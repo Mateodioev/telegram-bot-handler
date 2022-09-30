@@ -133,7 +133,7 @@ class Runner
             $this->longPolling($timeout);
         }
 
-        // Float
+        // Flood
         if (!$updates->ok && $updates->error_code == 429) {
             $this->log($updates->description, 'FATAL');
             sleep($updates->parameters->retry_after);
