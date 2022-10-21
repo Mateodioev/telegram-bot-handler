@@ -3,8 +3,8 @@
     "description": "Library for created telegram bots more easy",
     "type": "library",
     "require": {
-        "mateodioev/tgbot": "^1.2",
-        "mateodioev/php-easy-cli": "^1.1"
+        "mateodioev/php-easy-cli": "^1.1",
+        "mateodioev/tgbot": "^2.0"
     },
     "license": "MIT",
     "autoload": {
