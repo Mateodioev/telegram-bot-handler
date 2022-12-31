@@ -172,22 +172,14 @@ class Commands extends Updates
     }
     if ($action_type == 'message') {
       $cmd = $this->getCmdFromString($this->getText());
-
-      if (isset($fn[$cmd])) {
-        $fn = $fn[$cmd];
-        $params = array_merge($fn['params'], [$this]);
-        $this->Invoker($fn['fn'], $params);
-      }
-
-    } elseif (isset($this->registry[$action_type])) {
-
-      $callable = $this->registry[$action_type];
+    } else {
       $cmd = $this->getCmdOnCallback($this->getText());
-
-      if (isset($callable[$cmd])) {
-        $params = array_merge($callable[$cmd]['params'], [$this]);
-        $this->Invoker($callable[$cmd]['fn'], $params);
-      }
+    }
+    
+    if (isset($fn[$cmd])) {
+      $fn = $fn[$cmd];
+      $params = array_merge($fn['params'], [$this]);
+      $this->Invoker($fn['fn'], $params);
     }
   }
 
