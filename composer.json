@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "mateodioev/php-easy-cli": "^1.1",
-        "mateodioev/tgbot": "^2.0"
+        "mateodioev/tgbot": "^3.0"
     },
     "license": "MIT",
     "autoload": {
