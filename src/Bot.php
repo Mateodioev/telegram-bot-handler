@@ -5,10 +5,8 @@ namespace Mateodioev\TgHandler;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
-use Mateodioev\TgHandler\Log\BotApiStream;
-use Mateodioev\TgHandler\Log\Logger;
+use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
 use Psr\Log\LoggerInterface;
-use stdClass;
 
 class Bot
 {
@@ -64,7 +62,8 @@ class Bot
 			$commands = $this->commands[$type] ?? [];
 			foreach ($commands as $command) {
 				try {
-					$command->execute($this->api, $ctx);
+                    $command->setLogger($this->logger)
+                        ->execute($this->api, $ctx);
 				} catch (\Throwable $e) {
                     $this->logger->error('Fail to run command {name}, reason: {reason}', [
                         'name' => $command->getName(),

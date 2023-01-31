@@ -4,6 +4,7 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Psr\Log\LoggerInterface;
 
 interface CommandInterface
 {
@@ -21,6 +22,10 @@ interface CommandInterface
      * Get command description
      */
     public function getDescription(): string;
+    public function setDescription(string $description): void;
+
+    public function setLogger(LoggerInterface $logger): static;
+    public function getLogger(): LoggerInterface;
 
 	/**
 	 * Run command

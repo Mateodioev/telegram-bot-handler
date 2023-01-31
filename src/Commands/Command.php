@@ -4,6 +4,7 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Psr\Log\LoggerInterface;
 
 abstract class Command implements CommandInterface
 {
@@ -11,6 +12,8 @@ abstract class Command implements CommandInterface
     protected string $name = '';
     protected array $alias = [];
     protected string $description;
+    protected LoggerInterface $logger;
+
 
     public function getName(): string
     {
@@ -33,6 +36,17 @@ abstract class Command implements CommandInterface
     public function setDescription(string $description): void
     {
         $this->description = $description;
+    }
+
+    public function setLogger(LoggerInterface $logger): static
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 
 	/**
