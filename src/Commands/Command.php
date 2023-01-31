@@ -35,6 +35,14 @@ abstract class Command implements CommandInterface
         $this->description = $description;
     }
 
+	/**
+	 * Get new instance of the command
+	 */
+	public static function get(): static
+	{
+		return new static;
+	}
+
     /**
      * @inheritDoc
      */
