@@ -6,46 +6,43 @@
 composer require mateodioev/tg-handler
 ```
 
+```php
+use Mateodioev\TgHandler\Bot;
+```
+
 ## Usage
 
-See [examples](/examples/) folder for more information.
+Create new instance and add your command (*for now only text commands is available*)
 
 ```php
-use Mateodioev\TgHandler\Commands;
-$cmd = new Commands($namespace, $commandsPrefix);
+$bot = new Bot($botToken);
+
+$bot->on('message', YourCommandInstance);
+
+$bot->byWebhook();
+// or
+$bot->longPolling($timeout); // No needs server with ssl
 ```
 
-### Register commands
+### Creating new command instance
 
-Text commands
-```php
-$cmd->CmdMessage($cmd, $callable, $functionParams);
-```
-
-Callback data
-```php
-$cmd->CmdCallback($cmd, $callable, $functionParams);
-```
-
-Inline querys
-```php
-$cmd->CmdInline($cmd, $callable, $functionParams);
-```
-
-### Middlewares
-
-Middlewares are executed before the command is executed.
-
-_Types:_ message, photo, video, audio, voice, documment, sticker, venue, location, inline, callback, new_chat_member, left_chat_member, new_chat_title, new_chat_photo, group_chat_created, supergroup_chat_created, migrate_to_chat_id, migrate_from_chat_id, edited, game, channel, edited_channel
-```php
-$cmd->on($type, $callable, $functionParams);
-```
-
-### Run commands
-
-Run all comands registered and execute after middleware.
+All text commands need to extend `Mateodioev\TgHandler\Commands\MessageCommand` class, and put the logic in the method `handle`.
 
 ```php
-// Optional param
-$cmd->run($afterMidleware);
+use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Context;
+
+class MyCommand extends MessageCommand
+{
+    protected string $name = 'start';
+    protected string $description = 'Start the bot';
+    
+    public function handle(Api $bot, Context $context){
+         // TODO: Implement handle() method.
+         $bot->sendMessage($context->getChatId(), 'Hello!!!');
+    }
+}
+
+$bot->on('message', MyCommand::get());
 ```
