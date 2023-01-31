@@ -3,15 +3,21 @@
 namespace Mateodioev\TgHandler;
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
+use Mateodioev\TgHandler\Log\BotApiStream;
+use Mateodioev\TgHandler\Log\Logger;
+use Psr\Log\LoggerInterface;
 use stdClass;
 
 class Bot
 {
 	protected Api $api;
+    protected LoggerInterface $logger;
 
+    /**
+     * @var array<string|CommandInterface[]>
+     */
 	protected array $commands = [];
 
 	public function __construct(string $token) {
@@ -22,6 +28,22 @@ class Bot
 	{
 		return $this->api;
 	}
+
+    public function setLogger(LoggerInterface $logger): Bot
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    /**
+     * Set default logger class
+     * @param string $chatId Chat to send logs
+     */
+    public function setDefaultLogger(string $chatId): Bot
+    {
+        $apiStream = new BotApiStream($this->getApi(), $chatId);
+        return $this->setLogger(new Logger($apiStream));
+    }
 
 	public function on(string $type, CommandInterface $command): Bot
     {
@@ -34,7 +56,6 @@ class Bot
 		$ctx = Context::fromUpdate($update);
 		// Get context properties as array
 		$ctxProperties = $ctx->get();
-		echo 'Executing update_id: '.$update->updateId().PHP_EOL;
 
 		foreach ($ctxProperties as $type => $value) {
 			if (!is_array($value))
@@ -42,13 +63,13 @@ class Bot
 			
 			$commands = $this->commands[$type] ?? [];
 			foreach ($commands as $command) {
-				echo 'Executing command: '.$command->getName().PHP_EOL;
-				// Run command
-
 				try {
 					$command->execute($this->api, $ctx);
 				} catch (\Throwable $e) {
-					echo $e->getMessage().PHP_EOL;
+                    $this->logger->error('Fail to run command {name}, reason: {reason}', [
+                        'name' => $command->getName(),
+                        'reason' => $e->getMessage()
+                    ]);
 				}
 			}
 		}
@@ -75,7 +96,7 @@ class Bot
 			try {
 				$updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
 			} catch (\Throwable $e) {
-				echo $e->getMessage().PHP_EOL;
+				$this->logger->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
 				continue;
 			}
 
