@@ -23,12 +23,14 @@ class Bot
 		return $this->api;
 	}
 
-	public function on(string $type, CommandInterface $command) {
+	public function on(string $type, CommandInterface $command): Bot
+    {
 		$this->commands[$type][] = $command;
+        return $this;
 	}
 
-	public function run(Update $update)
-	{
+	public function run(Update $update): void
+    {
 		$ctx = Context::fromUpdate($update);
 		// Get context properties as array
 		$ctxProperties = $ctx->get();
@@ -52,8 +54,8 @@ class Bot
 		}
 	}
 
-	public function byWebhook()
-	{
+	public function byWebhook(): void
+    {
 		$update = json_decode(
 			file_get_contents('php://input')
 		);

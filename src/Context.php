@@ -16,8 +16,8 @@ class Context extends Update
         parent::__construct($up);
     }
 
-	public static function fromUpdate(Update $update)
-	{
+	public static function fromUpdate(Update $update): Context
+    {
 		$up = json_encode($update->get());
 		return new self(json_decode($up));
 	}
