@@ -46,3 +46,21 @@ class MyCommand extends MessageCommand
 
 $bot->on('message', MyCommand::get());
 ```
+
+This command works with `/start any text here` or `/start`. If you need another prefixes (/, !) you can add with method `addPrefix` or with property `prefix`
+
+```php
+class MyCommand extends MessageCommand
+{
+    protected string $name = 'start';
+    protected string $description = 'Start the bot';
+    protected array $prefix = ['/', '!'];
+    
+    // Additionally you can add command aliases
+    protected array $alias = ['help'];
+    
+    ...
+}
+```
+
+ 
