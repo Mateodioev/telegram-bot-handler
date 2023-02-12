@@ -10,22 +10,23 @@ use Psr\Log\LoggerInterface;
 
 class Bot
 {
-	protected Api $api;
+    protected Api $api;
     protected LoggerInterface $logger;
 
     /**
      * @var array<string|CommandInterface[]>
      */
-	protected array $commands = [];
+    protected array $commands = [];
 
-	public function __construct(string $token) {
-		$this->api = new Api($token);
-	}
+    public function __construct(string $token)
+    {
+        $this->api = new Api($token);
+    }
 
-	public function getApi(): Api
-	{
-		return $this->api;
-	}
+    public function getApi(): Api
+    {
+        return $this->api;
+    }
 
     public function setLogger(LoggerInterface $logger): Bot
     {
@@ -43,66 +44,66 @@ class Bot
         return $this->setLogger(new Logger($apiStream));
     }
 
-	public function on(string $type, CommandInterface $command): Bot
+    public function on(string $type, CommandInterface $command): Bot
     {
-		$this->commands[$type][] = $command;
+        $this->commands[$type][] = $command;
         return $this;
-	}
+    }
 
-	public function run(Update $update): void
+    public function run(Update $update): void
     {
-		$ctx = Context::fromUpdate($update);
-		// Get context properties as array
-		$ctxProperties = $ctx->get();
+        $ctx = Context::fromUpdate($update);
+        // Get context properties as array
+        $ctxProperties = $ctx->get();
 
-		foreach ($ctxProperties as $type => $value) {
-			if (!is_array($value))
-				continue;
-			
-			$commands = $this->commands[$type] ?? [];
-			foreach ($commands as $command) {
-				try {
+        foreach ($ctxProperties as $type => $value) {
+            if (!is_array($value))
+                continue;
+
+            $commands = $this->commands[$type] ?? [];
+            foreach ($commands as $command) {
+                try {
                     $command->setLogger($this->logger)
                         ->execute($this->api, $ctx);
-				} catch (\Throwable $e) {
+                } catch (\Throwable $e) {
                     $this->logger->error('Fail to run command {name}, reason: {reason}', [
                         'name' => $command->getName(),
                         'reason' => $e->getMessage()
                     ]);
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 
-	public function byWebhook(): void
+    public function byWebhook(): void
     {
-		$update = json_decode(
-			file_get_contents('php://input')
-		);
-		$update = new Update($update);
+        $update = json_decode(
+            file_get_contents('php://input')
+        );
+        $update = new Update($update);
 
-		$this->run($update);
-	}
+        $this->run($update);
+    }
 
-	public function longPolling(int $timeout): never
-	{
-		$offset = 0;
+    public function longPolling(int $timeout): never
+    {
+        $offset = 0;
 
-		while (true) {
-			// Get updates only for registered commands
-			$allowedUpdates = \array_keys($this->commands);
+        while (true) {
+            // Get updates only for registered commands
+            $allowedUpdates = \array_keys($this->commands);
 
-			try {
-				$updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
-			} catch (\Throwable $e) {
-				$this->logger->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
-				continue;
-			}
+            try {
+                $updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
+            } catch (\Throwable $e) {
+                $this->logger->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
+                continue;
+            }
 
-			foreach ($updates as $update) {
-				$offset = $update->update_id() + 1;
-				$this->run($update);
-			}
-		}
-	}
+            foreach ($updates as $update) {
+                $offset = $update->update_id() + 1;
+                $this->run($update);
+            }
+        }
+    }
 }

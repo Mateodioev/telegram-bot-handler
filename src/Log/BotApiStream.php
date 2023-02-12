@@ -13,7 +13,7 @@ class BotApiStream implements Stream
 
     public function push(string $message): void
     {
-        $message = $this->addHtmlTags($this->replaceIlegalCharacters($message));
+        $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
 
         $this->api->sendMessage(
             $this->chatId,
@@ -22,7 +22,7 @@ class BotApiStream implements Stream
         );
     }
 
-    protected function replaceIlegalCharacters(string $message): string
+    protected function replaceIllegalCharacters(string $message): string
     {
         return str_replace(['<', '>'], ['&lt;', '&gt;'], $message);
     }
