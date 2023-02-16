@@ -55,6 +55,13 @@ class Context extends Update
 			?? $this->inlineQuery()->query();
     }
 
+	public function getPayload(): string
+    {
+        $text = $this->getMessageText() ?? '';
+        $command = \explode(' ', $text)[0] ?? '';
+        return \substr($text, \strlen($command) + 1);
+    }
+
 	public function getChatType(): ?string
 	{
 		return $this->message()->chat()->type()
