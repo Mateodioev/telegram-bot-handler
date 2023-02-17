@@ -2,6 +2,7 @@
 
 namespace Mateodioev\TgHandler;
 
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
@@ -17,6 +18,10 @@ class Bot
      * @var array<string|CommandInterface[]>
      */
     protected array $commands = [];
+    /**
+     * @var array<string,Closure>
+     */
+    protected array $exceptionHandlers = [];
 
     public function __construct(string $token)
     {
@@ -44,6 +49,38 @@ class Bot
         return $this->setLogger(new Logger($apiStream));
     }
 
+    public function getLogger(): LoggerInterface
+    {
+        try {
+            return $this->logger;
+        } catch (\Throwable $e) {
+            throw new \Exception('Logger not set');
+        }
+    }
+
+    /**
+     * @param string $exception Exception class name
+     * @param Closure $handler Handler function, must accept 3 arguments: \Throwable $e, Bot $api, Context $ctx
+     * @return Bot
+     */
+    public function setExceptionHandler(string $exceptionName, Closure $handler): Bot
+    {
+        $this->exceptionHandlers[$exceptionName] = $handler;
+        return $this;
+    }
+
+    protected function handleException(\Throwable $e, Bot $api, Context $ctx): bool
+    {
+        $exceptionName = $e::class;
+        if (isset($this->exceptionHandlers[$exceptionName])) {
+            $handler = $this->exceptionHandlers[$exceptionName];
+            call_user_func($handler, $e, $api, $ctx);
+            return true;
+        }
+
+        return false;
+    }
+
     public function on(string $type, CommandInterface $command): Bot
     {
         $this->commands[$type][] = $command;
@@ -63,9 +100,11 @@ class Bot
             $commands = $this->commands[$type] ?? [];
             foreach ($commands as $command) {
                 try {
-                    $command->setLogger($this->logger)
+                    $command->setLogger($this->getLogger())
                         ->execute($this->api, $ctx);
                 } catch (\Throwable $e) {
+                    if ($this->handleException($e, $this, $ctx)) continue;
+
                     $this->logger->error('Fail to run command {name}, reason: {reason}', [
                         'name' => $command->getName(),
                         'reason' => $e->getMessage()
@@ -89,9 +128,9 @@ class Bot
     {
         $offset = 0;
 
+        // Get updates only for registered commands
+        $allowedUpdates = \array_keys($this->commands);
         while (true) {
-            // Get updates only for registered commands
-            $allowedUpdates = \array_keys($this->commands);
 
             try {
                 $updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
