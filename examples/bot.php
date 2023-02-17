@@ -7,7 +7,7 @@ use Mateodioev\Utils\Exceptions\RequestException;
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/Start.php';
 
-$bot = new Bot('2072676984:AAFP7pTgokA5mDTPTMRvlcW5VJSpp4g4biA');
+$bot = new Bot($_ENV['BOT_TOKEN']);
 
 // Log in file
 $bot->setLogger(new Logger(FileStream::fromToday(__DIR__)));
