@@ -8,7 +8,7 @@ require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/ButtonCallback.php';
 
-$bot = new Bot('2072676984:AAG8nv7vZ4ZCE98sm3MK3jhVluOk8tG68xQ');
+$bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
 
 // Log in file
 $bot->setLogger(new Logger(FileStream::fromToday(__DIR__)));
