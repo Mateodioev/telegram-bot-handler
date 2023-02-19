@@ -24,35 +24,40 @@ class Context extends Update
 
 	public function getUserId(): ?int
 	{
-		return $this->message()->from()->id()
-			?? $this->callbackQuery()->from()->id()
-			?? $this->inlineQuery()->from()->id();
+		return $this?->message()?->from()?->id()
+			?? $this?->callbackQuery()?->from()?->id()
+			?? $this?->inlineQuery()?->from()?->id()
+            ?? null;
 	}
 
 	public function getUserName(): ?string
 	{
-		return $this->message()->from()->username()
-			?? $this->callbackQuery()->from()->username()
-			?? $this->inlineQuery()->from()->username();
+		return $this?->message()?->from()?->username()
+			?? $this?->callbackQuery()?->from()?->username()
+			?? $this?->inlineQuery()?->from()?->username()
+            ?? null;
 	}
 
 	public function getChatId(): ?int
 	{
-		return $this->message()->chat()->id()
-			?? $this->callbackQuery()->message()->chat()->id();
+		return $this?->message()?->chat()?->id()
+			?? $this?->callbackQuery()?->message()?->chat()?->id()
+            ?? null;
 	}
 
 	public function getMessageId(): ?int
 	{
-		return $this->message()->messageId()
-			?? $this->callbackQuery()->message()->messageId();
+		return $this?->message()?->messageId()
+			?? $this?->callbackQuery()?->message()?->messageId()
+            ?? null;
 	}
 
     public function getMessageText(): ?string
     {
-        return $this->message()->text()
-			?? $this->callbackQuery()->data()
-			?? $this->inlineQuery()->query();
+        return $this?->message()?->text()
+			?? $this?->callbackQuery()?->data()
+			?? $this?->inlineQuery()?->query()
+            ?? null;
     }
 
 	public function getPayload(): string
@@ -64,8 +69,9 @@ class Context extends Update
 
 	public function getChatType(): ?string
 	{
-		return $this->message()->chat()->type()
-			?? $this->callbackQuery()->message()->chat()->type();
+		return $this?->message()?->chat()?->type()
+			?? $this?->callbackQuery()?->message()?->chat()?->type()
+            ?? null;
 	}
 
 	public function getFullName(): string
@@ -75,23 +81,26 @@ class Context extends Update
 
 	public function getFirsName(): ?string
 	{
-		return $this->message()->from()->firstName()
-			?? $this->callbackQuery()->from()->firstName()
-			?? $this->message()->replyToMessage()->from()->firstName()
-			?? $this->inlineQuery()->from()->firstName();
+		return $this?->message()?->from()?->firstName()
+			?? $this?->callbackQuery()?->from()?->firstName()
+			?? $this?->message()?->replyToMessage()?->from()?->firstName()
+			?? $this?->inlineQuery()?->from()?->firstName()
+            ?? null;
 	}
 
 	public function getLastName(): ?string
 	{
-		return $this->message()->from()->lastName()
-			?? $this->callbackQuery()->from()->lastName()
-			?? $this->message()->replyToMessage()->from()->lastName()
-			?? $this->inlineQuery()->from()->lastName();
+		return $this?->message()?->from()?->lastName()
+			?? $this?->callbackQuery()?->from()?->lastName()
+			?? $this?->message()?->replyToMessage()?->from()?->lastName()
+			?? $this?->inlineQuery()?->from()?->lastName()
+            ?? null;
 	}
 
 	public function getDocument(): ?Document
 	{
-		return $this->message()->document()
-			?? $this->message()->replyToMessage()->document();
+		return $this?->message()?->document()
+			?? $this?->message()?->replyToMessage()?->document()
+            ?? null;
 	}
 }
