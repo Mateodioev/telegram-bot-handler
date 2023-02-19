@@ -14,7 +14,7 @@ abstract class CallbackCommand extends Command
      */
     protected function buildRegex(): string
     {
-        $format = '#^(%s)((?: .+)?$#';
+        $format = '#^(%s)(?: .+)?$#';
         $alias = [$this->getName(), ...$this->getAliases()];
 
         return sprintf($format,
@@ -27,12 +27,12 @@ abstract class CallbackCommand extends Command
      */
     public function match(string $text): bool
     {
-        return preg_match($this->buildRegex(), $text) > 1;
+        return (bool) preg_match($this->buildRegex(), $text);
     }
 
     public function execute(Api $bot, Context $context)
     {
-        $query = $context->getCallbackQueryText();
+        $query = $context->getMessageText() ?? '';
 
 		if (empty($query)) return;
 		
