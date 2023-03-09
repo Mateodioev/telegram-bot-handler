@@ -3,6 +3,7 @@
 use Mateodioev\Bots\Telegram\{Api, Buttons};
 use Mateodioev\Request\Request;
 use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\TgHandler\Context;
 
 class Start extends MessageCommand
 {
@@ -13,12 +14,13 @@ class Start extends MessageCommand
      * Run command
      * @throws Exception
      */
-	public function handle(Api $bot, Mateodioev\TgHandler\Context $context)
+	public function handle(Api $bot, Context $context, array $args = [])
 	{
         $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), 'HTML', [
             'reply_markup' => (string) $this->getButton() // get json button
         ]);
 
+        // log telegram context using psr logger
         $this->getLogger()->info('Received new text: ' . $context->message()->text());
 
         // This will throw an exception

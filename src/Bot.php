@@ -3,6 +3,7 @@
 namespace Mateodioev\TgHandler;
 
 use Closure;
+use Exception;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
@@ -11,6 +12,8 @@ use Psr\Log\LoggerInterface;
 
 class Bot
 {
+    use middlewares;
+
     protected Api $api;
     protected LoggerInterface $logger;
 
@@ -49,17 +52,20 @@ class Bot
         return $this->setLogger(new Logger($apiStream));
     }
 
+    /**
+     * @throws Exception
+     */
     public function getLogger(): LoggerInterface
     {
         try {
             return $this->logger;
         } catch (\Throwable $e) {
-            throw new \Exception('Logger not set');
+            throw new Exception('Logger not set');
         }
     }
 
     /**
-     * @param string $exception Exception class name
+     * @param string $exceptionName Exception class name
      * @param Closure $handler Handler function, must accept 3 arguments: \Throwable $e, Bot $api, Context $ctx
      * @return Bot
      */
@@ -100,8 +106,9 @@ class Bot
             $commands = $this->commands[$type] ?? [];
             foreach ($commands as $command) {
                 try {
+                    $params = $this->handleMiddlewares($command, $ctx);
                     $command->setLogger($this->getLogger())
-                        ->execute($this->api, $ctx);
+                        ->execute($this->api, $ctx, $params);
                 } catch (\Throwable $e) {
                     if ($this->handleException($e, $this, $ctx)) continue;
 

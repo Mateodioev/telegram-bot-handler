@@ -12,6 +12,8 @@ abstract class Command implements CommandInterface
     protected string $name = '';
     protected array $alias = [];
     protected string $description;
+    protected array $middlewares = [];
+
     protected LoggerInterface $logger;
 
 
@@ -57,10 +59,32 @@ abstract class Command implements CommandInterface
 		return new static;
 	}
 
+    public function setMiddlewares(array $middlewares): static
+    {
+        $this->middlewares = $middlewares;
+        return $this;
+    }
+
+    public function addMiddlewares(\Closure $middleware): static
+    {
+        $this->middlewares[] = $middleware;
+        return $this;
+    }
+
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares;
+    }
+
+    public function hasMiddlewares(): bool
+    {
+        return !empty($this->middlewares);
+    }
+
     /**
      * @inheritDoc
      */
-    abstract public function execute(Api $bot, Context $context);
+    abstract public function execute(Api $bot, Context $context, array $args = []);
 
     /**
      * Crete regex for use in match method

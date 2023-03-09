@@ -62,19 +62,22 @@ abstract class MessageCommand extends Command
         return preg_match($this->buildRegex(), $text) > 0;
     }
 
-    public function execute(Api $bot, Context $context)
+    public function execute(Api $bot, Context $context, array $args = [])
     {
         $text = $context->getMessageText();
 
         if (empty($text)) return;
 
         if ($this->match($text)) {
-            $this->handle($bot, $context);
+            $this->handle($bot, $context, $args);
         }
     }
 
 	/**
 	 * Run command
+     * @param Api $bot Telegram bot api
+     * @param Context $context Telegram context / Update
+     * @param array $args Middlewares results
 	 */
-    abstract public function handle(Api $bot, Context $context);
+    abstract public function handle(Api $bot, Context $context, array $args = []);
 }

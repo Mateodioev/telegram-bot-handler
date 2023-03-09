@@ -9,11 +9,13 @@ class ButtonCallback extends CallbackCommand
 {
     protected string $name = 'button1';
     protected string $description = 'Button 1 callback';
+    protected array $middlewares = [
+        'echoPayload'
+    ];
 
-    public function handle(Api $bot, Context $context)
+    public function handle(Api $bot, Context $context, array $args = [])
     {
         $this->getLogger()->info('Button 1 pressed');
-
         // log telegram context
         $this->getLogger()->info('Update: {up}', ['up' => json_encode($context->get(), JSON_PRETTY_PRINT)]);
 
@@ -25,4 +27,12 @@ class ButtonCallback extends CallbackCommand
             'show_alert' => true
         ], 'answerCallbackQuery'));
     }
+}
+
+function echoPayload(Context $ctx, Api $bot): void
+{
+    $message = 'Received new payload: "%s"';
+    $payload = $ctx->getPayload();
+
+    echo sprintf($message, $payload) . PHP_EOL;
 }

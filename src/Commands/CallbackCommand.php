@@ -30,19 +30,22 @@ abstract class CallbackCommand extends Command
         return (bool) preg_match($this->buildRegex(), $text);
     }
 
-    public function execute(Api $bot, Context $context)
+    public function execute(Api $bot, Context $context, array $args = [])
     {
         $query = $context->getMessageText() ?? '';
 
 		if (empty($query)) return;
 		
 		if ($this->match($query)) {
-			$this->handle($bot, $context);
+			$this->handle($bot, $context, $args);
 		}
     }
 
 	/**
 	 * Run command
+     * @param Api $bot Telegram bot api
+     * @param Context $context Telegram context / update
+     * @param array $args Middleware results
 	 */
-	abstract public function handle(Api $bot, Context $context);
+	abstract public function handle(Api $bot, Context $context, array $args = []);
 }
