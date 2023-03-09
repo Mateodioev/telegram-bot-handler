@@ -8,6 +8,7 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
 use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
+use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
 
 class Bot
@@ -29,6 +30,8 @@ class Bot
     public function __construct(string $token)
     {
         $this->api = new Api($token);
+
+        $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
     }
 
     public function getApi(): Api

@@ -5,6 +5,7 @@ namespace Mateodioev\TgHandler;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\CommandInterface;
 use Closure, Exception;
+use Mateodioev\TgHandler\Commands\StopCommand;
 
 trait middlewares
 {
@@ -30,6 +31,8 @@ trait middlewares
     {
         try {
             return call_user_func($middleware, $context, $this->getApi());
+        } catch (StopCommand $e) {
+            throw $e;
         } catch (Exception $e) {
             if (!$this->handleException($e, $this, $ctx)) {
                 throw $e;

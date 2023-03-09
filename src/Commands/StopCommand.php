@@ -1,0 +1,35 @@
+<?php
+
+namespace Mateodioev\TgHandler\Commands;
+
+use Mateodioev\TgHandler\{Bot, Context};
+use Exception;
+
+/**
+ * Throw this exception to stop command execution
+ */
+class StopCommand extends Exception
+{
+    /**
+     * @var callable|Closure|null Custom handler for StopCommand, receive same arguments as StopCommand::handler
+     * @see StopCommand::handler
+     */
+    public static mixed $handler = null;
+
+    /**
+     * @throws Exception
+     */
+    public static function handler(StopCommand $e, Bot $bot, Context $ctx): void
+    {
+        if (empty($e->getMessage()))
+            return;
+
+        if (is_callable(self::$handler)) {
+            call_user_func(self::$handler, $e, $bot, $ctx);
+            return;
+        } else {
+            $bot->getLogger()->notice('StopCommand: ' . $e->getMessage());
+            $bot->getApi()->sendMessage($ctx->getChatId(), $e->getMessage());
+        }
+    }
+}
