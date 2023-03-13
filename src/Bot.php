@@ -125,7 +125,7 @@ class Bot
     /**
      * Execute middlewares and command
      */
-    protected function executeCommand(CommandInterface $command, Context $ctx): void
+    public function executeCommand(CommandInterface $command, Context $ctx): void
     {
         try {
             $params = $this->handleMiddlewares($command, $ctx);
