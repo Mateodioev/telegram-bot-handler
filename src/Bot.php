@@ -2,14 +2,16 @@
 
 namespace Mateodioev\TgHandler;
 
-use Closure;
-use Exception;
+use Closure, Exception;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
 use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
+use function Amp\async;
+use function Amp\Future\awaitAll;
 
 class Bot
 {
@@ -78,6 +80,9 @@ class Bot
         return $this;
     }
 
+    /**
+     * @return bool Return true if exception handled
+     */
     protected function handleException(\Throwable $e, Bot $api, Context $ctx): bool
     {
         $exceptionName = $e::class;
@@ -96,47 +101,95 @@ class Bot
         return $this;
     }
 
-    public function run(Update $update): void
+    /**
+     * Get commands
+     * @return CommandInterface[]
+     */
+    protected function resolveCommands(Context $ctx): array
     {
-        $ctx = Context::fromUpdate($update);
-        // Get context properties as array
+        // get context properties as array
         $ctxProperties = $ctx->get();
+        $commands = [];
 
         foreach ($ctxProperties as $type => $value) {
-            if (!is_array($value))
-                continue;
+            if (!is_array($value)) continue;
 
-            $commands = $this->commands[$type] ?? [];
-            foreach ($commands as $command) {
-                try {
-                    $params = $this->handleMiddlewares($command, $ctx);
-                    $command->setLogger($this->getLogger())
-                        ->execute($this->api, $ctx, $params);
-                } catch (\Throwable $e) {
-                    if ($this->handleException($e, $this, $ctx)) continue;
-
-                    $this->logger->error('Fail to run command {name}, reason: {reason}', [
-                        'name' => $command->getName(),
-                        'reason' => $e->getMessage()
-                    ]);
-                }
+            // add commands to return
+            foreach (($this->commands[$type] ?? []) as $command) {
+                $commands[] = $command;
             }
+        }
+        return $commands;
+    }
+
+    /**
+     * Execute middlewares and command
+     */
+    protected function executeCommand(CommandInterface $command, Context $ctx): void
+    {
+        try {
+            $params = $this->handleMiddlewares($command, $ctx);
+            $command->setLogger($this->getLogger())
+                ->execute($this->api, $ctx, $params);
+        } catch (\Throwable $e) {
+            if ($this->handleException($e, $this, $ctx)) return;
+
+            $this->logger->error('Fail to run command {name}, reason: {reason}', [
+                'name' => $command->getName(),
+                'reason' => $e->getMessage()
+            ]);
         }
     }
 
-    public function byWebhook(): void
+    /**
+     * Run commands
+     */
+    public function run(Update $update): void
+    {
+        $ctx = Context::fromUpdate($update);
+
+        array_map(function (CommandInterface $command) use ($ctx) {
+            $this->executeCommand($command, $ctx);
+        }, $this->resolveCommands($ctx));
+    }
+
+    /**
+     * Run commands in async mode
+     */
+    public function runAsync(Update $update): void
+    {
+        $ctx = Context::fromUpdate($update);
+
+        awaitAll(
+            array_map(function (CommandInterface $command) use ($ctx) {
+                // create async function for each command
+                return async(function (CommandInterface $command, Context $ctx) {
+                    $this->executeCommand($command, $ctx);
+                }, $command, $ctx);
+            }, $this->resolveCommands($ctx))
+        );
+    }
+
+    public function byWebhook(bool $async = false): void
     {
         $update = json_decode(
             file_get_contents('php://input')
         );
         $update = new Update($update);
 
-        $this->run($update);
+        $async ? $this->runAsync($update) : $this->run($update);
     }
 
-    public function longPolling(int $timeout): never
+    /**
+     * Run bot in long polling mode
+     *
+     * @param integer $timeout Timeout in seconds
+     * @param boolean $ignoreOldUpdates Ignore old updates
+     * @param boolean $async Run in async mode using AMPHP
+     */
+    public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): never
     {
-        $offset = 0;
+        $offset = ($ignoreOldUpdates) ? -1 : 0;
 
         // Get updates only for registered commands
         $allowedUpdates = \array_keys($this->commands);
@@ -144,15 +197,34 @@ class Bot
 
             try {
                 $updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
-            } catch (\Throwable $e) {
+            } catch (TelegramApiException $e) {
                 $this->logger->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
                 continue;
             }
 
-            foreach ($updates as $update) {
-                $offset = $update->update_id() + 1;
-                $this->run($update);
+            if ($async) {
+                $this->logger->info('Async mode');
+                $futureResponses = [];
+
+                foreach ($updates as $update) {
+                    $offset = $update->update_id() + 1;
+                    # $futureResponses[] = async($this->runAsync(...), $update);
+                    $futureResponses[] = async(getAsyncFn(), $update, $this);
+                }
+                awaitAll($futureResponses);
+            } else {
+                foreach ($updates as $update) {
+                    $offset = $update->update_id() + 1;
+                    $this->run($update);
+                }
             }
         }
     }
+}
+
+function getAsyncFn(): Closure
+{
+    return function (Update $up, Bot &$instance) {
+        $instance->runAsync($up);
+    };
 }
