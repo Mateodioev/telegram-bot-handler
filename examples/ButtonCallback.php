@@ -21,6 +21,7 @@ class ButtonCallback extends CallbackCommand
 
         $payload = $context->getPayload();
         // send answerCallbackQuery method
+        // if payload is empty, StopCommand will be thrown and this method will not be called
         $bot->request(Method::create([
             'callback_query_id' => $context?->callbackQuery()->id(),
             'text' => "Button 1 pressed\nPayload: " . $payload,
