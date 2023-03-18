@@ -34,7 +34,7 @@ trait middlewares
         } catch (StopCommand $e) {
             throw $e;
         } catch (Exception $e) {
-            if (!$this->handleException($e, $this, $ctx)) {
+            if (!$this->handleException($e, $this, $context)) {
                 throw $e;
             }
             return null;
