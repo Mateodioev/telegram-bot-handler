@@ -198,12 +198,15 @@ class Bot
             try {
                 $updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
             } catch (TelegramApiException $e) {
-                $this->logger->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
+                if ($e->getCode() == 404) {
+                    $this->getLogger()->critical('Invalid bot token');
+                    exit(1);
+                }
+                $this->getLogger()->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
                 continue;
             }
 
             if ($async) {
-                $this->logger->info('Async mode');
                 $futureResponses = [];
 
                 foreach ($updates as $update) {
