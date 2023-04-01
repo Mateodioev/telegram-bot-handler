@@ -6,13 +6,16 @@ use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 
 class FileStream implements Stream
 {
+    const OPEN_MODE = 'a';
+
     protected $file;
 
     public function __construct(string $fileName)
     {
-        $this->file = fopen($fileName, 'a');
+        $this->file = \Amp\File\openFile($fileName, self::OPEN_MODE);
+        // $this->file = fopen($fileName, 'a');
 
-        if ($this->file === false) {
+        if (!$this->file->isWritable()) {
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
         }
     }
@@ -25,11 +28,13 @@ class FileStream implements Stream
 
     public function push(string $message): void
     {
-        fwrite($this->file, $message);
+        $this->file->write($message);
+        // fwrite($this->file, $message);
     }
 
     public function __destruct()
     {
-        fclose($this->file);
+        $this->file->end();
+        $this->file->close();
     }
 }

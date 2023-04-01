@@ -3,14 +3,15 @@
     "description": "Library for created telegram bots more easy",
     "type": "library",
     "require": {
-        "mateodioev/tgbot": "^3.0",
         "psr/log": "^3.0",
-        "amphp/parallel": "^2.1"
+        "mateodioev/tgbot": "^3.3",
+        "amphp/file": "^3.0"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Mateodioev\\TgHandler\\": "src/"
         }
-    }
+    },
+    "minimum-stability": "beta"
 }

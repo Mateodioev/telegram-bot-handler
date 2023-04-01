@@ -2,6 +2,7 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use Amp\File\FilesystemException;
 use Mateodioev\Utils\Exceptions\FileException;
 use Mateodioev\Utils\Files;
 
@@ -67,11 +68,21 @@ class PhpNativeStream implements Stream
 
         $message = sprintf($format, $date, $level, $errorStr, $errorFile, $errorLine);
 
-        return (bool) file_put_contents($this->fileLog, $message, FILE_APPEND);
+        return $this->write($this->fileLog, $message);
     }
 
     public function push(string $message): void
     {
-        file_put_contents($this->fileLog, $message, FILE_APPEND);
+        $this->write($this->fileLog, $message);
+    }
+
+    protected function write(string $path, string $content)
+    {
+        try {
+            \Amp\File\write($path, $content);
+            return true;
+        } catch (FilesystemException $e) {
+            return false;
+        }
     }
 }

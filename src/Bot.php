@@ -193,10 +193,14 @@ class Bot
 
         // Get updates only for registered commands
         $allowedUpdates = \array_keys($this->commands);
+
+        $this->getApi()->setAsync($async);
+
         while (true) {
 
             try {
-                $updates = $this->api->getUpdates($offset, 100, $timeout, $allowedUpdates);
+                /** @var Update[] */
+                $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
             } catch (TelegramApiException $e) {
                 if ($e->getCode() == 404) {
                     $this->getLogger()->critical('Invalid bot token');
@@ -207,19 +211,17 @@ class Bot
             }
 
             if ($async) {
-                $futureResponses = [];
+                $futureResponses = array_map(function (Update $update) use (&$offset) {
+                    $offset = $update->updateId() + 1;
 
-                foreach ($updates as $update) {
-                    $offset = $update->update_id() + 1;
-                    # $futureResponses[] = async($this->runAsync(...), $update);
-                    $futureResponses[] = async(getAsyncFn(), $update, $this);
-                }
+                    return async(getAsyncFn(), $update, $this);
+                }, $updates);
                 awaitAll($futureResponses);
             } else {
-                foreach ($updates as $update) {
-                    $offset = $update->update_id() + 1;
+                array_map(function (Update $update) use (&$offset) {
+                    $offset = $update->updateId() + 1;
                     $this->run($update);
-                }
+                }, $updates);
             }
         }
     }
@@ -227,7 +229,7 @@ class Bot
 
 function getAsyncFn(): Closure
 {
-    return function (Update $up, Bot &$instance) {
+    return static function (Update $up, Bot &$instance) {
         $instance->runAsync($up);
     };
 }
