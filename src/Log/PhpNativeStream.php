@@ -23,10 +23,10 @@ class PhpNativeStream implements Stream
             if (!Files::isFile($file)) {
                 throw new FileException('Invalid file');
             } else {
-                $this->fileLog = $file;
+                $this->setFile($file);
             }
         } else {
-            $this->fileLog = $dir . '/' . \date('Y-m-d') . '-php_error.log';
+            $this->setFile($dir . '/' . \date('Y-m-d') . '-php_error.log');
         }
 
         \error_reporting(E_ALL);
@@ -36,6 +36,12 @@ class PhpNativeStream implements Stream
 
         set_error_handler($this->errorHandler(...));
 
+        return $this;
+    }
+
+    public function setFile(string $path): static
+    {
+        $this->fileLog = $path;
         return $this;
     }
 

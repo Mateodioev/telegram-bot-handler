@@ -12,6 +12,7 @@ use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
 use function Amp\async;
 use function Amp\Future\awaitAll;
+use Mateodioev\TgHandler\Log\PhpNativeStream;
 
 class Bot
 {
@@ -48,24 +49,23 @@ class Bot
     }
 
     /**
-     * Set default logger class
-     * @param string $chatId Chat to send logs
+     * Set default logger class to PhpNativeStream
      */
-    public function setDefaultLogger(string $chatId): Bot
+    public function setDefaultLogger(): Bot
     {
-        $apiStream = new BotApiStream($this->getApi(), $chatId);
-        return $this->setLogger(new Logger($apiStream));
+        $stream = new PhpNativeStream;
+        return $this->setLogger(new Logger($stream->activate(__DIR__)));
     }
 
     /**
-     * @throws Exception
+     * If logger is not set, create new PhpNativeSream 
      */
     public function getLogger(): LoggerInterface
     {
         try {
             return $this->logger;
         } catch (\Throwable $e) {
-            throw new Exception('Logger not set');
+            return $this->setDefaultLogger()->logger;
         }
     }
 
