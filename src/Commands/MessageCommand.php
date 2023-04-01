@@ -31,6 +31,12 @@ abstract class MessageCommand extends Command
         return $this;
     }
 
+    public function setPrefixes(array $prefixes): static
+    {
+        $this->prefix = $prefixes;
+        return $this;
+    }
+
     /**
      * Enable or disable case sensitive commands
      */
@@ -49,7 +55,7 @@ abstract class MessageCommand extends Command
         $alias = [$this->getName(), ...$this->getAliases()];
 
         return sprintf($format,
-            join('|', $this->getPrefix()),
+            str_replace('#', '\#', join('|', $this->getPrefix())), // for commands like #start
             join('|', $alias)
         );
     }

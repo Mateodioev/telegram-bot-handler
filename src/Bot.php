@@ -7,12 +7,13 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Commands\CommandInterface;
-use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
+use Mateodioev\TgHandler\Log\{Logger};
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
 use function Amp\async;
 use function Amp\Future\awaitAll;
 use Mateodioev\TgHandler\Log\PhpNativeStream;
+use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
 
 class Bot
 {
@@ -99,6 +100,13 @@ class Bot
     {
         $this->commands[$type][] = $command;
         return $this;
+    }
+
+    public function onCommand(string $name, Closure $fn): ClosureMessageCommand
+    {
+        $command = ClosureMessageCommand::fromClosure($fn, $name);
+        $this->on('message', $command);
+        return $command;
     }
 
     /**
