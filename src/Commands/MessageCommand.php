@@ -62,15 +62,18 @@ abstract class MessageCommand extends Command
         return preg_match($this->buildRegex(), $text) > 0;
     }
 
+    public function isValid(Api $bot, Context $ctx): bool
+    {
+        $text = $ctx->getMessageText();
+
+        if (empty($text)) return false;
+
+        return $this->match($text);
+    }
+
     public function execute(Api $bot, Context $context, array $args = [])
     {
-        $text = $context->getMessageText();
-
-        if (empty($text)) return;
-
-        if ($this->match($text)) {
-            $this->handle($bot, $context, $args);
-        }
+        $this->handle($bot, $context, $args);
     }
 
 	/**

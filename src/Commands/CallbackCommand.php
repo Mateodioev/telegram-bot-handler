@@ -30,6 +30,15 @@ abstract class CallbackCommand extends Command
         return (bool) preg_match($this->buildRegex(), $text);
     }
 
+    public function isValid(Api $bot, Context $ctx): bool
+    {
+        $query = $ctx->getMessageText() ?? '';
+
+		if (empty($query)) return false;
+		
+		return $this->match($query);
+    }
+
     public function execute(Api $bot, Context $context, array $args = [])
     {
         $query = $context->getMessageText() ?? '';

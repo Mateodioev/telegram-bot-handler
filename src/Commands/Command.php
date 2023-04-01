@@ -84,6 +84,14 @@ abstract class Command implements CommandInterface
     /**
      * @inheritDoc
      */
+    public function isValid(Api $bot, Context $context): bool
+    {
+        return true; // default for command events
+    }
+
+    /**
+     * @inheritDoc
+     */
     abstract public function execute(Api $bot, Context $context, array $args = []);
 
     /**

@@ -128,13 +128,15 @@ class Bot
     public function executeCommand(CommandInterface $command, Context $ctx): void
     {
         try {
+            if (!$command->isValid($this->getApi(), $ctx)) return;
+
             $params = $this->handleMiddlewares($command, $ctx);
             $command->setLogger($this->getLogger())
-                ->execute($this->api, $ctx, $params);
+                ->execute($this->getApi(), $ctx, $params);
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx)) return;
 
-            $this->logger->error('Fail to run command {name}, reason: {reason}', [
+            $this->getLogger()->error('Fail to run command {name}, reason: {reason}', [
                 'name' => $command->getName(),
                 'reason' => $e->getMessage()
             ]);
@@ -177,6 +179,7 @@ class Bot
         );
         $update = new Update($update);
 
+        $this->getApi()->setAsync($async);
         $async ? $this->runAsync($update) : $this->run($update);
     }
 
@@ -211,12 +214,12 @@ class Bot
             }
 
             if ($async) {
-                $futureResponses = array_map(function (Update $update) use (&$offset) {
-                    $offset = $update->updateId() + 1;
-
-                    return async(getAsyncFn(), $update, $this);
-                }, $updates);
-                awaitAll($futureResponses);
+                awaitAll(
+                    array_map(function (Update $update) use (&$offset) {
+                        $offset = $update->updateId() + 1;
+                        return async(getAsyncFn(), $update, $this);
+                    }, $updates)
+                );
             } else {
                 array_map(function (Update $update) use (&$offset) {
                     $offset = $update->updateId() + 1;

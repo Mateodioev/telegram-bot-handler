@@ -60,6 +60,11 @@ interface CommandInterface
      */
     public function hasMiddlewares(): bool;
 
+    /**
+     * Return true for execute command
+     */
+    public function isValid(Api $bot, Context $context): bool;
+
 	/**
 	 * Run command
      * @param Api $bot Telegram bot api
