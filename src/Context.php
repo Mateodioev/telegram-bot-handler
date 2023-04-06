@@ -16,6 +16,8 @@ use function json_encode, json_decode, explode, substr, strlen, trim;
  */
 class Context extends Update
 {
+	private ?EventType $type = null;
+
     public function __construct(?stdClass $up)
     {
         parent::__construct($up);
@@ -116,15 +118,18 @@ class Context extends Update
 	 */
 	public function eventType(): EventType
 	{
+		if ($this->type instanceof EventType)
+			return $this->type;
+
 		foreach ($this->get() as $type => $value) {
 
 			if ($value != null && !is_array($value)) {
-				return EventType::silentFrom($type);
+				return $this->type = EventType::silentFrom($type);
 			} else {
 				continue;
 			}
 		}
 
-		return EventType::none;
+		return $this->type = EventType::none;
 	}
 }
