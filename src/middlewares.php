@@ -2,10 +2,9 @@
 
 namespace Mateodioev\TgHandler;
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Commands\CommandInterface;
-use Closure, Exception;
+use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
+use Mateodioev\TgHandler\Events\EventInterface;
 
 trait middlewares
 {
@@ -13,12 +12,12 @@ trait middlewares
      * @throws Exception
      * @return array Returns array of middlewares results, only include results that are not null
      */
-    protected function handleMiddlewares(CommandInterface $command, Context $context): array
+    protected function handleMiddlewares(EventInterface $event, Context $context): array
     {
-        if (!$command->hasMiddlewares()) // Check if command has middlewares
+        if (!$event->hasMiddlewares()) // Check if command has middlewares
             return [];
 
-        $middlewares = $command->middlewares();
+        $middlewares = $event->middlewares();
 
         $params = array_map(fn($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
         return array_filter($params, fn($param) => $param !== null);

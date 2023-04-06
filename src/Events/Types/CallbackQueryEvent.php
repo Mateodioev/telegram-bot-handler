@@ -1,6 +1,6 @@
 <?php
 
-namespace Mateodioev\TgHandler\Event\Types;
+namespace Mateodioev\TgHandler\Events\Types;
 
 use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
 
