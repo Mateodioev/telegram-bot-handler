@@ -123,7 +123,7 @@ class Context extends Update
 
 		foreach ($this->get() as $type => $value) {
 
-			if ($value != null && !is_array($value)) {
+			if ($value != null && is_array($value)) {
 				return $this->type = EventType::silentFrom($type);
 			} else {
 				continue;

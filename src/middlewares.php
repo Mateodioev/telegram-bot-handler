@@ -18,7 +18,7 @@ trait middlewares
         if (!$command->hasMiddlewares()) // Check if command has middlewares
             return [];
 
-        $middlewares = $command->getMiddlewares();
+        $middlewares = $command->middlewares();
 
         $params = array_map(fn($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
         return array_filter($params, fn($param) => $param !== null);

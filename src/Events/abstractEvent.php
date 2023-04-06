@@ -36,6 +36,11 @@ abstract class abstractEvent implements EventInterface
         return $this->logger;
     }
 
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger();
+    }
+
     public function setLogger(LoggerInterface $logger): static
     {
         $this->logger = $logger;

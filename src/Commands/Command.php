@@ -4,9 +4,9 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
-use Mateodioev\TgHandler\Events\abstractEvent;
+use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
 
-abstract class Command extends abstractEvent implements CommandInterface
+abstract class Command extends abstractEvent implements CommandInterface, EventInterface
 {
 
     protected string $name = '';

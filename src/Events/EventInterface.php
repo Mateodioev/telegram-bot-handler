@@ -32,6 +32,11 @@ interface EventInterface
     public function logger(): LoggerInterface;
 
     /**
+     * @see static::logger
+     */
+    public function getLogger(): LoggerInterface;
+
+    /**
      * Set logger
      */
     public function setLogger(LoggerInterface $logger): static;
