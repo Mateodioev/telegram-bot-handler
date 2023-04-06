@@ -4,51 +4,28 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
-use Psr\Log\LoggerInterface;
+use Mateodioev\TgHandler\Events\abstractEvent;
 
-abstract class Command implements CommandInterface
+abstract class Command extends abstractEvent implements CommandInterface
 {
 
     protected string $name = '';
     protected array $alias = [];
-    protected string $description;
-    protected array $middlewares = [];
 
-    protected LoggerInterface $logger;
-
-
+    /**
+     * Get command name
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * Get command aliases
+     */
     public function getAliases(): array
     {
         return $this->alias;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    /**
-     * Set command description
-     */
-    public function setDescription(string $description): void
-    {
-        $this->description = $description;
-    }
-
-    public function setLogger(LoggerInterface $logger): static
-    {
-        $this->logger = $logger;
-        return $this;
-    }
-
-    public function getLogger(): LoggerInterface
-    {
-        return $this->logger;
     }
 
 	/**
@@ -59,38 +36,13 @@ abstract class Command implements CommandInterface
 		return new static;
 	}
 
-    public function setMiddlewares(array $middlewares): static
-    {
-        $this->middlewares = $middlewares;
-        return $this;
-    }
-
-    public function addMiddlewares(\Closure $middleware): static
-    {
-        $this->middlewares[] = $middleware;
-        return $this;
-    }
-
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
-    }
-
-    public function hasMiddlewares(): bool
-    {
-        return !empty($this->middlewares);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function isValid(Api $bot, Context $context): bool
     {
         return true; // default for command events
     }
 
     /**
-     * @inheritDoc
+     * Run command
      */
     abstract public function execute(Api $bot, Context $context, array $args = []);
 

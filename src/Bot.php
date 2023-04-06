@@ -14,6 +14,8 @@ use function Amp\async;
 use function Amp\Future\awaitAll;
 use Mateodioev\TgHandler\Log\PhpNativeStream;
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
+use Mateodioev\TgHandler\Events\EventInterface;
+use Mateodioev\TgHandler\Events\EventType;
 
 class Bot
 {
@@ -22,13 +24,10 @@ class Bot
     protected Api $api;
     protected LoggerInterface $logger;
 
-    /**
-     * @var array<string|CommandInterface[]>
-     */
-    protected array $commands = [];
-    /**
-     * @var array<string,Closure>
-     */
+    /** @var array<string|EventInterface[]> */
+    protected array $events = [];
+
+    /** @var array<string,Closure> */
     protected array $exceptionHandlers = [];
 
     public function __construct(string $token)
@@ -65,7 +64,7 @@ class Bot
     {
         try {
             return $this->logger;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return $this->setDefaultLogger()->logger;
         }
     }
@@ -96,56 +95,57 @@ class Bot
         return false;
     }
 
-    public function on(string $type, CommandInterface $command): Bot
+    /**
+     * Register new event
+     */
+    public function onEvent(EventInterface $event): Bot
     {
-        $this->commands[$type][] = $command;
+        $this->events[$event->type()->name()][] = $event;
+        return $this;
+    }
+
+    /**
+     * @deprecated use onEvent
+     * @throws Exception is `$type` is invalid Event type
+     */
+    public function on(string $type, EventInterface $command): Bot
+    {
+        $this->events[EventType::from($type)->name()][] = $command;
         return $this;
     }
 
     public function onCommand(string $name, Closure $fn): ClosureMessageCommand
     {
         $command = ClosureMessageCommand::fromClosure($fn, $name);
-        $this->on('message', $command);
+        $this->onEvent($command);
         return $command;
     }
 
     /**
      * Get commands
-     * @return CommandInterface[]
+     * @return EventInterface[]
      */
-    protected function resolveCommands(Context $ctx): array
+    protected function resolveEvents(Context $ctx): array
     {
-        // get context properties as array
-        $ctxProperties = $ctx->get();
-        $commands = [];
-
-        foreach ($ctxProperties as $type => $value) {
-            if (!is_array($value)) continue;
-
-            // add commands to return
-            foreach (($this->commands[$type] ?? []) as $command) {
-                $commands[] = $command;
-            }
-        }
-        return $commands;
+        return $this->events[$ctx->eventType()->name()] ?? [];
     }
 
     /**
      * Execute middlewares and command
      */
-    public function executeCommand(CommandInterface $command, Context $ctx): void
+    public function executeCommand(EventInterface $event, Context $ctx): void
     {
         try {
-            if (!$command->isValid($this->getApi(), $ctx)) return;
+            if (!$event->isValid($this->getApi(), $ctx)) return;
 
-            $params = $this->handleMiddlewares($command, $ctx);
-            $command->setLogger($this->getLogger())
+            $params = $this->handleMiddlewares($event, $ctx);
+            $event->setLogger($this->getLogger())
                 ->execute($this->getApi(), $ctx, $params);
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx)) return;
 
-            $this->getLogger()->error('Fail to run command {name}, reason: {reason}', [
-                'name' => $command->getName(),
+            $this->getLogger()->error('Fail to run {name} event, reason: {reason}', [
+                'name' => $event->type()->prettyName(),
                 'reason' => $e->getMessage()
             ]);
         }
@@ -158,9 +158,9 @@ class Bot
     {
         $ctx = Context::fromUpdate($update);
 
-        array_map(function (CommandInterface $command) use ($ctx) {
-            $this->executeCommand($command, $ctx);
-        }, $this->resolveCommands($ctx));
+        array_map(function (EventInterface $event) use ($ctx) {
+            $this->executeCommand($event, $ctx);
+        }, $this->resolveEvents($ctx));
     }
 
     /**
@@ -171,12 +171,12 @@ class Bot
         $ctx = Context::fromUpdate($update);
 
         awaitAll(
-            array_map(function (CommandInterface $command) use ($ctx) {
+            array_map(function (EventInterface $event) use ($ctx) {
                 // create async function for each command
-                return async(function (CommandInterface $command, Context $ctx) {
-                    $this->executeCommand($command, $ctx);
-                }, $command, $ctx);
-            }, $this->resolveCommands($ctx))
+                return async(function (EventInterface $event, Context $ctx) {
+                    $this->executeCommand($event, $ctx);
+                }, $event, $ctx);
+            }, $this->resolveEvents($ctx))
         );
     }
 
@@ -203,7 +203,7 @@ class Bot
         $offset = ($ignoreOldUpdates) ? -1 : 0;
 
         // Get updates only for registered commands
-        $allowedUpdates = \array_keys($this->commands);
+        $allowedUpdates = \array_keys($this->events);
 
         $this->getApi()->setAsync($async);
 
