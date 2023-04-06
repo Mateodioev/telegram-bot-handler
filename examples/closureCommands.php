@@ -11,14 +11,14 @@ $bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
 $bot->setLogger(new Logger(new TerminalStream));
 
 // New closure must receive Api and Context params
-$startCommand = function (Api $bot, Context $ctx) {
+$startCommand = function (Api $bot, Context $ctx, array $args = []) {
     $bot->replyTo($ctx->getChatId(), 'Hello world!', $ctx->getMessageId(), 'HTML');
 };
 
 // create MessageCommand from closure
 $bot->onCommand('start', $startCommand)->setPrefixes(['/', '.', '!']);
 
-$bot->onCommand('notes', function (Api $bot, Context $ctx) {
+$bot->onCommand('notes', function (Api $bot, Context $ctx, array $args = []) {
     $bot->replyTo($ctx->getChatId(), 'Find your notes heres', $ctx->getMessageId());
     # ... implementes your logic
 })->setPrefixes(['#']);
