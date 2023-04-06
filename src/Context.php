@@ -2,8 +2,12 @@
 
 namespace Mateodioev\TgHandler;
 
-use Mateodioev\Bots\Telegram\Types\Document;
-use Mateodioev\Bots\Telegram\Types\Update;
+use Mateodioev\Bots\Telegram\Types\{
+	Document,
+	Update,
+	User
+};
+
 use stdClass;
 
 /**
@@ -22,20 +26,22 @@ class Context extends Update
 		return new self(json_decode($up));
 	}
 
+	public function getUser(): ?User
+	{
+		return $this?->message()?->from()
+			?? $this?->callbackQuery()?->from()
+			?? $this?->inlineQuery()?->from()
+            ?? null;
+	}
+
 	public function getUserId(): ?int
 	{
-		return $this?->message()?->from()?->id()
-			?? $this?->callbackQuery()?->from()?->id()
-			?? $this?->inlineQuery()?->from()?->id()
-            ?? null;
+		return $this->getUser()?->id();
 	}
 
 	public function getUserName(): ?string
 	{
-		return $this?->message()?->from()?->username()
-			?? $this?->callbackQuery()?->from()?->username()
-			?? $this?->inlineQuery()?->from()?->username()
-            ?? null;
+		return $this->getUser()?->username();
 	}
 
 	public function getChatId(): ?int
