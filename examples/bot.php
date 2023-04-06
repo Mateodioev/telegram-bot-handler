@@ -1,7 +1,8 @@
 <?php
 
-use Mateodioev\TgHandler\Log\{FileStream, Logger};
+use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream};
 use Mateodioev\TgHandler\{Bot, Context};
+use Mateodioev\TgHandler\Log\PhpNativeStream;
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -10,16 +11,16 @@ require __DIR__ . '/ButtonCallback.php';
 
 $bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
 
-// Log in file
-$bot->setLogger(new Logger(FileStream::fromToday(__DIR__)));
+// Log php error and print in terminal
+BulkStream::add(new TerminalStream);
+BulkStream::add((new PhpNativeStream)->activate(__DIR__));
+$bot->setLogger(new Logger(new BulkStream));
 
 // Exception handler for RequestException
 $bot->setExceptionHandler(RequestException::class, function (RequestException $e, Bot $bot, Context $ctx) {
     echo 'RequestException: ' . $e->getMessage() . PHP_EOL;
-
-    $bot->getLogger()->warning($e->getMessage());
 });
 
-$bot->on('message', Start::get())
-    ->on('callback_query', ButtonCallback::get())
-    ->longPolling(20, false, true);
+$bot->onEvent(Start::get());
+$bot->onEvent(ButtonCallback::get());
+$bot->longPolling(20, false, true);
