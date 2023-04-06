@@ -7,8 +7,9 @@ use Mateodioev\Bots\Telegram\Types\{
 	Update,
 	User
 };
-
+use Mateodioev\TgHandler\Events\EventType;
 use stdClass;
+use function json_encode, json_decode, explode, substr, strlen, trim;
 
 /**
  * Telegram context
@@ -69,8 +70,8 @@ class Context extends Update
 	public function getPayload(): string
     {
         $text = $this->getMessageText() ?? '';
-        $command = \explode(' ', $text)[0] ?? '';
-        return \substr($text, \strlen($command) + 1);
+        $command = explode(' ', $text)[0] ?? '';
+        return substr($text, strlen($command) + 1);
     }
 
 	public function getChatType(): ?string
@@ -108,5 +109,22 @@ class Context extends Update
 		return $this?->message()?->document()
 			?? $this?->message()?->replyToMessage()?->document()
             ?? null;
+	}
+
+	/**
+	 * Get event type
+	 */
+	public function eventType(): EventType
+	{
+		foreach ($this->get() as $type => $value) {
+
+			if ($value != null && !is_array($value)) {
+				return EventType::silentFrom($type);
+			} else {
+				continue;
+			}
+		}
+
+		return EventType::none;
 	}
 }
