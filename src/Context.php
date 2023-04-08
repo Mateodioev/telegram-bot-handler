@@ -8,8 +8,7 @@ use Mateodioev\Bots\Telegram\Types\{
 	User
 };
 use Mateodioev\TgHandler\Events\EventType;
-use stdClass;
-use function json_encode, json_decode, explode, substr, strlen, trim;
+use function explode, substr, strlen, trim;
 
 /**
  * Telegram context
@@ -18,15 +17,9 @@ class Context extends Update
 {
 	private ?EventType $type = null;
 
-    public function __construct(?stdClass $up)
-    {
-        parent::__construct($up);
-    }
-
 	public static function fromUpdate(Update $update): Context
     {
-		$up = json_encode($update->get());
-		return new self(json_decode($up));
+		return self::createFromType($update);
 	}
 
 	public function getUser(): ?User

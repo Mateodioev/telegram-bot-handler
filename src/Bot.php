@@ -6,7 +6,6 @@ use Closure, Exception;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\Update;
-use Mateodioev\TgHandler\Commands\CommandInterface;
 use Mateodioev\TgHandler\Log\{Logger};
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
@@ -14,8 +13,7 @@ use function Amp\async;
 use function Amp\Future\awaitAll;
 use Mateodioev\TgHandler\Log\PhpNativeStream;
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
-use Mateodioev\TgHandler\Events\EventInterface;
-use Mateodioev\TgHandler\Events\EventType;
+use Mateodioev\TgHandler\Events\{EventInterface, EventType};
 
 class Bot
 {
@@ -182,10 +180,12 @@ class Bot
 
     public function byWebhook(bool $async = false): void
     {
-        $update = json_decode(
-            file_get_contents('php://input')
+        $up = json_decode(
+            file_get_contents('php://input'),
+            true
         );
-        $update = new Update($update);
+        /** @var Update */
+        $update = Update::createFromArray($up);
 
         $this->getApi()->setAsync($async);
         $async ? $this->runAsync($update) : $this->run($update);
