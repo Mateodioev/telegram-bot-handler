@@ -6,14 +6,12 @@ use Closure, Exception;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\Update;
-use Mateodioev\TgHandler\Log\{Logger};
-use Mateodioev\TgHandler\Commands\StopCommand;
+use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
+use Mateodioev\TgHandler\Events\{EventInterface, EventType};
+use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
 use Psr\Log\LoggerInterface;
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use Mateodioev\TgHandler\Log\PhpNativeStream;
-use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
-use Mateodioev\TgHandler\Events\{EventInterface, EventType};
 
 class Bot
 {

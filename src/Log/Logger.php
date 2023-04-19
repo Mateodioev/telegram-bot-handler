@@ -2,11 +2,12 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use Psr\Log\{AbstractLogger, LoggerInterface};
-use InvalidArgumentException;
+use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface};
+use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 
 class Logger extends AbstractLogger implements LoggerInterface
 {
+    public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
 
     public function __construct(private readonly Stream $stream) {}
 
@@ -16,23 +17,23 @@ class Logger extends AbstractLogger implements LoggerInterface
     public function log($level, \Stringable|string $message, array $context = []): void
     {
         $date = (new \DateTime())->format('Y-m-d H:i:s');
-        $logMessage = "[%s] [%s] %s" . PHP_EOL;
 
-        $this->stream->push(sprintf($logMessage,
-            $date,
-            strtoupper($level),
-            $this->makeLogMessage($message, $context))
-        );
+        try {
+            $logMessage = StringFormatter::format(self::$messageFormat, [
+                'time'    => $date,
+                'level'   => \strtoupper($level),
+                'message' => $this->makeLogMessage($message, $context),
+                'EOL'     => PHP_EOL
+            ]);
+            $this->stream->push($logMessage);
+
+        } catch (StringFormatterException $th) {
+            throw new LogInvalidArgumentException($th->getMessage(), $th->getCode(), $th);
+        }
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
     protected function makeLogMessage(string $message, array $context = []): string
     {
-        $pattern = '/{([a-zA-Z0-9_]+)}/';
-        return preg_replace_callback($pattern, function ($matches) use ($context) {
-            return $context[$matches[1]] ?? $matches[0];
-        }, $message);
+        return StringFormatter::format($message, $context);
     }
 }
