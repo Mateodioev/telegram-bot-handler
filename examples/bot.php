@@ -1,8 +1,7 @@
 <?php
 
-use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream};
+use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
 use Mateodioev\TgHandler\{Bot, Context};
-use Mateodioev\TgHandler\Log\PhpNativeStream;
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/../vendor/autoload.php';
