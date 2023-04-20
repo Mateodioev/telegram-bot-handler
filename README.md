@@ -12,7 +12,7 @@ use Mateodioev\TgHandler\Bot;
 
 ## Usage
 
-Create new instance and add your command (*for now only text commands is available*)
+Create new instance and add your command
 
 ```php
 $bot = new Bot($botToken);
