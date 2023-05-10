@@ -45,12 +45,17 @@ class Logger extends AbstractLogger implements LoggerInterface
         $date = (new \DateTime())->format('Y-m-d H:i:s');
 
         try {
-            $logMessage = StringFormatter::format(self::$messageFormat, [
-                'time'    => $date,
-                'level'   => \strtoupper($level),
-                'message' => $this->makeLogMessage($message, $context),
-                'EOL'     => PHP_EOL
-            ]);
+	    $logMessage = $message;
+	
+	    // only format if $context is not empty 
+	    if (!count($context) > 0) {
+	        $logMessage = StringFormatter::format(self::$messageFormat, [
+                    'time'    => $date,
+                    'level'   => \strtoupper($level),
+                    'message' => $this->makeLogMessage($message, $context),
+                    'EOL'     => PHP_EOL
+                ]);
+	    }
             $this->stream->push($logMessage);
 
         } catch (StringFormatterException $th) {
