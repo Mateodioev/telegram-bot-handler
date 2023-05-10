@@ -24,6 +24,7 @@ enum EventType: string
     case chat_member = 'chat_member';
     case chat_join_request = 'chat_join_request';
     case none = ''; // se supone que nunca debe pasar eso xd
+    case all = 'all';
 
     /**
      * Get event name

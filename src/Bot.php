@@ -117,13 +117,23 @@ class Bot
         return $command;
     }
 
+    private function getEventsType(EventType $type): array
+    {
+        return $this->events[$type->name()] ?? [];
+    }
+
     /**
      * Get commands
      * @return EventInterface[]
      */
     protected function resolveEvents(Context $ctx): array
     {
-        return $this->events[$ctx->eventType()->name()] ?? [];
+        $events = \array_merge(
+            $this->getEventsType($ctx->eventType()),
+            $this->getEventsType(EventType::all) // tg not send this event
+        );
+        // print_r($events);
+        return $events;
     }
 
     /**
@@ -132,7 +142,13 @@ class Bot
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
         try {
-            if (!$event->isValid($this->getApi(), $ctx)) return;
+            if (!$event->isValid($this->getApi(), $ctx)) {
+                $this->getLogger()->debug(
+                    'It\'s not possible to validate the event "{type}"',
+                    ['type' => $event->type()->prettyName()]
+                );
+                return;
+            }
 
             $params = $this->handleMiddlewares($event, $ctx);
             $event->setLogger($this->getLogger())
