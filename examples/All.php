@@ -13,7 +13,7 @@ class All extends AllEvent
     public function execute(Api $bot, Context $context, array $args = [])
     {
         $type = $context->eventType()->prettyName();
-        $raw  = \json_encode($context->get(), JSON_PRETTY_PRINT);
+        $raw  = \json_encode($context->getReduced(), JSON_PRETTY_PRINT);
 
         $this->getLogger()->info('Receive new {type} event', compact('type'));
         $this->getLogger()->info('Update: {raw}', compact('raw'));

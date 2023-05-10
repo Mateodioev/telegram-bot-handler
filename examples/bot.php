@@ -10,7 +10,7 @@ require __DIR__ . '/ButtonCallback.php';
 require __DIR__ . '/Message.php';
 require __DIR__ . '/All.php';
 
-$bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
+$bot = new Bot($_ENV['BOT_TOKEN'] ?? getenv('BOT_TOKEN')); // put your bot token here
 
 // Log php error and print in terminal
 BulkStream::add(new TerminalStream);
