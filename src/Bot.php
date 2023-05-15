@@ -236,12 +236,13 @@ class Bot
             }
 
             if ($async) {
-                awaitAll(
-                    array_map(function (Update $update) use (&$offset) {
-                        $offset = $update->updateId() + 1;
-                        return async(getAsyncFn(), $update, $this);
-                    }, $updates)
-                );
+                array_map(function (Update $update) use (&$offset) {
+                    $offset = $update->updateId() + 1;
+                    async(function (Update $up,): void {
+                        $this->runAsync($up);
+                    }, $update);
+                }, $updates);
+                \Amp\delay(1);
             } else {
                 array_map(function (Update $update) use (&$offset) {
                     $offset = $update->updateId() + 1;
@@ -252,6 +253,9 @@ class Bot
     }
 }
 
+/**
+ * @deprecated
+ */
 function getAsyncFn(): Closure
 {
     return static function (Update $up, Bot &$instance) {

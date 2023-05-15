@@ -1,7 +1,6 @@
 <?php
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Methods\Method;
 use Mateodioev\TgHandler\Commands\{CallbackCommand, StopCommand};
 use Mateodioev\TgHandler\Context;
 
@@ -17,16 +16,16 @@ class ButtonCallback extends CallbackCommand
     {
         $this->getLogger()->info('Button 1 pressed');
         // log telegram context
-        $this->getLogger()->info('Update: {up}', ['up' => json_encode($context->get(), JSON_PRETTY_PRINT)]);
+        $this->getLogger()->info('Update: {up}', ['up' => \json_encode($context->get(), JSON_PRETTY_PRINT)]);
 
         $payload = $context->getPayload();
         // send answerCallbackQuery method
         // if payload is empty, StopCommand will be thrown and this method will not be called
-        $bot->request(Method::create([
-            'callback_query_id' => $context?->callbackQuery()->id(),
-            'text' => "Button 1 pressed\nPayload: " . $payload,
-            'show_alert' => true
-        ], 'answerCallbackQuery'));
+        $bot->answerCallbackQuery(
+            $context?->callbackQuery()->id(),
+            "Button 1 pressed\nPayload: " . $payload,
+            ['show_alert' => true]
+        );
     }
 }
 

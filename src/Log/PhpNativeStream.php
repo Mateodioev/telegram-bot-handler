@@ -3,8 +3,12 @@
 namespace Mateodioev\TgHandler\Log;
 
 // use Amp\File\FilesystemException;
+
+use Amp\File\FilesystemException;
 use Mateodioev\Utils\Exceptions\FileException;
 use Mateodioev\Utils\Files;
+
+use Amp\File;
 
 /**
  * Log php errors into a file setting an error_handler
@@ -15,7 +19,7 @@ class PhpNativeStream implements Stream
 
     public function activate(string $dir, ?string $file = null): static
     {
-        if (is_dir($dir) && $file !== null) {
+        if (\is_dir($dir) && $file !== null) {
             throw new FileException('Invalid dir');
         }
 
@@ -42,6 +46,11 @@ class PhpNativeStream implements Stream
     public function setFile(string $path): static
     {
         $this->fileLog = $path;
+
+        if (!Files::isFile($path)) {
+            \fclose(\fopen($path, 'a')); // create file if not exists
+        }
+
         return $this;
     }
 
@@ -84,13 +93,12 @@ class PhpNativeStream implements Stream
 
     protected function write(string $path, string $content)
     {
-        return (bool) file_put_contents($path, $content, FILE_APPEND);
-
-        /* try {
-            \Amp\File\write($path, $content);
+        try {
+            $fileContent = File\read($path) . $content;
+            File\write($path, $fileContent);
             return true;
-        } catch (FilesystemException $e) {
-         return false;
-        } */
+        } catch (FilesystemException) {
+            return false;
+        }
     }
 }
