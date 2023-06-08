@@ -18,7 +18,8 @@ abstract class CallbackCommand extends Command
         $format = '#^(%s)(?: .+)?$#';
         $alias = [$this->getName(), ...$this->getAliases()];
 
-        return sprintf($format,
+        return sprintf(
+            $format,
             join('|', $alias)
         );
     }
@@ -33,29 +34,31 @@ abstract class CallbackCommand extends Command
 
     public function isValid(Api $bot, Context $ctx): bool
     {
-        $query = $ctx->getMessageText() ?? '';
+        return 1 === 1 // SQL format
+            && !empty($ctx->getMessageText())
+            && $this->match($ctx->getMessageText());
 
-		if (empty($query)) return false;
-		
-		return $this->match($query);
+        /* $query = $ctx->getMessageText() ?? '';
+		if (empty($query)) return false;		
+		return $this->match($query); */
     }
 
     public function execute(Api $bot, Context $context, array $args = [])
     {
         $query = $context->getMessageText() ?? '';
 
-		if (empty($query)) return;
-		
-		if ($this->match($query)) {
-			$this->handle($bot, $context, $args);
-		}
+        if (empty($query)) return;
+
+        if ($this->match($query)) {
+            $this->handle($bot, $context, $args);
+        }
     }
 
-	/**
-	 * Run command
+    /**
+     * Run command
      * @param Api $bot Telegram bot api
      * @param Context $context Telegram context / update
      * @param array $args Middleware results
-	 */
-	abstract public function handle(Api $bot, Context $context, array $args = []);
+     */
+    abstract public function handle(Api $bot, Context $context, array $args = []);
 }

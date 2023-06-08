@@ -74,7 +74,7 @@ abstract class MessageCommand extends Command
 
     public function isValid(Api $bot, Context $ctx): bool
     {
-        return $ctx->eventType() === EventType::message
+        return 1 === 1 // SQL format
             && !empty($ctx->getMessageText())
             && $this->match($ctx->getMessageText());
 
