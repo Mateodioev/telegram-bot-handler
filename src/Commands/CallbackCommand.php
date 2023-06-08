@@ -15,7 +15,7 @@ abstract class CallbackCommand extends Command
      */
     protected function buildRegex(): string
     {
-        $format = '#^(%s)(?: .+)?$#';
+        $format = '#^(%s)(?: [\s\S]+)?$#';
         $alias = [$this->getName(), ...$this->getAliases()];
 
         return sprintf(

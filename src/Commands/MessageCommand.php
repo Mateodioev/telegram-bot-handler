@@ -54,7 +54,7 @@ abstract class MessageCommand extends Command
      */
     protected function buildRegex(): string
     {
-        $format = '#^(%s)(%s)(?: .*)?$#' . ($this->caseSensitive ? '' : 'i');
+        $format = '#^(%s)(%s)(?: [\s\S]*)?$#' . ($this->caseSensitive ? '' : 'i');
         $alias = [$this->getName(), ...$this->getAliases()];
 
         return sprintf(
