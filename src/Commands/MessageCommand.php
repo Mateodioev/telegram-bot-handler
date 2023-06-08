@@ -54,10 +54,11 @@ abstract class MessageCommand extends Command
      */
     protected function buildRegex(): string
     {
-        $format = '#^(%s)(%s)(?: .*)?$#' . ($this->caseSensitive ? 'i' : '');
+        $format = '#^(%s)(%s)(?: .*)?$#' . ($this->caseSensitive ? '' : 'i');
         $alias = [$this->getName(), ...$this->getAliases()];
 
-        return sprintf($format,
+        return sprintf(
+            $format,
             str_replace('#', '\#', join('|', $this->getPrefix())), // for commands like #start
             join('|', $alias)
         );
@@ -73,11 +74,15 @@ abstract class MessageCommand extends Command
 
     public function isValid(Api $bot, Context $ctx): bool
     {
-        $text = $ctx->getMessageText();
+        return $ctx->eventType() === EventType::message
+            && !empty($ctx->getMessageText())
+            && $this->match($ctx->getMessageText());
+
+        /* $text = $ctx->getMessageText();
 
         if (empty($text)) return false;
 
-        return $this->match($text);
+        return $this->match($text); */
     }
 
     public function execute(Api $bot, Context $context, array $args = [])
@@ -85,11 +90,11 @@ abstract class MessageCommand extends Command
         $this->handle($bot, $context, $args);
     }
 
-	/**
-	 * Run command
+    /**
+     * Run command
      * @param Api $bot Telegram bot api
      * @param Context $context Telegram context / Update
      * @param array $args Middlewares results
-	 */
+     */
     abstract public function handle(Api $bot, Context $context, array $args = []);
 }
