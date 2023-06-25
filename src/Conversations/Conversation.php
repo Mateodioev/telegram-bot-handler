@@ -2,9 +2,9 @@
 
 namespace Mateodioev\TgHandler\Conversations;
 
-use Mateodioev\TgHandler\Events\EventInterface;
+use Mateodioev\TgHandler\Events\TemporaryEvent;
 
-interface Conversation extends EventInterface
+interface Conversation extends TemporaryEvent
 {
     /**
      * Message format to validate the user answer

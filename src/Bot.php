@@ -7,7 +7,7 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
-use Mateodioev\TgHandler\Events\{EventInterface, EventType};
+use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
@@ -162,10 +162,13 @@ class Bot
         if (!$events)
             return;
 
-        foreach ($events as $id => $ev) {
-            if (\spl_object_id($ev) === \spl_object_id($event))
-                unset($this->events[$type][$id]);
-        }
+        // Get event id
+        $eventId = \spl_object_id($event);
+
+        // Delete the event
+        $this->events[$type] = array_filter($events, function ($ev) use ($eventId) {
+            return \spl_object_id($ev) !== $eventId;
+        });
     }
 
     /**
@@ -173,8 +176,10 @@ class Bot
      */
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
+        $api = $this->getApi();
         try {
-            if (!$event->isValid($this->getApi(), $ctx)) {
+            if (!$event->isValid($api, $ctx)) {
+                // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',
                     [
@@ -185,12 +190,14 @@ class Bot
                 return;
             }
 
-            $params = $this->handleMiddlewares($event, $ctx);
-            $return = $event->setLogger($this->getLogger())
-                ->execute($this->getApi(), $ctx, $params);
+            $return = $event->setLogger($this->getLogger())->execute(
+                $api,
+                $ctx,
+                $this->handleMiddlewares($event, $ctx)
+            );
 
-            // Delete conversation 
-            if ($event instanceof Conversation)
+            // Delete temporary event
+            if ($event instanceof TemporaryEvent)
                 $this->deleteEvent($event);
             // Register next conversation
             if ($return instanceof Conversation)
