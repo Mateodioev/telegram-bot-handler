@@ -4,6 +4,7 @@ namespace Mateodioev\TgHandler\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Db\DbInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -41,6 +42,16 @@ interface EventInterface
      * Set logger
      */
     public function setLogger(LoggerInterface $logger): static;
+
+    /**
+     * Get db to storage data
+     */
+    public function db(): DbInterface;
+
+    /**
+     * Get db to storage data
+     */
+    public function setDb(DbInterface $db): static;
 
     /**
      * Return true if event has middlewares

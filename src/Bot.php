@@ -8,9 +8,11 @@ use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType};
-use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
+use Mateodioev\TgHandler\Db\{DbInterface, Memory};
+use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Psr\Log\LoggerInterface;
+
 use function Amp\async;
 use function Amp\Future\awaitAll;
 
@@ -20,6 +22,7 @@ class Bot
 
     protected Api $api;
     protected LoggerInterface $logger;
+    protected ?DbInterface $db = null;
 
     /** @var array<string|EventInterface[]> */
     protected array $events = [];
@@ -66,6 +69,21 @@ class Bot
         }
     }
 
+    public function setDb(DbInterface $db): Bot
+    {
+        $this->db = $db;
+        return $this;
+    }
+
+    protected function getDb(): DbInterface
+    {
+        if ($this->db instanceof DbInterface)
+            return $this->db;
+
+        $this->db = new Memory; // Default database
+        return $this->db;
+    }
+
     /**
      * @param string $exceptionName Exception class name
      * @param Closure $handler Handler function, must accept 3 arguments: \Throwable $e, Bot $api, Context $ctx
@@ -97,7 +115,7 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
-        $this->events[$event->type()->name()][] = $event;
+        $this->events[$event->type()->name()][] = $event->setDb($this->getDb());
         return $this;
     }
 
@@ -107,8 +125,7 @@ class Bot
      */
     public function on(string $type, EventInterface $command): Bot
     {
-        $this->events[EventType::from($type)->name()][] = $command;
-        return $this;
+        return $this->onEvent($command);
     }
 
     public function onCommand(string $name, Closure $fn): ClosureMessageCommand
