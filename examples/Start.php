@@ -3,6 +3,7 @@
 use Mateodioev\Bots\Telegram\{Api, Buttons};
 use Mateodioev\Request\Request;
 use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Context;
 
 class Start extends MessageCommand
@@ -19,17 +20,20 @@ class Start extends MessageCommand
         $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), 'HTML', [
             'reply_markup' => (string) $this->getButton() // get json button
         ]);
-
         // log telegram context using psr logger
-        $this->getLogger()->info('Received new text: {text}', ['text' => $context->message()->text()]);
+        $this->logger()->info('Received new text: {text}', ['text' => $context->message()->text()]);
 
-        $this->getLogger()->info('Waiting 5 seconds...');
+        // Get paylod from command
+        $this->logger()->info('Payload: "{payload}"', ['payload' => $this->param('payload', 'Not payload')]);
+
+        $this->logger()->info('Waiting 5 seconds...');
         \Amp\delay(5); // wait 5 seconds
 
         $bot->replyTo($context->getChatId(), '5 seconds passed!', $context->getMessageId());
 
         // This will throw an exception
         Request::GET('https://invalidurl.invalid')->run();
+
     }
 
     protected function getButton(): Buttons

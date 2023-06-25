@@ -6,6 +6,7 @@ use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/Start.php';
+require __DIR__ . '/Params.php';
 require __DIR__ . '/ButtonCallback.php';
 require __DIR__ . '/Message.php';
 require __DIR__ . '/All.php';
@@ -22,8 +23,9 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
     echo 'RequestException: ' . $e->getMessage() . PHP_EOL;
 });
 
-$bot->onEvent(new All);
+# $bot->onEvent(new All);
 $bot->onEvent(new Message);
 $bot->onEvent(Start::get());
 $bot->onEvent(ButtonCallback::get());
+$bot->onEvent(Params::get());
 $bot->longPolling(20, false, true);

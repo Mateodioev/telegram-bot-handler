@@ -6,7 +6,8 @@
         "psr/log": "^3.0",
         "mateodioev/tgbot": "^3.3",
         "amphp/file": "^3.0",
-        "smoren/string-formatter": "^1.0"
+        "smoren/string-formatter": "^1.0",
+        "mateodioev/string-vars": "^1.2"
     },
     "license": "MIT",
     "autoload": {

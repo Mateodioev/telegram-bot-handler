@@ -10,6 +10,7 @@ use Mateodioev\TgHandler\Events\EventType;
 
 abstract class MessageCommand extends Command
 {
+    private const DEFAULT_PARAMS = '{all:payload}?';
     public EventType $type = EventType::message;
 
     /**
@@ -24,7 +25,7 @@ abstract class MessageCommand extends Command
      * $params = '{name}';
      * ```
      */
-    protected string $params = '{all:payload}?';
+    protected string $params = self::DEFAULT_PARAMS;
 
     private ?Matcher $pattern = null;
     private array $commandParams = [];
@@ -86,7 +87,7 @@ abstract class MessageCommand extends Command
             return $this->pattern;
 
         // prefix names parameters
-        $format = '(?:%s)(?:%s)( %s)?';
+        $format = '(?:%s)(?:%s)%s';
         $alias = [$this->getName(), ...$this->getAliases()];
 
         $pattern = sprintf(
@@ -94,7 +95,12 @@ abstract class MessageCommand extends Command
             str_replace('#', '\#', join('|', $this->getPrefix())),
             // for commands like #start
             join('|', $alias),
-            $this->params()
+                // if params was not set, optional payload are allowed
+            (
+                $this->params() === self::DEFAULT_PARAMS
+                ? '( ' . self::DEFAULT_PARAMS . ')?'
+                : ' ' . $this->params()
+            )
         );
 
         $this->pattern = new Matcher($pattern);
