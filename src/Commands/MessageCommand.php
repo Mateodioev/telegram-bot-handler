@@ -3,19 +3,31 @@
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\StringVars\Config;
 use Mateodioev\TgHandler\Context;
+use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\EventType;
 
 abstract class MessageCommand extends Command
 {
     public EventType $type = EventType::message;
 
-    protected bool $caseSensitive = false;
-
     /**
      * @var string[] Prefix of commands
      */
     protected array $prefix = ['/'];
+
+    /**
+     * Regex param matchers
+     * Example:
+     * ```php
+     * $params = '{name}';
+     * ```
+     */
+    protected string $params = '{all:payload}?';
+
+    private ?Matcher $pattern = null;
+    private array $commandParams = [];
 
     /**
      * @return array
@@ -41,27 +53,52 @@ abstract class MessageCommand extends Command
     }
 
     /**
-     * Enable or disable case sensitive commands
+     * @see https://github.com/Mateodioev/string-vars
      */
-    public function setCaseSensitive(bool $caseSensitive = false): static
+    public function setParams(string $pattern = '{all:payload}?'): static
     {
-        $this->caseSensitive = $caseSensitive;
+        $this->params = $pattern;
         return $this;
+    }
+
+    /**
+     * Get params string format
+     */
+    public function params(): string
+    {
+        return $this->params;
+    }
+
+    /**
+     * Get params from text
+     */
+    public function param(string $key, mixed $default = null): mixed
+    {
+        return $this->commandParams[$key] ?? $default;
     }
 
     /**
      * @inheritDoc
      */
-    protected function buildRegex(): string
+    protected function buildRegex(): Matcher
     {
-        $format = '#^(%s)(%s)(?: .*)?$#' . ($this->caseSensitive ? '' : 'i');
+        if ($this->pattern instanceof Matcher)
+            return $this->pattern;
+
+        // prefix names parameters
+        $format = '(?:%s)(?:%s)( %s)?';
         $alias = [$this->getName(), ...$this->getAliases()];
 
-        return sprintf(
+        $pattern = sprintf(
             $format,
-            str_replace('#', '\#', join('|', $this->getPrefix())), // for commands like #start
-            join('|', $alias)
+            str_replace('#', '\#', join('|', $this->getPrefix())),
+            // for commands like #start
+            join('|', $alias),
+            $this->params()
         );
+
+        $this->pattern = new Matcher($pattern);
+        return $this->pattern;
     }
 
     /**
@@ -69,7 +106,11 @@ abstract class MessageCommand extends Command
      */
     public function match(string $text): bool
     {
-        return preg_match($this->buildRegex(), $text) > 0;
+        $isValid = $this->buildRegex()->isValid($text, true);
+        if ($isValid)
+            $this->commandParams = $this->pattern->match($text);
+
+        return $isValid;
     }
 
     public function isValid(Api $bot, Context $ctx): bool
@@ -77,12 +118,6 @@ abstract class MessageCommand extends Command
         return 1 === 1 // SQL format
             && !empty($ctx->getMessageText())
             && $this->match($ctx->getMessageText());
-
-        /* $text = $ctx->getMessageText();
-
-        if (empty($text)) return false;
-
-        return $this->match($text); */
     }
 
     public function execute(Api $bot, Context $context, array $args = [])

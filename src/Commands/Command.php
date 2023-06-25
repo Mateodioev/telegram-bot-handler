@@ -4,6 +4,7 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
 
 abstract class Command extends abstractEvent implements CommandInterface, EventInterface
@@ -28,13 +29,13 @@ abstract class Command extends abstractEvent implements CommandInterface, EventI
         return $this->alias;
     }
 
-	/**
-	 * Get new instance of the command
-	 */
-	public static function get(): static
-	{
-		return new static;
-	}
+    /**
+     * Get new instance of the command
+     */
+    public static function get(): static
+    {
+        return new static;
+    }
 
     public function isValid(Api $bot, Context $context): bool
     {
@@ -49,7 +50,7 @@ abstract class Command extends abstractEvent implements CommandInterface, EventI
     /**
      * Crete regex for use in match method
      */
-    abstract protected function buildRegex(): string;
+    abstract protected function buildRegex(): Matcher;
 
     /**
      * Validate command

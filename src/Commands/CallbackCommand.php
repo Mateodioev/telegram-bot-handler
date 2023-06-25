@@ -4,24 +4,34 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\EventType;
 
 abstract class CallbackCommand extends Command
 {
     public EventType $type = EventType::callback_query;
 
+    private ?Matcher $pattern = null;
+
     /**
      * @inheritDoc
      */
-    protected function buildRegex(): string
+    protected function buildRegex(): Matcher
     {
+        if ($this->pattern instanceof Matcher)
+            return $this->pattern;
+
         $format = '#^(%s)(?: .+)?$#';
         $alias = [$this->getName(), ...$this->getAliases()];
 
-        return sprintf(
-            $format,
-            join('|', $alias)
+        $this->pattern = new Matcher(
+            sprintf(
+                $format,
+                join('|', $alias)
+            )
         );
+
+        return $this->pattern;
     }
 
     /**
@@ -29,7 +39,7 @@ abstract class CallbackCommand extends Command
      */
     public function match(string $text): bool
     {
-        return (bool) preg_match($this->buildRegex(), $text);
+        return $this->buildRegex()->isValid($text);
     }
 
     public function isValid(Api $bot, Context $ctx): bool
@@ -39,19 +49,13 @@ abstract class CallbackCommand extends Command
             && $this->match($ctx->getMessageText());
 
         /* $query = $ctx->getMessageText() ?? '';
-		if (empty($query)) return false;		
-		return $this->match($query); */
+        if (empty($query)) return false;		
+        return $this->match($query); */
     }
 
     public function execute(Api $bot, Context $context, array $args = [])
     {
-        $query = $context->getMessageText() ?? '';
-
-        if (empty($query)) return;
-
-        if ($this->match($query)) {
-            $this->handle($bot, $context, $args);
-        }
+        $this->handle($bot, $context, $args);
     }
 
     /**

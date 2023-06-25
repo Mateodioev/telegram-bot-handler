@@ -154,7 +154,8 @@ class Bot
             $event->setLogger($this->getLogger())
                 ->execute($this->getApi(), $ctx, $params);
         } catch (\Throwable $e) {
-            if ($this->handleException($e, $this, $ctx)) return;
+            if ($this->handleException($e, $this, $ctx))
+                return;
 
             $this->getLogger()->error('Fail to run {name} event, reason: {reason}', [
                 'name' => $event->type()->prettyName(),
@@ -218,6 +219,7 @@ class Bot
 
         // Get updates only for registered commands
         $allowedUpdates = \array_keys($this->events);
+        unset($allowedUpdates['all']); // Ignore this
 
         $this->getApi()->setAsync($async);
 
@@ -238,7 +240,7 @@ class Bot
             if ($async) {
                 array_map(function (Update $update) use (&$offset) {
                     $offset = $update->updateId() + 1;
-                    async(function (Update $up,): void {
+                    async(function (Update $up, ): void {
                         $this->runAsync($up);
                     }, $update);
                 }, $updates);
