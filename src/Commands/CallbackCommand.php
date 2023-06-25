@@ -21,7 +21,7 @@ abstract class CallbackCommand extends Command
         if ($this->pattern instanceof Matcher)
             return $this->pattern;
 
-        $format = '#^(%s)(?: .+)?$#';
+        $format = '(%s)(?: .+)?';
         $alias = [$this->getName(), ...$this->getAliases()];
 
         $this->pattern = new Matcher(
@@ -39,7 +39,7 @@ abstract class CallbackCommand extends Command
      */
     public function match(string $text): bool
     {
-        return $this->buildRegex()->isValid($text);
+        return $this->buildRegex()->isValid($text, true);
     }
 
     public function isValid(Api $bot, Context $ctx): bool
@@ -47,10 +47,6 @@ abstract class CallbackCommand extends Command
         return 1 === 1 // SQL format
             && !empty($ctx->getMessageText())
             && $this->match($ctx->getMessageText());
-
-        /* $query = $ctx->getMessageText() ?? '';
-        if (empty($query)) return false;		
-        return $this->match($query); */
     }
 
     public function execute(Api $bot, Context $context, array $args = [])

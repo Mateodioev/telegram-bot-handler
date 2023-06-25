@@ -14,9 +14,11 @@ class ButtonCallback extends CallbackCommand
 
     public function handle(Api $bot, Context $context, array $args = [])
     {
-        $this->getLogger()->info('Button 1 pressed');
+        $this->logger()->info('Button 1 pressed');
         // log telegram context
-        $this->getLogger()->info('Update: {up}', ['up' => \json_encode($context->get(), JSON_PRETTY_PRINT)]);
+        $this->logger()->info('Update: {up}', [
+            'up' => \json_encode($context->getReduced(), JSON_PRETTY_PRINT)
+        ]);
 
         $payload = $context->getPayload();
         // send answerCallbackQuery method
