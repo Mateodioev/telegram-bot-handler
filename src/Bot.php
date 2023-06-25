@@ -4,10 +4,11 @@ namespace Mateodioev\TgHandler;
 
 use Closure, Exception;
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\Update;
+use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType};
+use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
 use Psr\Log\LoggerInterface;
 use function Amp\async;
@@ -136,6 +137,21 @@ class Bot
         return $events;
     }
 
+    protected function deleteEvent(EventInterface $event): void
+    {
+        $type = $event->type()->name();
+        $events = $this->events[$type] ?? false;
+
+        // not exists this event type
+        if (!$events)
+            return;
+
+        foreach ($events as $id => $ev) {
+            if (spl_object_id($ev) === spl_object_id($event))
+                unset($this->events[$type][$id]);
+        }
+    }
+
     /**
      * Execute middlewares and command
      */
@@ -151,8 +167,24 @@ class Bot
             }
 
             $params = $this->handleMiddlewares($event, $ctx);
-            $event->setLogger($this->getLogger())
+            $return = $event->setLogger($this->getLogger())
                 ->execute($this->getApi(), $ctx, $params);
+
+            echo 'Event: ' . $event::class . "\n";
+            if (is_object($return))
+                echo 'Return type: ' . $return::class . "\n";
+
+            if ($event instanceof Conversation) {
+                // Delete conversation 
+                echo 'Deleting ' . $event::class . "\n";
+                $this->deleteEvent($event);
+            }
+            if ($return instanceof Conversation) {
+                // Register next conversation
+                echo 'Registering ' . $return::class . "\n";
+                $this->onEvent($return);
+            }
+
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;
@@ -218,8 +250,7 @@ class Bot
         $offset = ($ignoreOldUpdates) ? -1 : 0;
 
         // Get updates only for registered commands
-        $allowedUpdates = \array_keys($this->events);
-        unset($allowedUpdates['all']); // Ignore this
+        $allowedUpdates = $this->getAllowedUpdates();
 
         $this->getApi()->setAsync($async);
 
@@ -253,14 +284,13 @@ class Bot
             }
         }
     }
-}
 
-/**
- * @deprecated
- */
-function getAsyncFn(): Closure
-{
-    return static function (Update $up, Bot &$instance) {
-        $instance->runAsync($up);
-    };
+    private function getAllowedUpdates(): array
+    {
+        // Get updates only for registered commands
+        $allowedUpdates = \array_keys($this->events);
+        unset($allowedUpdates['all']); // Ignore this
+
+        return $allowedUpdates;
+    }
 }

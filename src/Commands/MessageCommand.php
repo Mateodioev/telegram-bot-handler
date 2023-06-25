@@ -128,7 +128,7 @@ abstract class MessageCommand extends Command
 
     public function execute(Api $bot, Context $context, array $args = [])
     {
-        $this->handle($bot, $context, $args);
+        return $this->handle($bot, $context, $args);
     }
 
     /**

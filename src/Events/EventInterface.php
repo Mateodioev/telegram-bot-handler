@@ -33,6 +33,7 @@ interface EventInterface
 
     /**
      * @see static::logger
+     * @deprecated v3.5.0 Use `static::logger`
      */
     public function getLogger(): LoggerInterface;
 
