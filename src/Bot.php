@@ -133,7 +133,6 @@ class Bot
             $this->getEventsType($ctx->eventType()),
             $this->getEventsType(EventType::all) // tg not send this event
         );
-        // print_r($events);
         return $events;
     }
 
@@ -147,7 +146,7 @@ class Bot
             return;
 
         foreach ($events as $id => $ev) {
-            if (spl_object_id($ev) === spl_object_id($event))
+            if (\spl_object_id($ev) === \spl_object_id($event))
                 unset($this->events[$type][$id]);
         }
     }

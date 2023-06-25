@@ -100,6 +100,65 @@ function authUser(Context $ctx, Api $bot) {
 ```
 > You can use `StopCommand` exception to stop command execution
 
+
+### Conversations
+
+To start a new conversation you simply return an instance of the `Mateodioev\TgHandler\Conversations\Conversations` in a interface of `Mateodioev\TgHandler\Events\EventInterface`
+
+**Conversation:**
+
+```php
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Conversations\MessageConversation;
+
+class MyConversation extends MessageConversation
+{
+    // This is optional, only for validate the user input message
+    protected string $format = 'My name is {w:name}';
+    public function execute(Api $bot, Context $context, array $args = [])
+    {
+        $bot->sendMessage(
+            $context->getChatId(),
+            'Nice to meet you ' . $this->param('name')
+        );
+    }
+}
+```
+
+**EventInterface handler** for this case an instance of _MessageCommand_
+
+```php
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\TgHandler\Context;
+
+class Name extends MessageCommand
+{
+    protected string $name = 'name';
+
+    public function handle(Api $bot, Context $context, array $args = [])
+    {
+        $bot->replyTo(
+            $context->getChatId(),
+            'Please give me your name:',
+            $context->getMessageId(),
+        );
+
+        // Register next conversation handler
+        return nameConversation::new($context->getChatId(), $context->getUserId());
+    }
+}
+```
+
+Register the conversation
+
+```php
+$bot->onEvent(Name::get());
+```
+
+> For more details see [examples](examples/) folder
+
 ### Loging
 
 #### Basic usage
