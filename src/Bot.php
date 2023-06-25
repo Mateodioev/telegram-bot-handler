@@ -160,8 +160,11 @@ class Bot
         try {
             if (!$event->isValid($this->getApi(), $ctx)) {
                 $this->getLogger()->debug(
-                    'It\'s not possible to validate the event "{type}"',
-                    ['type' => $event->type()->prettyName()]
+                    'It\'s not possible to validate the event {name} ({type})',
+                    [
+                        'type' => $event->type()->prettyName(),
+                        'name' => $event::class
+                    ]
                 );
                 return;
             }
@@ -170,27 +173,20 @@ class Bot
             $return = $event->setLogger($this->getLogger())
                 ->execute($this->getApi(), $ctx, $params);
 
-            echo 'Event: ' . $event::class . "\n";
-            if (is_object($return))
-                echo 'Return type: ' . $return::class . "\n";
-
-            if ($event instanceof Conversation) {
-                // Delete conversation 
-                echo 'Deleting ' . $event::class . "\n";
+            // Delete conversation 
+            if ($event instanceof Conversation)
                 $this->deleteEvent($event);
-            }
-            if ($return instanceof Conversation) {
-                // Register next conversation
-                echo 'Registering ' . $return::class . "\n";
+            // Register next conversation
+            if ($return instanceof Conversation)
                 $this->onEvent($return);
-            }
 
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;
 
-            $this->getLogger()->error('Fail to run {name} event, reason: {reason}', [
-                'name' => $event->type()->prettyName(),
+            $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason}', [
+                'name' => $event::class,
+                'eventType' => $event->type()->prettyName(),
                 'reason' => $e->getMessage()
             ]);
         }

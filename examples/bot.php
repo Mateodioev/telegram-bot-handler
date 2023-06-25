@@ -10,6 +10,8 @@ require __DIR__ . '/Params.php';
 require __DIR__ . '/ButtonCallback.php';
 require __DIR__ . '/Message.php';
 require __DIR__ . '/All.php';
+require __DIR__ . '/Name.php';
+require __DIR__ . '/nameConversation.php';
 
 $bot = new Bot($_ENV['BOT_TOKEN'] ?? getenv('BOT_TOKEN')); // put your bot token here
 
@@ -24,8 +26,10 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
 });
 
 # $bot->onEvent(new All);
-$bot->onEvent(new Message);
-$bot->onEvent(Start::get());
-$bot->onEvent(ButtonCallback::get());
-$bot->onEvent(Params::get());
+$bot->onEvent(new Message)
+    ->onEvent(Start::get())
+    ->onEvent(ButtonCallback::get())
+    ->onEvent(Params::get())
+    ->onEvent(Name::get());
+
 $bot->longPolling(20, false, true);
