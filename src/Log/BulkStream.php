@@ -2,6 +2,8 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use function array_walk;
+
 /**
  * Collections of streams
  */
@@ -22,8 +24,9 @@ class BulkStream implements Stream
 
     public function push(string $message): void
     {
-        array_walk(self::$streams, function (Stream $stream) use ($message) {
-            $stream->push($message);
-        });
+        array_walk(
+            self::$streams,
+            fn(Stream $stream) => $stream->push($message)
+        );
     }
 }

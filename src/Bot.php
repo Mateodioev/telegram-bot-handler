@@ -37,6 +37,19 @@ class Bot
         $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
     }
 
+    /**
+     * Create new Bot instance from config class
+     */
+    public static function fromConfig(BotConfig $config): Bot
+    {
+        $bot = (new static($config->token()))
+            ->setDb($config->db())
+            ->setLogger($config->logger());
+
+        $bot->getApi()->setAsync($config->async());
+        return $bot;
+    }
+
     public function getApi(): Api
     {
         return $this->api;
@@ -313,3 +326,4 @@ class Bot
         return $allowedUpdates;
     }
 }
+

@@ -100,4 +100,13 @@ class PhpNativeStream implements Stream
             return false;
         }
     }
+
+    /**
+     * Restore custom error handler
+     */
+    public function __destruct()
+    {
+        $this->deactivate();
+    }
 }
+
