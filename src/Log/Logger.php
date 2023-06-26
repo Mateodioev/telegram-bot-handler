@@ -2,15 +2,12 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use Psr\Log\{InvalidArgumentException as LogInvalidArgumentException, LoggerInterface};
+use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 
-use function strtoupper, preg_replace;
-
-class Logger implements LoggerInterface
+class Logger extends AbstractLogger implements LoggerInterface
 {
     use BitwiseFlag;
-    use levelLogger;
 
     const ALL = 255;
     const CRITICAL = 128;
@@ -24,9 +21,8 @@ class Logger implements LoggerInterface
 
     public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
 
-    public function __construct(
-        private readonly Stream $stream
-    ) {
+    public function __construct(private readonly Stream $stream)
+    {
         $this->setLevel(self::ALL);
     }
 
@@ -39,9 +35,12 @@ class Logger implements LoggerInterface
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        if (!$this->canAccess($level))
+        if (!$this->canAccess($this->levelToInt($level)))
             return;
 
         $date = (new \DateTime())->format('Y-m-d H:i:s');
@@ -49,7 +48,7 @@ class Logger implements LoggerInterface
         try {
             $logMessage = StringFormatter::format(self::$messageFormat, [
                 'time' => $date,
-                'level' => strtoupper($level),
+                'level' => \strtoupper($level),
                 'message' => $this->makeLogMessage($message, $context),
                 'EOL' => PHP_EOL
             ]);
@@ -71,7 +70,7 @@ class Logger implements LoggerInterface
 
     protected function deleteBrackets(string $message): string
     {
-        return preg_replace('/\{(.*)\}/', '$1', $message);
+        return \preg_replace('/\{(.*)\}/', '$1', $message);
     }
     /**
      * Return true if log level can access
@@ -79,5 +78,23 @@ class Logger implements LoggerInterface
     protected function canAccess(int $level): bool
     {
         return $this->isFlagSet($level);
+    }
+
+    /**
+     * Convert level string to int
+     */
+    private function levelToInt(string $level): int
+    {
+        return match ($level) {
+            LogLevel::EMERGENCY => self::EMERGENCY,
+            LogLevel::ALERT => self::ALERT,
+            LogLevel::CRITICAL => self::CRITICAL,
+            LogLevel::ERROR => self::ERROR,
+            LogLevel::WARNING => self::WARNING,
+            LogLevel::NOTICE => self::NOTICE,
+            LogLevel::INFO => self::INFO,
+            LogLevel::DEBUG => self::DEBUG,
+            default => self::ALL
+        };
     }
 }
