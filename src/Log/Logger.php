@@ -2,27 +2,31 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
+use Psr\Log\{InvalidArgumentException as LogInvalidArgumentException, LoggerInterface};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 
-class Logger extends AbstractLogger implements LoggerInterface
+use function strtoupper, preg_replace;
+
+class Logger implements LoggerInterface
 {
     use BitwiseFlag;
+    use levelLogger;
 
-    const ALL       = 255;
-    const CRITICAL  = 128;
-    const ERROR     = 64;
+    const ALL = 255;
+    const CRITICAL = 128;
+    const ERROR = 64;
     const EMERGENCY = 32;
-    const ALERT     = 16;
-    const WARNING   = 8;
-    const NOTICE    = 4;
-    const INFO      = 2;
-    const DEBUG     = 1;
+    const ALERT = 16;
+    const WARNING = 8;
+    const NOTICE = 4;
+    const INFO = 2;
+    const DEBUG = 1;
 
     public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
 
-    public function __construct(private readonly Stream $stream)
-    {
+    public function __construct(
+        private readonly Stream $stream
+    ) {
         $this->setLevel(self::ALL);
     }
 
@@ -35,22 +39,19 @@ class Logger extends AbstractLogger implements LoggerInterface
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        if (!$this->canAccess($this->levelToInt($level)))
+        if (!$this->canAccess($level))
             return;
 
         $date = (new \DateTime())->format('Y-m-d H:i:s');
 
         try {
             $logMessage = StringFormatter::format(self::$messageFormat, [
-                'time'    => $date,
-                'level'   => \strtoupper($level),
+                'time' => $date,
+                'level' => strtoupper($level),
                 'message' => $this->makeLogMessage($message, $context),
-                'EOL'     => PHP_EOL
+                'EOL' => PHP_EOL
             ]);
 
             $this->stream->push($logMessage);
@@ -70,7 +71,7 @@ class Logger extends AbstractLogger implements LoggerInterface
 
     protected function deleteBrackets(string $message): string
     {
-        return \preg_replace('/\{(.*)\}/', '$1', $message);
+        return preg_replace('/\{(.*)\}/', '$1', $message);
     }
     /**
      * Return true if log level can access
@@ -78,23 +79,5 @@ class Logger extends AbstractLogger implements LoggerInterface
     protected function canAccess(int $level): bool
     {
         return $this->isFlagSet($level);
-    }
-
-    /**
-     * Convert level string to int
-     */
-    private function levelToInt(string $level): int
-    {
-        return match ($level) {
-            LogLevel::EMERGENCY => self::EMERGENCY,
-            LogLevel::ALERT     => self::ALERT,
-            LogLevel::CRITICAL  => self::CRITICAL,
-            LogLevel::ERROR     => self::ERROR,
-            LogLevel::WARNING   => self::WARNING,
-            LogLevel::NOTICE    => self::NOTICE,
-            LogLevel::INFO      => self::INFO,
-            LogLevel::DEBUG     => self::DEBUG,
-            default             => self::ALL
-        };
     }
 }

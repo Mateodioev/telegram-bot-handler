@@ -4,12 +4,18 @@ namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Api;
 
+use function str_replace, preg_replace;
+
 /**
  * Push messages to telegram channel/chat
  */
 class BotApiStream implements Stream
 {
-    public function __construct(protected Api $api, protected string $chatId) {}
+    public function __construct(
+        protected Api $api,
+        protected string $chatId
+    ) {
+    }
 
     public function push(string $message): void
     {

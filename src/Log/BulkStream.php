@@ -22,8 +22,8 @@ class BulkStream implements Stream
 
     public function push(string $message): void
     {
-        foreach (self::$streams as $stream) {
+        array_walk(self::$streams, function (Stream $stream) use ($message) {
             $stream->push($message);
-        }
+        });
     }
 }

@@ -4,21 +4,29 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
+use Closure;
 
+use function call_user_func;
+
+/**
+ * Create new MessageCommand from closure
+ */
 class ClosureMessageCommand extends MessageCommand
 {
 
-    private \Closure $command;
+    private Closure $command;
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
-    public function setCommand(\Closure $fn): static
+    public function setCommand(Closure $fn): static
     {
         $this->command = $fn;
         return $this;
     }
 
-    public static function fromClosure(\Closure $fn, string $name): static
+    public static function fromClosure(Closure $fn, string $name): static
     {
         $instance = new static;
         $instance->name = $name;

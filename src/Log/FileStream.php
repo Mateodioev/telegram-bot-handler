@@ -4,6 +4,8 @@ namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 
+use function date, realpath;
+
 class FileStream implements Stream
 {
     const OPEN_MODE = 'a';
@@ -15,9 +17,8 @@ class FileStream implements Stream
         $this->file = \Amp\File\openFile($fileName, self::OPEN_MODE);
         // $this->file = fopen($fileName, 'a');
 
-        if (!$this->file->isWritable()) {
+        if (!$this->file->isWritable())
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
-        }
     }
 
     public static function fromToday(string $dir): FileStream

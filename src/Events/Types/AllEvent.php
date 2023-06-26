@@ -7,7 +7,7 @@ use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
 
 /**
- * Event for buttons pressed
+ * This event can be used for all events
  */
 abstract class AllEvent extends abstractEvent
 {

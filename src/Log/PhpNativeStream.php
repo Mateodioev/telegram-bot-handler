@@ -2,13 +2,12 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-// use Amp\File\FilesystemException;
-
+use Amp\File;
 use Amp\File\FilesystemException;
 use Mateodioev\Utils\Exceptions\FileException;
 use Mateodioev\Utils\Files;
 
-use Amp\File;
+use function is_dir, date, error_reporting, ini_set, set_error_handler, fclose, fopen, restore_error_handler, sprintf;
 
 /**
  * Log php errors into a file setting an error_handler
@@ -19,9 +18,8 @@ class PhpNativeStream implements Stream
 
     public function activate(string $dir, ?string $file = null): static
     {
-        if (\is_dir($dir) && $file !== null) {
+        if (is_dir($dir) && $file !== null)
             throw new FileException('Invalid dir');
-        }
 
         if ($file !== null) {
             if (!Files::isFile($file)) {
@@ -30,13 +28,13 @@ class PhpNativeStream implements Stream
                 $this->setFile($file);
             }
         } else {
-            $this->setFile($dir . '/' . \date('Y-m-d') . '-php_error.log');
+            $this->setFile($dir . '/' . date('Y-m-d') . '-php_error.log');
         }
 
-        \error_reporting(E_ALL);
-        \ini_set('display_errors', false);
-        \ini_set('log_errors', true);
-        \ini_set('error_log', $this->fileLog);
+        error_reporting(E_ALL);
+        ini_set('display_errors', false);
+        ini_set('log_errors', true);
+        ini_set('error_log', $this->fileLog);
 
         set_error_handler($this->errorHandler(...));
 
@@ -48,7 +46,7 @@ class PhpNativeStream implements Stream
         $this->fileLog = $path;
 
         if (!Files::isFile($path)) {
-            \fclose(\fopen($path, 'a')); // create file if not exists
+            fclose(fopen($path, 'a')); // create file if not exists
         }
 
         return $this;
@@ -61,7 +59,8 @@ class PhpNativeStream implements Stream
 
     public function errorHandler(int $errno, string $errorStr, string $errorFile, int $errorLine): bool
     {
-        if (!(error_reporting() & $errno)) return false;
+        if (!(error_reporting() & $errno))
+            return false;
 
         $date = (new \DateTime())->format('Y-m-d H:i:s');
         $format = "[%s] [%s] %s in %s(%d)" . PHP_EOL;

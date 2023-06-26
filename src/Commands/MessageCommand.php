@@ -3,10 +3,11 @@
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\StringVars\Config;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\EventType;
+
+use function sprintf, str_replace, join;
 
 abstract class MessageCommand extends Command
 {
@@ -96,11 +97,9 @@ abstract class MessageCommand extends Command
             // for commands like #start
             join('|', $alias),
                 // if params was not set, optional payload are allowed
-            (
-                $this->params() === self::DEFAULT_PARAMS
+            ($this->params() === self::DEFAULT_PARAMS
                 ? '( ' . self::DEFAULT_PARAMS . ')?'
-                : ' ' . $this->params()
-            )
+                : ' ' . $this->params())
         );
 
         $this->pattern = new Matcher($pattern);

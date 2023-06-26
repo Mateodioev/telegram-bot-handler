@@ -24,9 +24,9 @@ class Context extends Update
 
     public function getUser(): ?User
     {
-        return $this?->message()?->from()
-            ?? $this?->callbackQuery()?->from()
-            ?? $this?->inlineQuery()?->from()
+        return $this->message()?->from()
+            ?? $this->callbackQuery()?->from()
+            ?? $this->inlineQuery()?->from()
             ?? null;
     }
 
@@ -42,23 +42,23 @@ class Context extends Update
 
     public function getChatId(): ?int
     {
-        return $this?->message()?->chat()?->id()
-            ?? $this?->callbackQuery()?->message()?->chat()?->id()
+        return $this->message()?->chat()?->id()
+            ?? $this->callbackQuery()?->message()?->chat()?->id()
             ?? null;
     }
 
     public function getMessageId(): ?int
     {
-        return $this?->message()?->messageId()
-            ?? $this?->callbackQuery()?->message()?->messageId()
+        return $this->message()?->messageId()
+            ?? $this->callbackQuery()?->message()?->messageId()
             ?? null;
     }
 
     public function getMessageText(): ?string
     {
-        return $this?->message()?->text()
-            ?? $this?->callbackQuery()?->data()
-            ?? $this?->inlineQuery()?->query()
+        return $this->message()?->text()
+            ?? $this->callbackQuery()?->data()
+            ?? $this->inlineQuery()?->query()
             ?? null;
     }
 
@@ -71,8 +71,8 @@ class Context extends Update
 
     public function getChatType(): ?string
     {
-        return $this?->message()?->chat()?->type()
-            ?? $this?->callbackQuery()?->message()?->chat()?->type()
+        return $this->message()?->chat()?->type()
+            ?? $this->callbackQuery()?->message()?->chat()?->type()
             ?? null;
     }
 
@@ -84,21 +84,21 @@ class Context extends Update
     public function getFirsName(): ?string
     {
         return $this->getUser()?->firstName()
-            ?? $this?->message()?->replyToMessage()?->from()?->firstName()
+            ?? $this->message()?->replyToMessage()?->from()?->firstName()
             ?? null;
     }
 
     public function getLastName(): ?string
     {
         return $this->getUser()?->lastName()
-            ?? $this?->message()?->replyToMessage()?->from()?->lastName()
+            ?? $this->message()?->replyToMessage()?->from()?->lastName()
             ?? null;
     }
 
     public function getDocument(): ?Document
     {
-        return $this?->message()?->document()
-            ?? $this?->message()?->replyToMessage()?->document()
+        return $this->message()?->document()
+            ?? $this->message()?->replyToMessage()?->document()
             ?? null;
     }
 
@@ -110,13 +110,11 @@ class Context extends Update
         if ($this->type instanceof EventType)
             return $this->type;
 
-        foreach ($this->get() as $type => $value) {
-
+        $eventTypes = $this->get();
+        foreach ($eventTypes as $type => $value) {
             if ($value != null && is_array($value)) {
                 $this->type = EventType::silentFrom($type);
                 return $this->type;
-            } else {
-                continue;
             }
         }
 
