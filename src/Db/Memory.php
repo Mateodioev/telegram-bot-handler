@@ -2,12 +2,24 @@
 
 namespace Mateodioev\TgHandler\Db;
 
+use Mateodioev\TgHandler\{Bot, RunState};
+
+/**
+ * Save data in memory
+ */
 class Memory implements DbInterface
 {
     /**
      * @var array<string, mixed> The database
      */
     private array $db = [];
+
+    public function __construct()
+    {
+        // This is why the data is missing in every request
+        if (Bot::$state === RunState::webhook)
+            throw new DbException('Can\'t use Memory db while bot is runing in webhook mode');
+    }
 
     /**
      * @return bool Always return true

@@ -30,13 +30,13 @@ class BotConfig
         $obj->setToken(self::env(self::$envToken['botToken']));
 
         if (($db = self::env(self::$envToken['db'])) !== null)
-            $obj->setToken($db);
+            $obj->setDbStr($db);
 
         if (($logger = self::env(self::$envToken['logger'])) !== null)
-            $obj->setToken($logger);
+            $obj->setLoggerStr($logger);
 
         if (($async = self::env(self::$envToken['async'])) !== null)
-            $obj->setToken($async);
+            $obj->setAsync($async);
 
         return $obj;
     }
@@ -110,7 +110,7 @@ class BotConfig
 
     protected static function env(string $key, $default = null): mixed
     {
-        return $_ENV[$key] ?? getenv($key) ?? $default;
+        return $_ENV[$key] ?? getenv($key) ?: $default;
     }
 
     protected static function evalbool($value): bool

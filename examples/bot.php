@@ -1,7 +1,5 @@
 <?php
 
-use Mateodioev\TgHandler\BotConfig;
-use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
 use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\Utils\Exceptions\RequestException;
 
@@ -20,4 +18,8 @@ $bot->onEvent(new Message)
     ->onEvent(Params::get())
     ->onEvent(Name::get());
 
-$bot->longPolling(20, false, $config->async());
+try {
+    $bot->longPolling(20, false, $config->async());
+} catch (Exception $e) {
+    echo $e;
+}

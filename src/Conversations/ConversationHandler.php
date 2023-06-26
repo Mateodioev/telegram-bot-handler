@@ -5,7 +5,7 @@ namespace Mateodioev\TgHandler\Conversations;
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\{Bot, Context, RunState};
 
 abstract class ConversationHandler extends abstractEvent implements Conversation
 {
@@ -22,6 +22,9 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
 
     protected static function create(EventType $type, int $chatId, int $userId): static
     {
+        if (Bot::$state === RunState::webhook)
+            throw new ConversationException('Can\'t use Conversation handlers while bot is runing in webhook mode');
+
         return (new static($chatId, $userId))
             ->setType($type);
     }
@@ -30,13 +33,13 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     {
         $text = $context->getMessageText() ?? '';
         $isValid = 1 === 1
-            && $this->chatId === $context->getChatId()
+            && $this->chatId === $context->getChatId() // validate user and chat id
             && $this->userId === $context->getUserId()
-            && $this->type() === $context->eventType()
-            && $this->getPattern()->isValid($text, true);
+            && $this->type() === $context->eventType() // validate event type
+            && $this->getPattern()->isValid($text, true); // Validate pattern
 
         if ($isValid)
-            $this->params = $this->getPattern()->match($text);
+            $this->params = $this->getPattern()->match($text); // Get params from command
 
         return $isValid;
     }

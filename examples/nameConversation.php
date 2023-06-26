@@ -82,5 +82,12 @@ class confirmConversation extends MessageConversation
             $msg .= ', you are still a minor';
 
         $bot->sendMessage($context->getChatId(), $msg);
+        $this->deleteDb($userId); // Clear this conversation data
+    }
+
+    private function deleteDb(int $userID)
+    {
+        $this->db()->delete(nameConversation::nameToken($userID));
+        $this->db()->delete(ageConversation::ageToken($userID));
     }
 }

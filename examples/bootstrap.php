@@ -1,5 +1,8 @@
 <?php
 
+use Mateodioev\TgHandler\BotConfig;
+use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
+
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/Params.php';
@@ -17,4 +20,3 @@ $config = BotConfig::fromEnv()
     ->setLogger(new Logger(new BulkStream))
     ->setAsync(true);
 // ->setToken($myToken) // Set your token
-

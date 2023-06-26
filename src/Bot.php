@@ -30,6 +30,9 @@ class Bot
     /** @var array<string,Closure> */
     protected array $exceptionHandlers = [];
 
+    /** @var RunState Bot run mode */
+    public static RunState $state = RunState::none;
+
     public function __construct(string $token)
     {
         $this->api = new Api($token);
@@ -259,6 +262,8 @@ class Bot
 
     public function byWebhook(bool $async = false): void
     {
+        self::$state = RunState::webhook;
+
         $up = json_decode(
             file_get_contents('php://input'),
             true
@@ -279,6 +284,8 @@ class Bot
      */
     public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): never
     {
+        self::$state = RunState::longpolling;
+
         $offset = ($ignoreOldUpdates) ? -1 : 0;
 
         // Get updates only for registered commands
@@ -326,4 +333,3 @@ class Bot
         return $allowedUpdates;
     }
 }
-
