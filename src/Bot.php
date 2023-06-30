@@ -299,7 +299,7 @@ class Bot
                 /** @var Update[] */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
             } catch (TelegramApiException $e) {
-                if ($e->getCode() === 404 $e->getCode() === 401) { // 401 unauthorized or 404 not found
+                if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
                     exit(1);
                 }
