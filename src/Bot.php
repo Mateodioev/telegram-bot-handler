@@ -4,7 +4,7 @@ namespace Mateodioev\TgHandler;
 
 use Closure, Exception;
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Types\Update;
+use Mateodioev\Bots\Telegram\Types\{Update, Error};
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
@@ -218,7 +218,6 @@ class Bot
             // Register next conversation
             if ($return instanceof Conversation)
                 $this->onEvent($return);
-
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;
@@ -298,22 +297,24 @@ class Bot
             try {
                 /** @var Update[] */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
+                if ($updates instanceof Error)
+                    throw new TelegramApiException('(' . $updates->error_code . ') ' . $updates->description);
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
                     exit(1);
                 }
                 $this->getLogger()->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
+                sleep(1);
                 continue;
             }
 
             if ($async) {
                 array_map(function (Update $update) use (&$offset) {
                     $offset = $update->updateId() + 1;
-                    async(function (Update $up, ): void {
-                        $this->runAsync($up);
-                    }, $update);
+                    async(fn (Update $up) => $this->runAsync($up), $update);
                 }, $updates);
+
                 \Amp\delay(1);
             } else {
                 array_map(function (Update $update) use (&$offset) {
