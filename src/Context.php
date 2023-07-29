@@ -110,9 +110,11 @@ class Context extends Update
         if ($this->type instanceof EventType)
             return $this->type;
 
-        $eventTypes = $this->get();
+        $eventTypes = $this->properties();
+        unset($eventTypes['update_id']);
+
         foreach ($eventTypes as $type => $value) {
-            if ($value != null && is_array($value)) {
+            if ($value !== null && $value instanceof EventType) {
                 $this->type = EventType::silentFrom($type);
                 return $this->type;
             }

@@ -15,6 +15,7 @@ class StopCommand extends Exception
      * @see StopCommand::handler
      */
     public static mixed $handler = null;
+    public static string $parseMode = 'html';
 
     /**
      * @throws Exception
@@ -29,7 +30,7 @@ class StopCommand extends Exception
             return;
         } else {
             $bot->getLogger()->notice('StopCommand: ' . $e->getMessage());
-            $bot->getApi()->sendMessage($ctx->getChatId(), $e->getMessage());
+            $bot->getApi()->sendMessage($ctx->getChatId(), $e->getMessage(), ['parse_mode' => self::$parseMode]);
         }
     }
 }

@@ -111,19 +111,34 @@ class Bot
         return $this;
     }
 
+    private function findExceptionHandler(\Throwable $exception): ?Closure
+    {
+        $exceptionName = $exception::class;
+        $handler = $this->exceptionHandlers[$exceptionName] ?? null;
+
+        if ($handler !== null)
+            return $handler;
+        
+        foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
+            if (is_subclass_of($exceptionName, $name))
+                return $exceptionHandler;
+        }
+
+        return null;
+    }
+
     /**
      * @return bool Return true if exception handled
      */
     protected function handleException(\Throwable $e, Bot $api, Context $ctx): bool
     {
-        $exceptionName = $e::class;
-        if (isset($this->exceptionHandlers[$exceptionName])) {
-            $handler = $this->exceptionHandlers[$exceptionName];
-            call_user_func($handler, $e, $api, $ctx);
-            return true;
-        }
+        $handler = $this->findExceptionHandler($e);
 
-        return false;
+        if ($handler === null)
+            return false;
+        
+        \call_user_func($handler, $e, $api, $ctx);
+        return true;
     }
 
     /**
@@ -218,6 +233,7 @@ class Bot
             // Register next conversation
             if ($return instanceof Conversation)
                 $this->onEvent($return);
+
         } catch (\Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;

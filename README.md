@@ -235,3 +235,29 @@ class MyCommand extends MessageCommand
 // register the command
 $bot->onEvent(MyCommand::get());
 ```
+
+### Manager errors
+
+
+You can register an exception handler the will be used if an exception occurs within the [Events::execute method](src/Events/EventInterface.php#87) method or in the event middlewares
+
+```php
+
+// Base exception
+class UserException extends \Exception
+{}
+
+// Specific exception
+final class UserNotRegistered extends UserException {}
+final class UserBanned extends UserException {}
+
+// This only manage UserBanned exception
+$bot->setExceptionHandler(UserBanned::class, function (UserBanned $e, Bot $bot, Context $ctx) {
+    $bot->getApi()->sendMessage($ctx->getChatId(), 'You are banned');
+});
+
+// This manage all UserException sub classes
+$bot->setExceptionHandler(UserException::class, function (UserException $e, Bot $bot, Context $ctx) {
+    $bot->getLogger()->warning('Ocurrs an user exception in chat id: ' . $ctx->getChatId());
+});
+```
