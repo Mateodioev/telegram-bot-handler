@@ -8,6 +8,8 @@ use Mateodioev\Bots\Telegram\Types\{
     User
 };
 use Mateodioev\TgHandler\Events\EventType;
+use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
+
 use function explode, substr, strlen, trim;
 
 /**
@@ -114,7 +116,7 @@ class Context extends Update
         unset($eventTypes['update_id']);
 
         foreach ($eventTypes as $type => $value) {
-            if ($value !== null && $value instanceof EventType) {
+            if ($value !== null && $value instanceof TypesInterface) {
                 $this->type = EventType::silentFrom($type);
                 return $this->type;
             }
