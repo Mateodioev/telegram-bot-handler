@@ -35,10 +35,7 @@ abstract class Command extends abstractEvent implements CommandInterface, EventI
      */
     public static function get(): static
     {
-        Container::singleton(static::class, static function () {
-            echo 'creating new instance of ' . static::class . "\n";
-            return new static;
-        });
+        Container::singleton(static::class);
         return Container::make(static::class);
     }
 
