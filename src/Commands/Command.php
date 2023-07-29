@@ -5,6 +5,7 @@ namespace Mateodioev\TgHandler\Commands;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
+use Mateodioev\TgHandler\Containers\Container;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
 
 abstract class Command extends abstractEvent implements CommandInterface, EventInterface
@@ -34,7 +35,11 @@ abstract class Command extends abstractEvent implements CommandInterface, EventI
      */
     public static function get(): static
     {
-        return new static;
+        Container::singleton(static::class, static function () {
+            echo 'creating new instance of ' . static::class . "\n";
+            return new static;
+        });
+        return Container::make(static::class);
     }
 
     public function isValid(Api $bot, Context $context): bool

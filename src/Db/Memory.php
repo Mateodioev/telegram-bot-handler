@@ -41,11 +41,14 @@ class Memory implements DbInterface
     }
 
     /**
-     * @return bool Always return true
+     * @return bool If `key` dont exists, return false
      */
     public function delete(string $key): bool
     {
-        unset($this->db[$key]);
-        return true;
+        if ($this->exists($key)) {
+            unset($this->db[$key]);
+            return true;
+        }
+        return false;
     }
 }
