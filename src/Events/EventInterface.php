@@ -5,6 +5,7 @@ namespace Mateodioev\TgHandler\Events;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
+use Mateodioev\TgHandler\Filters\Filter;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -62,6 +63,22 @@ interface EventInterface
      * Get middlewares
      */
     public function middlewares(): array;
+
+    /**
+     * Return true if event has Attributes as Filters
+     */
+    public function hasFilters(): bool;
+
+    /**
+     * Get filter
+     * @return Filter[]
+     */
+    public function filters(): array;
+
+    /**
+     * Validates all filters, return `false` if any of them fail
+     */
+    public function validateFilters(Context $ctx): bool;
 
     /**
      * Add single middleware

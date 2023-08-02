@@ -209,7 +209,7 @@ class Bot
     {
         $api = $this->getApi();
         try {
-            if (!$event->isValid($api, $ctx)) {
+            if ($event->isValid($api, $ctx) === false || $event->validateFilters($ctx) === false) {
                 // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',

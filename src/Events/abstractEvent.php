@@ -5,7 +5,9 @@ namespace Mateodioev\TgHandler\Events;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
+use Mateodioev\TgHandler\Filters\Filter;
 use Psr\Log\LoggerInterface;
+use ReflectionClass;
 
 use function array_merge;
 
@@ -17,6 +19,9 @@ abstract class abstractEvent implements EventInterface
     protected LoggerInterface $logger;
     protected DbInterface $db;
     protected array $middlewares = [];
+
+    /** @var Filter[] Event filters */
+    private ?array $filters = null;
 
     public function type(): EventType
     {
@@ -70,6 +75,36 @@ abstract class abstractEvent implements EventInterface
         return $this->middlewares;
     }
 
+    public function hasFilters(): bool
+    {
+        // Filter already mapped
+        if ($this->filters !== null)
+            return empty($this->filters) === false;
+
+        $this->filters();
+        return empty($this->filters) === false;
+    }
+
+    public function filters(): array
+    {
+        $this->filters ??= self::mapFilters($this);
+        return $this->filters;
+    }
+
+    public function validateFilters(Context $ctx): bool
+    {
+        // No need validation
+        if ($this->hasFilters() === false)
+            return true;
+
+        foreach ($this->filters as $filter) {
+            if ($filter->apply($ctx) === false)
+                return false;
+        }
+
+        return true;
+    }
+
     public function addMiddleware(\Closure $middleware): static
     {
         $this->middlewares[] = $middleware;
@@ -85,5 +120,24 @@ abstract class abstractEvent implements EventInterface
     public function isValid(Api $bot, Context $context): bool
     {
         return $context->eventType() == $this->type();
+    }
+
+    /**
+     * Map Filters of any sub class of EventInterface
+     * @return Filter[]
+     */
+    public static function mapFilters(string|object $class): array
+    {
+        $attributes = (new ReflectionClass($class))->getAttributes();
+        $filters = [];
+
+        foreach ($attributes as $attribute) {
+            if (is_subclass_of($attribute->getName(), Filter::class) === false)
+                continue;
+
+            $filters[] = $attribute->newInstance();
+        }
+
+        return $filters;
     }
 }

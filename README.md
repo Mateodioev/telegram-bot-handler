@@ -100,6 +100,61 @@ function authUser(Context $ctx, Api $bot) {
 ```
 > You can use `StopCommand` exception to stop command execution
 
+### Using filters
+
+Now you can set custom filters to you event for validate, all filters need to extends the interface `Mateodioev\TgHandler\Filters\Filter`
+
+```php
+
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Context;
+
+[\Mateodioev\TgHandler\Filters\FilterFromUserId(996202950)];
+class FilterCommand extends MessageCommand
+{
+    protected string $name = 'filter';
+    
+    public function handle(Api $bot, Context $context, array $args = [])
+    {
+    }
+}
+```
+
+Now this command only respond to the user ID `996202950`
+
+#### Using multiple filters
+
+You can use `FilterCollection` 
+
+```php
+use Mateodioev\TgHandler\Events\Types\MessageEvent;
+use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
+
+#[FilterCollection(
+    new FilterMessageChat(TestChat::CHAT_ID),
+    new FilterMessageRegex('/.*(mt?proto).*/i')
+)]
+class TestChat extends MessageEvent {
+    const CHAT_ID = 'Put your chat id here';
+    public function execute(Api $bot, Context $context, array $args = []) {
+        // your logic here
+    }
+}
+```
+
+Or can use this sintax
+```php
+use Mateodioev\TgHandler\Events\Types\MessageEvent;
+use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
+
+#[FilterMessageChat(TestChat::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
+class TestChat extends MessageEvent {
+    const CHAT_ID = 'Put your chat id here';
+    public function execute(Api $bot, Context $context, array $args = []) {
+        // your logic here
+    }
+}
+```
 
 ### Conversations
 

@@ -3,7 +3,6 @@
 use Mateodioev\Bots\Telegram\{Api, Buttons};
 use Mateodioev\Request\Request;
 use Mateodioev\TgHandler\Commands\MessageCommand;
-use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Context;
 
 class Start extends MessageCommand
