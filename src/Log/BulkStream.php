@@ -32,7 +32,7 @@ class BulkStream implements Stream
     {
         array_walk(
             $this->streams,
-            fn(Stream $stream) => $stream->push($message)
+            fn(Stream $stream) => $stream->push($message, $level)
         );
     }
 }

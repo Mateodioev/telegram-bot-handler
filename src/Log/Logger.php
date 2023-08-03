@@ -53,7 +53,7 @@ class Logger extends AbstractLogger implements LoggerInterface
                 'EOL' => PHP_EOL
             ]);
 
-            $this->stream->push($logMessage);
+            $this->stream->push($logMessage, $level);
         } catch (StringFormatterException $th) {
             throw new LogInvalidArgumentException($th->getMessage(), $th->getCode(), $th);
         }

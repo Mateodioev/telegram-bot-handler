@@ -28,8 +28,7 @@ class BotApiStream implements Stream
 
     public function push(string $message, ?string $level = null): void
     {
-        $level = Logger::levelToInt($level ?? 'all');
-        if ($this->isFlagSet($level) === false)
+        if ($this->isFlagSet(Logger::levelToInt($level ?? '')) === false)
             return;
 
         $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
