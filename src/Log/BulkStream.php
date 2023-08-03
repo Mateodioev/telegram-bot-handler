@@ -12,20 +12,26 @@ class BulkStream implements Stream
     /**
      * @var Stream[]
      */
-    public static array $streams;
+    public array $streams = [];
+
+    public function __construct(Stream ...$streams)
+    {
+        $this->streams = $streams;
+    }
 
     /**
      * Add new stream
      */
-    public static function add(Stream $stream): void
+    public function add(Stream $stream): static
     {
-        self::$streams[] = $stream;
+        $this->streams[] = $stream;
+        return $this;
     }
 
-    public function push(string $message): void
+    public function push(string $message, ?string $level = null): void
     {
         array_walk(
-            self::$streams,
+            $this->streams,
             fn(Stream $stream) => $stream->push($message)
         );
     }

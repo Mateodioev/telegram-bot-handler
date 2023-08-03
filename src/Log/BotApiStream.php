@@ -11,14 +11,27 @@ use function str_replace, preg_replace;
  */
 class BotApiStream implements Stream
 {
+    use BitwiseFlag;
+
     public function __construct(
         protected Api $api,
         protected string $chatId
     ) {
+        $this->setLevel(Logger::CRITICAL | Logger::ERROR | Logger::EMERGENCY);
     }
 
-    public function push(string $message): void
+    public function setLevel(int $level, bool $add = true): static
     {
+        $this->setFlag($level, $add);
+        return $this;
+    }
+
+    public function push(string $message, ?string $level = null): void
+    {
+        $level = Logger::levelToInt($level ?? 'all');
+        if ($this->isFlagSet($level) === false)
+            return;
+
         $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
 
         $this->api->sendMessage(

@@ -27,7 +27,7 @@ class FileStream implements Stream
         return new static(realpath($dir) . '/' . $fileName);
     }
 
-    public function push(string $message): void
+    public function push(string $message, ?string $level = null): void
     {
         $this->file->write($message);
         // fwrite($this->file, $message);

@@ -40,7 +40,7 @@ class Logger extends AbstractLogger implements LoggerInterface
      */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        if (!$this->canAccess($this->levelToInt($level)))
+        if (!$this->canAccess(self::levelToInt($level)))
             return;
 
         $date = (new \DateTime())->format('Y-m-d H:i:s');
@@ -83,7 +83,7 @@ class Logger extends AbstractLogger implements LoggerInterface
     /**
      * Convert level string to int
      */
-    private function levelToInt(string $level): int
+    public static function levelToInt(string $level): int
     {
         return match ($level) {
             LogLevel::EMERGENCY => self::EMERGENCY,

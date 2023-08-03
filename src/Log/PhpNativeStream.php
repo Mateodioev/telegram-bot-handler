@@ -12,7 +12,7 @@ use function is_dir, date, error_reporting, ini_set, set_error_handler, fclose, 
 /**
  * Log php errors into a file setting an error_handler
  */
-class PhpNativeStream implements Stream
+final class PhpNativeStream implements Stream
 {
     public string $fileLog;
 
@@ -85,7 +85,7 @@ class PhpNativeStream implements Stream
         return $this->write($this->fileLog, $message);
     }
 
-    public function push(string $message): void
+    public function push(string $message, ?string $level = null): void
     {
         $this->write($this->fileLog, $message);
     }

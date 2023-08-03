@@ -7,5 +7,9 @@ namespace Mateodioev\TgHandler\Log;
  */
 interface Stream
 {
-    public function push(string $message): void;
+    /**
+     * @param string $message Message to log
+     * @param ?string $level Log level
+     */
+    public function push(string $message, ?string $level = null): void;
 }
