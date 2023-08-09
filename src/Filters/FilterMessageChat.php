@@ -2,16 +2,17 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
  * This filter validate the chat id of the message
  */
-#[\Attribute]
+#[Attribute]
 final class FilterMessageChat implements Filter
 {
 	public function __construct(
-		private int|string $chatId
+		private readonly int|string $chatId
 	) {
 	}
 

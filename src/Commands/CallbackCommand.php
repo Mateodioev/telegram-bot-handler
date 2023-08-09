@@ -42,11 +42,11 @@ abstract class CallbackCommand extends Command
         return $this->buildRegex()->isValid($text, true);
     }
 
-    public function isValid(Api $bot, Context $ctx): bool
+    public function isValid(Api $bot, Context $context): bool
     {
         return 1 === 1 // SQL format
-            && !empty($ctx->getMessageText())
-            && $this->match($ctx->getMessageText());
+            && !empty($context->getMessageText())
+            && $this->match($context->getMessageText());
     }
 
     public function execute(Api $bot, Context $context, array $args = [])

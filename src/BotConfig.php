@@ -3,8 +3,7 @@
 namespace Mateodioev\TgHandler;
 
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
-use Mateodioev\TgHandler\Log\Logger;
-use Mateodioev\TgHandler\Log\PhpNativeStream;
+use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Psr\Log\LoggerInterface;
 
 class BotConfig

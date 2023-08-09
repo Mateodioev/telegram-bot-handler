@@ -2,17 +2,18 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 use function preg_match;
 
 /**
  * This filter validate the regex in the messages
  */
-#[\Attribute]
+#[Attribute]
 final class FilterMessageRegex implements Filter
 {
 	public function __construct(
-		private string $regex
+		private readonly string $regex
 	) {
 	}
 

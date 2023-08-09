@@ -2,16 +2,17 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
  * This filter validate the user id of the message
  */
-#[\Attribute]
+#[Attribute]
 final class FilterFromUserId implements Filter
 {
 	public function __construct(
-		private int $userId
+		private readonly int $userId
 	) {
 	}
 

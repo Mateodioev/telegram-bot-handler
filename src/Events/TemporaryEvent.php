@@ -3,7 +3,7 @@
 namespace Mateodioev\TgHandler\Events;
 
 /**
- * This interface represents a temporay event
+ * This interface represents a temporary event
  */
 interface TemporaryEvent extends EventInterface
 {

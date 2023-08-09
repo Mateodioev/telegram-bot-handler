@@ -2,6 +2,7 @@
 
 namespace Mateodioev\TgHandler\Events;
 
+use Exception;
 use function str_replace, ucwords;
 
 /**
@@ -56,7 +57,7 @@ enum EventType: string
     {
         try {
             return self::from($type);
-        } catch (\Exception) {
+        } catch (Exception) {
             return $default;
         }
     }

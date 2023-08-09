@@ -2,7 +2,7 @@
 
 namespace Mateodioev\TgHandler;
 
-use Closure, Exception;
+use Closure, Exception, Throwable;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\{Update, Error};
 use Mateodioev\TgHandler\Conversations\Conversation;
@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
+use function array_keys, array_merge, call_user_func, spl_object_id;
 
 class Bot
 {
@@ -74,13 +75,13 @@ class Bot
     }
 
     /**
-     * If logger is not set, create new PhpNativeSream 
+     * If logger is not set, create new PhpNativeStream
      */
     public function getLogger(): LoggerInterface
     {
         try {
             return $this->logger;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $this->setDefaultLogger()->logger;
         }
     }
@@ -111,7 +112,7 @@ class Bot
         return $this;
     }
 
-    private function findExceptionHandler(\Throwable $exception): ?Closure
+    private function findExceptionHandler(Throwable $exception): ?Closure
     {
         $exceptionName = $exception::class;
         $handler = $this->exceptionHandlers[$exceptionName] ?? null;
@@ -130,14 +131,14 @@ class Bot
     /**
      * @return bool Return true if exception handled
      */
-    protected function handleException(\Throwable $e, Bot $api, Context $ctx): bool
+    protected function handleException(Throwable $e, Bot $api, Context $ctx): bool
     {
         $handler = $this->findExceptionHandler($e);
 
         if ($handler === null)
             return false;
         
-        \call_user_func($handler, $e, $api, $ctx);
+        call_user_func($handler, $e, $api, $ctx);
         return true;
     }
 
@@ -177,11 +178,10 @@ class Bot
      */
     protected function resolveEvents(Context $ctx): array
     {
-        $events = \array_merge(
+        return array_merge(
             $this->getEventsType($ctx->eventType()),
             $this->getEventsType(EventType::all) // tg not send this event
         );
-        return $events;
     }
 
     protected function deleteEvent(EventInterface $event): void
@@ -194,11 +194,11 @@ class Bot
             return;
 
         // Get event id
-        $eventId = \spl_object_id($event);
+        $eventId = spl_object_id($event);
 
         // Delete the event
         $this->events[$type] = array_filter($events, function ($ev) use ($eventId) {
-            return \spl_object_id($ev) !== $eventId;
+            return spl_object_id($ev) !== $eventId;
         });
     }
 
@@ -234,7 +234,7 @@ class Bot
             if ($return instanceof Conversation)
                 $this->onEvent($return);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;
 
@@ -283,7 +283,7 @@ class Bot
             file_get_contents('php://input'),
             true
         );
-        /** @var Update */
+        /** @var Update $update */
         $update = Update::createFromArray($up);
 
         $this->getApi()->setAsync($async);
@@ -311,10 +311,10 @@ class Bot
         while (true) {
 
             try {
-                /** @var Update[] */
+                /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
                 if ($updates instanceof Error)
-                    throw new TelegramApiException('(' . $updates->error_code . ') ' . $updates->description);
+                    throw new TelegramApiException('(' . ($updates->error_code ?? 0) . ') ' . ($updates->description ?? ''));
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
@@ -344,7 +344,7 @@ class Bot
     private function getAllowedUpdates(): array
     {
         // Get updates only for registered commands
-        $allowedUpdates = \array_keys($this->events);
+        $allowedUpdates = array_keys($this->events);
         unset($allowedUpdates['all']); // Ignore this
 
         return $allowedUpdates;

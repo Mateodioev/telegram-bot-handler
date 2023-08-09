@@ -15,15 +15,18 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     private array $params = [];
 
     protected function __construct(
-        private int $chatId,
-        private int $userId,
+        private readonly int $chatId,
+        private readonly int $userId,
     ) {
     }
 
+    /**
+     * @throws ConversationException
+     */
     protected static function create(EventType $type, int $chatId, int $userId): static
     {
         if (Bot::$state === RunState::webhook)
-            throw new ConversationException('Can\'t use Conversation handlers while bot is runing in webhook mode');
+            throw new ConversationException('Can\'t use Conversation handlers while bot is running in webhook mode');
 
         return (new static($chatId, $userId))
             ->setType($type);

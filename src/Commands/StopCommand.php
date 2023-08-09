@@ -27,7 +27,6 @@ class StopCommand extends Exception
 
         if (is_callable(self::$handler)) {
             call_user_func(self::$handler, $e, $bot, $ctx);
-            return;
         } else {
             $bot->getLogger()->notice('StopCommand: ' . $e->getMessage());
             $bot->getApi()->sendMessage($ctx->getChatId(), $e->getMessage(), ['parse_mode' => self::$parseMode]);

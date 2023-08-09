@@ -2,12 +2,13 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 
-#[\Attribute]
+#[Attribute]
 final class FilterCollection implements Filter
 {
-	private array $filters = [];
+	private array $filters;
 
 	public function __construct(Filter ...$filters)
 	{

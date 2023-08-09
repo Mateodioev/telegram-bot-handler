@@ -14,11 +14,14 @@ class Memory implements DbInterface
      */
     private array $db = [];
 
+    /**
+     * @throws DbException
+     */
     public function __construct()
     {
         // This is why the data is missing in every request
         if (Bot::$state === RunState::webhook)
-            throw new DbException('Can\'t use Memory db while bot is runing in webhook mode');
+            throw new DbException('Can\'t use Memory db while bot is running in webhook mode');
     }
 
     /**
@@ -41,7 +44,7 @@ class Memory implements DbInterface
     }
 
     /**
-     * @return bool If `key` dont exists, return false
+     * @return bool If `key` don't exist, return false
      */
     public function delete(string $key): bool
     {

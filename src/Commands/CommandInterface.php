@@ -5,7 +5,7 @@ namespace Mateodioev\TgHandler\Commands;
 use Mateodioev\TgHandler\Events\EventInterface;
 
 /**
- * Handle an incomming command
+ * Handle an incoming command
  */
 interface CommandInterface extends EventInterface
 {

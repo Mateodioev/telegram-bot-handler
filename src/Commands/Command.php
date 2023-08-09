@@ -8,7 +8,7 @@ use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Containers\Container;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
 
-abstract class Command extends abstractEvent implements CommandInterface, EventInterface
+abstract class Command extends abstractEvent implements CommandInterface
 {
 
     protected string $name = '';

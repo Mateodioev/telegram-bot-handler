@@ -2,8 +2,11 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use DateTime, Stringable;
 use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
+
+use function preg_replace, strtoupper;
 
 class Logger extends AbstractLogger implements LoggerInterface
 {
@@ -38,17 +41,17 @@ class Logger extends AbstractLogger implements LoggerInterface
     /**
      * @inheritDoc
      */
-    public function log($level, \Stringable|string $message, array $context = []): void
+    public function log($level, Stringable|string $message, array $context = []): void
     {
         if (!$this->canAccess(self::levelToInt($level)))
             return;
 
-        $date = (new \DateTime())->format('Y-m-d H:i:s');
+        $date = (new DateTime())->format('Y-m-d H:i:s');
 
         try {
             $logMessage = StringFormatter::format(self::$messageFormat, [
                 'time' => $date,
-                'level' => \strtoupper($level),
+                'level' => strtoupper($level),
                 'message' => $this->makeLogMessage($message, $context),
                 'EOL' => PHP_EOL
             ]);
@@ -59,6 +62,9 @@ class Logger extends AbstractLogger implements LoggerInterface
         }
     }
 
+    /**
+     * @throws StringFormatterException
+     */
     protected function makeLogMessage(string $message, array $context = []): string
     {
         // if context is empty, delete brackets
@@ -70,7 +76,7 @@ class Logger extends AbstractLogger implements LoggerInterface
 
     protected function deleteBrackets(string $message): string
     {
-        return \preg_replace('/\{(.*)\}/', '$1', $message);
+        return preg_replace('/\{(.*)\}/', '$1', $message);
     }
     /**
      * Return true if log level can access

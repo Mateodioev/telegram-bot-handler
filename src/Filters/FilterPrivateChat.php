@@ -2,12 +2,13 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
  * This filter validates that the chat is private
  */
-#[\Attribute]
+#[Attribute]
 final class FilterPrivateChat implements Filter
 {
 	public function apply(Context $ctx): bool

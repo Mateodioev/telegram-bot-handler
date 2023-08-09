@@ -16,7 +16,7 @@ final class PhpNativeStream implements Stream
 {
     public string $fileLog;
 
-    public function activate(string $dir, ?string $file = null): static
+    public function activate(string $dir, ?string $file = null): PhpNativeStream
     {
         if (is_dir($dir) && $file !== null)
             throw new FileException('Invalid dir');
@@ -41,7 +41,7 @@ final class PhpNativeStream implements Stream
         return $this;
     }
 
-    public function setFile(string $path): static
+    public function setFile(string $path): PhpNativeStream
     {
         $this->fileLog = $path;
 
@@ -52,7 +52,7 @@ final class PhpNativeStream implements Stream
         return $this;
     }
 
-    public function deactivate()
+    public function deactivate(): void
     {
         restore_error_handler();
     }
@@ -64,7 +64,6 @@ final class PhpNativeStream implements Stream
 
         $date = (new \DateTime())->format('Y-m-d H:i:s');
         $format = "[%s] [%s] %s in %s(%d)" . PHP_EOL;
-        $level = 'ALL';
 
         switch ($errno) {
             case E_DEPRECATED || E_USER_DEPRECATED:
@@ -90,7 +89,7 @@ final class PhpNativeStream implements Stream
         $this->write($this->fileLog, $message);
     }
 
-    protected function write(string $path, string $content)
+    protected function write(string $path, string $content): bool
     {
         try {
             $fileContent = File\read($path) . $content;

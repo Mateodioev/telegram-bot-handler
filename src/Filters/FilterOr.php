@@ -11,10 +11,9 @@ use Mateodioev\TgHandler\Context;
 final class FilterOr implements Filter
 {
 	function __construct(
-		private Filter $a,
-		private Filter $b
+		private readonly Filter $a,
+		private readonly Filter $b
 	) {
-
 	}
 
 	public function apply(Context $ctx): bool

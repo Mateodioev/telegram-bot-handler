@@ -2,9 +2,10 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
+use Attribute;
 use Mateodioev\TgHandler\Context;
 
-#[\Attribute]
+#[Attribute]
 interface Filter
 {
 	/** Apply the current filter */

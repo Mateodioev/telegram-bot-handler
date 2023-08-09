@@ -2,6 +2,7 @@
 
 namespace Mateodioev\TgHandler\Events;
 
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
@@ -105,7 +106,7 @@ abstract class abstractEvent implements EventInterface
         return true;
     }
 
-    public function addMiddleware(\Closure $middleware): static
+    public function addMiddleware(Closure $middleware): static
     {
         $this->middlewares[] = $middleware;
         return $this;
