@@ -6,7 +6,7 @@ use Closure, Exception, Throwable;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\{Update, Error};
 use Mateodioev\TgHandler\Conversations\Conversation;
-use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
+use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
@@ -70,8 +70,8 @@ class Bot
      */
     public function setDefaultLogger(): Bot
     {
-        $stream = new PhpNativeStream;
-        return $this->setLogger(new Logger($stream->activate(__DIR__)));
+        // $stream = new PhpNativeStream;
+        return $this->setLogger(new Logger(new TerminalStream));
     }
 
     /**
