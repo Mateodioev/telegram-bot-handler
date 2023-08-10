@@ -119,7 +119,7 @@ class Bot
 
         if ($handler !== null)
             return $handler;
-        
+
         foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
             if (is_subclass_of($exceptionName, $name))
                 return $exceptionHandler;
@@ -137,7 +137,7 @@ class Bot
 
         if ($handler === null)
             return false;
-        
+
         call_user_func($handler, $e, $api, $ctx);
         return true;
     }
@@ -233,7 +233,6 @@ class Bot
             // Register next conversation
             if ($return instanceof Conversation)
                 $this->onEvent($return);
-
         } catch (Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;

@@ -13,11 +13,13 @@ require __DIR__ . '/nameConversation.php';
 require __DIR__ . '/TestFilters.php';
 
 // Log php error and print in terminal
-BulkStream::add(new TerminalStream);
-BulkStream::add((new PhpNativeStream)->activate(__DIR__));
+$streamCollection = new BulkStream(
+    new TerminalStream,
+    (new PhpNativeStream)->activate(__DIR__)
+);
 
 // Config from env vars
 $config = BotConfig::fromEnv()
-    ->setLogger(new Logger(new BulkStream))
+    ->setLogger(new Logger($streamCollection))
     ->setAsync(true);
 // ->setToken($myToken) // Set your token

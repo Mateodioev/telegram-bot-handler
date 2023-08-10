@@ -9,7 +9,7 @@ $bot = Bot::fromConfig($config);
 
 // Exception handler for RequestException
 $bot->setExceptionHandler(RequestException::class, function (RequestException $e, Bot $bot, Context $ctx) {
-    echo 'RequestException: ' . $e->getMessage() . PHP_EOL;
+    $bot->getLogger()->error($e::class . ': ' . $e->getMessage());
 });
 
 $bot->onEvent(new Message)
