@@ -5,7 +5,7 @@
     "require": {
         "php": ">=8.1",
         "psr/log": "^3.0",
-        "mateodioev/tgbot": "^3.3",
+        "mateodioev/tgbot": "^3.6",
         "amphp/file": "^3.0",
         "smoren/string-formatter": "^1.0",
         "mateodioev/string-vars": "^1.2"

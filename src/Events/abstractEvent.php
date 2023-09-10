@@ -39,6 +39,17 @@ abstract class abstractEvent implements EventInterface
         $this->description = $description;
     }
 
+    /**
+     * Async sleep
+     * 
+     * @param float $seconds Number of seconds to sleep
+     * @see \Amp\delay()
+     */
+    public function sleep(float $seconds): void
+    {
+        \Amp\delay($seconds);
+    }
+
     public function logger(): LoggerInterface
     {
         return $this->logger;
@@ -76,6 +87,9 @@ abstract class abstractEvent implements EventInterface
         return $this->middlewares;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function hasFilters(): bool
     {
         // Filter already mapped
@@ -86,12 +100,18 @@ abstract class abstractEvent implements EventInterface
         return empty($this->filters) === false;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function filters(): array
     {
         $this->filters ??= self::mapFilters($this);
         return $this->filters;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function validateFilters(Context $ctx): bool
     {
         // No need validation
@@ -124,8 +144,9 @@ abstract class abstractEvent implements EventInterface
     }
 
     /**
-     * Map Filters of any sub class of EventInterface
+     * Map Filters of any subclass of EventInterface
      * @return Filter[]
+     * @throws \ReflectionException
      */
     public static function mapFilters(string|object $class): array
     {

@@ -20,7 +20,11 @@ $bot->onEvent(new Message)
     ->onEvent(Name::get());
 
 try {
-    $bot->longPolling(20, false, $config->async());
+    $bot->longPolling(
+        timeout: 60,
+        ignoreOldUpdates: false,
+        async: $config->async()
+    );
 } catch (Exception $e) {
     echo $e;
 }

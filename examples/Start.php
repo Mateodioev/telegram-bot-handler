@@ -1,6 +1,8 @@
 <?php
 
-use Mateodioev\Bots\Telegram\{Api, Buttons};
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\Bots\Telegram\Buttons\{ButtonFactory, InlineKeyboardMarkupFactory};
+use Mateodioev\Bots\Telegram\Types\InlineKeyboardButton;
 use Mateodioev\Request\Request;
 use Mateodioev\TgHandler\Commands\MessageCommand;
 use Mateodioev\TgHandler\Context;
@@ -22,25 +24,24 @@ class Start extends MessageCommand
         // log telegram context using psr logger
         $this->logger()->info('Received new text: {text}', ['text' => $context->message()->text()]);
 
-        // Get paylod from command
+        // Get payload from command
         $this->logger()->info('Payload: "{payload}"', ['payload' => $this->param('payload', 'Not payload')]);
 
         $this->logger()->info('Waiting 5 seconds...');
-        \Amp\delay(5); // wait 5 seconds
+        $this->sleep(5); // wait 5 seconds
 
         $bot->replyTo($context->getChatId(), '5 seconds passed!', $context->getMessageId());
 
         // This will throw an exception
         Request::GET('https://invalidurl.invalid')->run();
-
     }
 
-    protected function getButton(): Buttons
+    protected function getButton(): InlineKeyboardMarkupFactory
     {
-        return Buttons::create()
-            ->addCeil(['text' => 'Button 1', 'callback_data' => 'button1'])
-            ->addCeil(['text' => 'Button 1 with payload', 'callback_data' => 'button1 Custom payload'])
-            ->AddLine()
-            ->addCeil(['text' => 'Docs', 'url' => 'https://core.telegram.org/bots/api']);
+        return ButtonFactory::inlineKeyboardMarkup()
+            ->addCeil(new InlineKeyboardButton(['text' => 'Button 1', 'callback_data' => 'button1']))
+            ->addCeil(new InlineKeyboardButton(['text' => 'Button 1 with payload', 'callback_data' => 'button1 Custom payload']))
+            ->addLine()
+            ->addCeil(new InlineKeyboardButton(['text' => 'Docs', 'url' => 'https://core.telegram.org/bots/api']));
     }
 }
