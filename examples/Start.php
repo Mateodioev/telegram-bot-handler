@@ -18,8 +18,7 @@ class Start extends MessageCommand
      */
     public function handle(Api $bot, Context $context, array $args = [])
     {
-        $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), [
-            'parse_mode'   => 'HTML',
+        $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), params: [
             'reply_markup' => (string) $this->getButton()  // get json button
         ]);
 
@@ -29,10 +28,11 @@ class Start extends MessageCommand
         // Get payload from command
         $this->logger()->info('Payload: "{payload}"', ['payload' => $this->param('payload', 'Not payload')]);
 
-        $this->logger()->info('Waiting 5 seconds...');
+        $message = $bot->sendMessage($context->getChatId(), 'Please wait 5 seconds...');
         $this->sleep(5); // wait 5 seconds
+        $result = $bot->editMessageText($message->chat()->id(), '5 seconds passed!', ['message_id' => $message->messageId()]);
 
-        $bot->replyTo($context->getChatId(), '5 seconds passed!', $context->getMessageId());
+        $this->logger()->info('Result: {res}', ['res' => json_encode($result->getReduced())]);
 
         // This will throw an exception
         Request::GET('https://invalidurl.invalid')->run();

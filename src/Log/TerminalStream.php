@@ -13,11 +13,11 @@ final class TerminalStream implements Stream
         if (!$stdout)
             $stdout = STDOUT;
 
-        $this->stdout = $stdout;
+        $this->stdout = new ResourceStream($stdout);
     }
 
     public function push(string $message, ?string $level = null): void
     {
-        fwrite($this->stdout, $message);
+        $this->stdout->push($message, $level);
     }
 }

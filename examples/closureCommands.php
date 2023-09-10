@@ -1,6 +1,7 @@
 <?php
 
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\Bots\Telegram\Config\ParseMode;
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Mateodioev\TgHandler\{Bot, Context};
 
@@ -12,7 +13,7 @@ $bot->setLogger(new Logger(new TerminalStream));
 
 // New closure must receive Api and Context params
 $startCommand = function (Api $bot, Context $ctx, array $args = []) {
-    $bot->replyTo($ctx->getChatId(), 'Hello world!', $ctx->getMessageId(), ['parse_mode' => 'HTML']);
+    $bot->replyTo($ctx->getChatId(), 'Hello world!', $ctx->getMessageId());
 };
 
 // create MessageCommand from closure

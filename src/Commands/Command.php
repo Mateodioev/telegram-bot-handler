@@ -6,7 +6,7 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Containers\Container;
-use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
+use Mateodioev\TgHandler\Events\abstractEvent;
 
 abstract class Command extends abstractEvent implements CommandInterface
 {

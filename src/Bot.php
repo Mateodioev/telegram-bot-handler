@@ -25,8 +25,7 @@ class Bot
     protected LoggerInterface $logger;
     protected ?DbInterface $db = null;
 
-    /** @var array<string|EventInterface[]> */
-    protected array $events = [];
+    protected EventStorage $eventStorage;
 
     /** @var array<string,Closure> */
     protected array $exceptionHandlers = [];
@@ -37,6 +36,7 @@ class Bot
     public function __construct(string $token)
     {
         $this->api = new Api($token);
+        $this->eventStorage = new EventStorage;
 
         $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
     }
@@ -121,7 +121,7 @@ class Bot
             return $handler;
 
         foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
-            if (is_subclass_of($exceptionName, $name))
+            if (\is_a($exception, $name))
                 return $exceptionHandler;
         }
 
@@ -147,7 +147,7 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
-        $this->events[$event->type()->name()][] = $event->setDb($this->getDb());
+        $this->eventStorage->add($event);
         return $this;
     }
 
@@ -167,11 +167,6 @@ class Bot
         return $command;
     }
 
-    private function getEventsType(EventType $type): array
-    {
-        return $this->events[$type->name()] ?? [];
-    }
-
     /**
      * Get commands
      * @return EventInterface[]
@@ -179,27 +174,14 @@ class Bot
     protected function resolveEvents(Context $ctx): array
     {
         return array_merge(
-            $this->getEventsType($ctx->eventType()),
-            $this->getEventsType(EventType::all) // tg not send this event
+            $this->eventStorage->resolve($ctx->eventType()),
+            $this->eventStorage->resolve(EventType::all) // tg not send this event
         );
     }
 
     protected function deleteEvent(EventInterface $event): void
     {
-        $type = $event->type()->name();
-        $events = $this->events[$type] ?? false;
-
-        // not exists this event type
-        if (!$events)
-            return;
-
-        // Get event id
-        $eventId = spl_object_id($event);
-
-        // Delete the event
-        $this->events[$type] = array_filter($events, function ($ev) use ($eventId) {
-            return spl_object_id($ev) !== $eventId;
-        });
+        $this->eventStorage->delete($event);
     }
 
     /**
@@ -228,19 +210,23 @@ class Bot
             );
 
             // Delete temporary event
-            if ($event instanceof TemporaryEvent)
-                $this->deleteEvent($event);
+            if ($event instanceof TemporaryEvent) {
+                $this->eventStorage->delete($event);
+            }
             // Register next conversation
-            if ($return instanceof Conversation)
+            if ($return instanceof Conversation) {
                 $this->onEvent($return);
+            }
         } catch (Throwable $e) {
             if ($this->handleException($e, $this, $ctx))
                 return;
 
-            $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason}', [
-                'name' => $event::class,
+            $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
+                'name'      => $event::class,
                 'eventType' => $event->type()->prettyName(),
-                'reason' => $e->getMessage()
+                'reason'    => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine()
             ]);
         }
     }
@@ -342,10 +328,6 @@ class Bot
 
     private function getAllowedUpdates(): array
     {
-        // Get updates only for registered commands
-        $allowedUpdates = array_keys($this->events);
-        unset($allowedUpdates['all']); // Ignore this
-
-        return $allowedUpdates;
+        return $this->eventStorage->types();
     }
 }

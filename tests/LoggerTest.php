@@ -2,30 +2,53 @@
 
 namespace Tests;
 
-use Mateodioev\TgHandler\Log\Logger;
-use Mateodioev\TgHandler\Log\TerminalStream;
+use Mateodioev\TgHandler\Log\{Logger, ResourceStream};
+use Mateodioev\TgHandler\Log\BulkStream;
 use PHPUnit\Framework\TestCase;
 
-use function ob_start, call_user_func, ob_get_contents, ob_end_clean;
+use function fopen;
 
 class LoggerTest extends TestCase
 {
+    private static $stream = null;
+
+    /**
+     * @return resource
+     */
+    public static function streamResource()
+    {
+        if (self::$stream === null) {
+            self::$stream = fopen('php://memory', 'a+');
+        }
+
+        return self::$stream;
+    }
+
     public function testCreateLogger()
     {
         $this->assertInstanceOf(Logger::class, $this->logger());
     }
 
+    protected function logger(): Logger
+    {
+        return new Logger(new BulkStream(
+            new ResourceStream(self::streamResource()),
+        ));
+    }
+
     public function testLogMessage()
     {
         $message = 'This is a message';
-        $logger  = $this->logger();
-        $loggers = $this->getLoggers($logger);
+        $logger  = $this->logger()->setLevel(Logger::ALL);
 
-        foreach ($loggers as $loggerFn) {
-            $output = $this->getStdOutput($loggerFn, $message);
+        $loggers = $this->getLoggers();
 
-            $this->assertNotEmpty($output);
-            $this->assertTrue(\str_contains($output, $message));
+        foreach ($loggers as $level) {
+            $output = $this->getStdOutput($logger, $level, $message);
+            // var_dump($output);
+
+            $this->assertNotEmpty($output, $level);
+            $this->assertTrue(\str_contains($output, $message), $level);
         }
     }
 
@@ -33,12 +56,12 @@ class LoggerTest extends TestCase
     {
         $message = 'This is a message';
         $logger  = $this->logger()->setLevel(Logger::ALL, false);
-        $loggers = $this->getLoggers($logger);
+        $loggers = $this->getLoggers();
 
-        foreach ($loggers as $loggerFn) {
-            $output = $this->getStdOutput($loggerFn, $message);
+        foreach ($loggers as $level) {
+            $output = $this->getStdOutput($logger, $level, $message);
 
-            $this->assertEmpty($output);
+            $this->assertEmpty($output, $level);
         }
     }
 
@@ -50,38 +73,31 @@ class LoggerTest extends TestCase
         $logger->setLevel(Logger::ALL, false);
         $logger->setLevel(Logger::DEBUG); // enable only debug messages
 
-        $output = $this->getStdOutput($logger->debug(...), $message);
+        $output = $this->getStdOutput($logger, 'debug', $message);
         $this->assertNotEmpty($output);
     }
 
-    protected function getLoggers(Logger $logger): array
+    protected function getLoggers(): array
     {
         return [
-            $logger->emergency(...),
-            $logger->alert(...),
-            $logger->critical(...),
-            $logger->error(...),
-            $logger->warning(...),
-            $logger->notice(...),
-            $logger->info(...),
-            $logger->debug(...)
+            'emergency',
+            'alert',
+            'critical',
+            'error',
+            'warning',
+            'notice',
+            'info',
+            'debug'
         ];
     }
 
-    protected function logger(): Logger
+    protected function getStdOutput(Logger $logger, string $level, string $message): string
     {
-        return new Logger(new TerminalStream);
-    }
+        $logger->log($level, $message);
+        rewind(self::streamResource());
+        $content = stream_get_contents(self::streamResource());
+        ftruncate(self::streamResource(), 0);
 
-    protected function getStdOutput(\Closure $fn, ...$params)
-    {
-        ob_start();
-
-        call_user_func_array($fn, $params);
-        $output = ob_get_contents();
-
-        ob_end_clean();
-
-        return $output;
+        return $content;
     }
 }
