@@ -49,8 +49,9 @@ final class EventStorage
     public function resolve(EventType $eventType): array
     {
         $events = [];
+        $eventsPointers = $this->events[$eventType->name()] ?? [];
 
-        foreach ($this->events[$eventType->name()] as $eventId) {
+        foreach ($eventsPointers as $eventId) {
             $event = $this->get($eventId);
             if ($event === null) {
                 continue;
