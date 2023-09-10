@@ -283,7 +283,7 @@ class Bot
             true
         );
         /** @var Update $update */
-        $update = Update::createFromArray($up);
+        $update = new Update($up);
 
         $this->getApi()->setAsync($async);
         $async ? $this->runAsync($update) : $this->run($update);

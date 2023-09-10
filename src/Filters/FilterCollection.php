@@ -15,6 +15,9 @@ final class FilterCollection implements Filter
 		$this->filters = $filters;
 	}
 
+	/**
+	 * Apply all filters
+	 */
 	public function apply(Context $ctx): bool
 	{
 		foreach ($this->filters as $filter) {

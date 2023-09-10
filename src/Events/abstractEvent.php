@@ -6,7 +6,9 @@ use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
+use Mateodioev\TgHandler\Db\PrefixDb;
 use Mateodioev\TgHandler\Filters\Filter;
+use Mateodioev\TgHandler\Filters\FilterCollection;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 
@@ -23,6 +25,7 @@ abstract class abstractEvent implements EventInterface
 
     /** @var Filter[] Event filters */
     private ?array $filters = null;
+    private ?DbInterface $privateDb = null;
 
     public function type(): EventType
     {
@@ -77,6 +80,21 @@ abstract class abstractEvent implements EventInterface
         return $this;
     }
 
+    /**
+     * Return a db with a prefix key
+     */
+    public function privateDb(): DbInterface
+    {
+        if ($this->privateDb) {
+            return $this->privateDb;
+        }
+
+        $currentClassName = \strtolower((new ReflectionClass($this))->getShortName()) . '.';
+        $this->privateDb  = new PrefixDb($this->db(), $currentClassName);
+
+        return $this->privateDb;
+    }
+
     public function hasMiddlewares(): bool
     {
         return !empty($this->middlewares());
@@ -115,12 +133,14 @@ abstract class abstractEvent implements EventInterface
     public function validateFilters(Context $ctx): bool
     {
         // No need validation
-        if ($this->hasFilters() === false)
+        if ($this->hasFilters() === false) {
             return true;
+        }
 
-        foreach ($this->filters as $filter) {
-            if ($filter->apply($ctx) === false)
-                return false;
+        $filterCollection = new FilterCollection(...$this->filters());
+
+        if ($filterCollection->apply($ctx) === false) {
+            return false;
         }
 
         return true;

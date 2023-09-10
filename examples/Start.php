@@ -18,10 +18,12 @@ class Start extends MessageCommand
      */
     public function handle(Api $bot, Context $context, array $args = [])
     {
-        $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), 'HTML', [
-            'reply_markup' => (string) $this->getButton() // get json button
+        $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), [
+            'parse_mode'   => 'HTML',
+            'reply_markup' => (string) $this->getButton()  // get json button
         ]);
-        // log telegram context using psr logger
+
+        // log telegram context using psr/log
         $this->logger()->info('Received new text: {text}', ['text' => $context->message()->text()]);
 
         // Get payload from command

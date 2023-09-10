@@ -17,6 +17,6 @@ class Name extends MessageCommand
         );
 
         // Register next conversation handler
-        return nameConversation::new($context->getChatId(), $context->getUserId());
+        return nameConversation::fromContext($context);
     }
 }

@@ -14,6 +14,18 @@ final class Builder
     public array $atributtes = [];
     public bool $singleton = false;
 
+    /**
+     * @param class-string $class
+     */
+    public static function default(string $class, ?Closure $fn = null): Builder
+    {
+        $instance          = new self;
+        $instance->class   = $class;
+        $instance->builder = $fn;
+
+        return $instance;
+    }
+
     public function with(array $params): self
     {
         $this->atributtes = $params;
@@ -39,4 +51,3 @@ final class Builder
         return $fn(...$this->atributtes);
     }
 }
-

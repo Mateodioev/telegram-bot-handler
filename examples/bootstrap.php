@@ -4,6 +4,7 @@ use Mateodioev\TgHandler\BotConfig;
 use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/All.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/Params.php';
 require __DIR__ . '/ButtonCallback.php';

@@ -11,16 +11,19 @@ use Mateodioev\TgHandler\Filters\{FilterMessageChat, FilterMessageRegex};
 #[FilterMessageChat(TestFilters::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
 class TestFilters extends MessageEvent
 {
-    const CHAT_ID = 996202950; // If you use chat id, always set as INT
+    const CHAT_ID = 996202950; // Always set as INT
 
     public function execute(Api $bot, Context $context, array $args = [])
     {
-        $result = $bot->replyTo(
+        $message = $bot->replyTo(
             self::CHAT_ID, // this is equal to "$context->getChatId()" because this command only respond to the same chat id
             'Hi ' . ($context->getUser()?->mention() ?? 'Default name'),
-            $context->getMessageId()
+            $context->getMessageId(),
+            ['parse_mode' => 'HTML']
         );
 
-        $this->logger()->debug(json_encode($result->getReduced(), JSON_PRETTY_PRINT));
+        $this->logger()->debug('Result message of test filter: {msg}', [
+            'msg' => $message->toString(JSON_PRETTY_PRINT)
+        ]);
     }
 }

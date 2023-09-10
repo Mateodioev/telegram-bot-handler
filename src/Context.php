@@ -23,7 +23,7 @@ class Context extends Update
 
     public static function fromUpdate(Update $update): Context
     {
-        return self::createFromType($update);
+        return new self($update->get());
     }
 
     public function getUser(): ?User

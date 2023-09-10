@@ -12,7 +12,7 @@ $bot->setLogger(new Logger(new TerminalStream));
 
 // New closure must receive Api and Context params
 $startCommand = function (Api $bot, Context $ctx, array $args = []) {
-    $bot->replyTo($ctx->getChatId(), 'Hello world!', $ctx->getMessageId(), 'HTML');
+    $bot->replyTo($ctx->getChatId(), 'Hello world!', $ctx->getMessageId(), ['parse_mode' => 'HTML']);
 };
 
 // create MessageCommand from closure

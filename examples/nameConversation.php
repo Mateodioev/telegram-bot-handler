@@ -18,7 +18,8 @@ class nameConversation extends MessageConversation
         $bot->replyTo($context->getChatId(), 'Nice to meet you ' . $name, $context->getMessageId());
         $bot->sendMessage($context->getChatId(), 'What is your age? ');
 
-        return ageConversation::new($context->getChatId(), $context->getUserId());
+        return ageConversation::fromContext($context);
+        // return ageConversation::new($context->getChatId(), $context->getUserId());
     }
 
     /**
@@ -50,7 +51,8 @@ class ageConversation extends MessageConversation
         );
 
         $this->db()->save(self::ageToken($context->getUserId()), $age);
-        return confirmConversation::new($context->getChatId(), $context->getUserId());
+        return confirmConversation::fromContext($context);
+        // return confirmConversation::new($context->getChatId(), $context->getUserId());
     }
 
     public static function ageToken(int $userId)
@@ -74,7 +76,8 @@ class confirmConversation extends MessageConversation
         if (\in_array(\strtolower($context->getMessageText()), $yes) === false) {
             // ask your age again
             $bot->sendMessage($context->getChatId(), 'What is your age? ');
-            return ageConversation::new($context->getChatId(), $context->getUserId());
+            return ageConversation::fromContext($context);
+            // return ageConversation::new($context->getChatId(), $context->getUserId());
         }
 
         $msg = 'Welcome ' . $name;
