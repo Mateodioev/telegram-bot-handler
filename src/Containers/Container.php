@@ -14,6 +14,10 @@ class Container
 
     private static function makeBuilder(string $class, ?Closure $fn = null): Builder
     {
+        if (isset(self::$builders[$class])) { // if already exists
+            return self::$builders[$class];
+        }
+        
         $builder = Builder::default($class, $fn);
 
         self::$builders[$class] = $builder;
@@ -39,6 +43,10 @@ class Container
      */
     public static function singleton(string $class, ?Closure $fn = null): Builder
     {
+        if (isset(self::$builders[$class])) { // if already exists
+            return self::$builders[$class];
+        }
+
         $builder            = self::makeBuilder($class, $fn);
         $builder->singleton = true;
 

@@ -2,8 +2,8 @@
 
 namespace Mateodioev\TgHandler\Conversations;
 
-use Exception;
+use Mateodioev\TgHandler\BotException;
 
-class ConversationException extends Exception
+class ConversationException extends BotException
 {
 }

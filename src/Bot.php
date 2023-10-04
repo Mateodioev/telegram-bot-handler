@@ -15,20 +15,22 @@ use Psr\Log\LoggerInterface;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use function array_keys, array_merge, call_user_func, spl_object_id;
+use function array_merge, call_user_func;
 
 class Bot
 {
     use middlewares;
 
-    protected Api $api;
-    protected LoggerInterface $logger;
-    protected ?DbInterface $db = null;
+    private const EVENTS_CACHE = 'events.cache.json';
 
-    protected EventStorage $eventStorage;
+    private Api $api;
+    private LoggerInterface $logger;
+    private ?DbInterface $db = null;
+
+    private EventStorage $eventStorage;
 
     /** @var array<string,Closure> */
-    protected array $exceptionHandlers = [];
+    private array $exceptionHandlers = [];
 
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
@@ -121,7 +123,7 @@ class Bot
             return $handler;
 
         foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
-            if (\is_a($exception, $name))
+            if (\is_a($exception, $name)) // Check is same class or subclass
                 return $exceptionHandler;
         }
 
@@ -211,7 +213,7 @@ class Bot
 
             // Delete temporary event
             if ($event instanceof TemporaryEvent) {
-                $this->eventStorage->delete($event);
+                $this->deleteEvent($event);
             }
             // Register next conversation
             if ($return instanceof Conversation) {
@@ -260,12 +262,18 @@ class Bot
         );
     }
 
-    public function byWebhook(bool $async = false): void
+    /**
+     * Run bot in webhook mode
+     *
+     * @param string $resource Resource to get update
+     * @param bool $async Run in async mode using AMPHP
+     */
+    public function byWebhook($resource = 'php://input', bool $async = false): void
     {
         self::$state = RunState::webhook;
 
         $up = json_decode(
-            file_get_contents('php://input'),
+            file_get_contents($resource),
             true
         );
         /** @var Update $update */
@@ -293,6 +301,8 @@ class Bot
 
         $this->getApi()->setAsync($async);
 
+        // enable garbage collector
+        gc_enable();
         while (true) {
 
             try {
@@ -323,6 +333,9 @@ class Bot
                     $this->run($update);
                 }, $updates);
             }
+
+            unset($updates);
+            gc_collect_cycles();
         }
     }
 

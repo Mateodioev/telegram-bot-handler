@@ -23,6 +23,22 @@ final class EventStorage
     private array $eventsPointers = [];
 
     /**
+     * Resolver all events
+     */
+    public function all(): array
+    {
+        $events = [];
+
+        foreach ($this->events as $type => $eventIds) {
+            $events[$type] = [];
+            foreach ($eventIds as $eventId) {
+                $events[$type][] = $this->eventsPointers[$eventId] ?? null;
+            }
+        }
+        return $events;
+    }
+
+    /**
      * Get total events count. If $eventType is specified, return count of events with this type.
      */
     public function total(?EventType $eventType = null): int
