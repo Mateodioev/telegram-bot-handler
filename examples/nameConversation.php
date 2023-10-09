@@ -88,7 +88,7 @@ class confirmConversation extends MessageConversation
         $this->deleteDb($userId); // Clear this conversation data
     }
 
-    private function deleteDb(int $userID)
+    private function deleteDb(int $userID): void
     {
         $this->db()->delete(nameConversation::nameToken($userID));
         $this->db()->delete(ageConversation::ageToken($userID));

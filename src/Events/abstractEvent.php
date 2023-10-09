@@ -5,14 +5,10 @@ namespace Mateodioev\TgHandler\Events;
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
-use Mateodioev\TgHandler\Db\DbInterface;
-use Mateodioev\TgHandler\Db\PrefixDb;
-use Mateodioev\TgHandler\Filters\Filter;
-use Mateodioev\TgHandler\Filters\FilterCollection;
+use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
+use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-
-use function array_merge;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -21,6 +17,8 @@ abstract class abstractEvent implements EventInterface
     protected string $description = '';
     protected LoggerInterface $logger;
     protected DbInterface $db;
+    protected Api $botApi;
+    protected Context $botContext;
     protected array $middlewares = [];
 
     /** @var Filter[] Event filters */
@@ -30,6 +28,23 @@ abstract class abstractEvent implements EventInterface
     public function type(): EventType
     {
         return $this->type;
+    }
+
+    public function setVars(Api $bot, Context $ctx): static
+    {
+        $this->botApi = $bot;
+        $this->botContext = $ctx;
+        return $this;
+    }
+
+    public function api(): Api
+    {
+        return $this->botApi;
+    }
+
+    public function ctx(): Context
+    {
+        return $this->botContext;
     }
 
     public function description(): string
@@ -100,6 +115,11 @@ abstract class abstractEvent implements EventInterface
         return !empty($this->middlewares());
     }
 
+    /**
+     * Get all middlewares
+     *
+     * @return array
+     */
     public function middlewares(): array
     {
         return $this->middlewares;
@@ -119,9 +139,11 @@ abstract class abstractEvent implements EventInterface
     }
 
     /**
+     * Get event filters
+     * @return Filter[]
      * @throws \ReflectionException
      */
-    public function filters(): array
+    private function filters(): array
     {
         $this->filters ??= self::mapFilters($this);
         return $this->filters;
@@ -130,7 +152,7 @@ abstract class abstractEvent implements EventInterface
     /**
      * @throws \ReflectionException
      */
-    public function validateFilters(Context $ctx): bool
+    public function validateFilters(): bool
     {
         // No need validation
         if ($this->hasFilters() === false) {
@@ -139,7 +161,7 @@ abstract class abstractEvent implements EventInterface
 
         $filterCollection = new FilterCollection(...$this->filters());
 
-        if ($filterCollection->apply($ctx) === false) {
+        if ($filterCollection->apply($this->ctx()) === false) {
             return false;
         }
 
@@ -154,13 +176,13 @@ abstract class abstractEvent implements EventInterface
 
     public function setMiddlewares(array $middlewares): static
     {
-        $this->middlewares = array_merge($this->middlewares(), $middlewares);
+        $this->middlewares = [...$this->middlewares(), ...$middlewares];
         return $this;
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
-        return $context->eventType() == $this->type();
+        return $this->ctx()->eventType() == $this->type();
     }
 
     /**
@@ -168,7 +190,7 @@ abstract class abstractEvent implements EventInterface
      * @return Filter[]
      * @throws \ReflectionException
      */
-    public static function mapFilters(string|object $class): array
+    private static function mapFilters(string|object $class): array
     {
         $attributes = (new ReflectionClass($class))->getAttributes();
         $filters = [];

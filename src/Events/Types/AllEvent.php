@@ -13,7 +13,7 @@ abstract class AllEvent extends abstractEvent
 {
     public EventType $type = EventType::all;
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
         return true;
     }

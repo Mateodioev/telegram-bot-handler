@@ -3,8 +3,8 @@
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
+use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Containers\Container;
 use Mateodioev\TgHandler\Events\abstractEvent;
 
@@ -39,15 +39,10 @@ abstract class Command extends abstractEvent implements CommandInterface
         return Container::make(static::class);
     }
 
-    public function isValid(Api $bot, Context $context): bool
-    {
-        return true; // default for command events
-    }
-
     /**
      * Run command
      */
-    abstract public function execute(Api $bot, Context $context, array $args = []);
+    abstract public function execute(array $args = []);
 
     /**
      * Crete regex for use in match method
@@ -58,5 +53,5 @@ abstract class Command extends abstractEvent implements CommandInterface
      * Validate command
      * @return bool Return true if is valid command
      */
-    abstract public function match(string $text): bool;
+    abstract protected function match(string $text): bool;
 }

@@ -4,8 +4,7 @@ namespace Mateodioev\TgHandler\Conversations;
 
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\{Bot, Context, RunState};
+use Mateodioev\TgHandler\{Bot, RunState};
 
 abstract class ConversationHandler extends abstractEvent implements Conversation
 {
@@ -32,19 +31,21 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
             ->setType($type);
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
-        $text = $context->getMessageText() ?? '';
+
+        $text = $this->ctx()->getMessageText() ?? '';
         $isValid = 1 === 1
-            && $this->chatId === $context->getChatId() // validate user and chat id
-            && $this->userId === $context->getUserId()
-            && $this->type() === $context->eventType() // validate event type
+            && $this->type() === $this->ctx()->eventType() // validate event type
+            && $this->chatId === $this->ctx()->getChatId() // validate chat id
+            && $this->userId === $this->ctx()->getUserId() // validate user id
             && $this->getPattern()->isValid($text, true); // Validate pattern
 
-        if ($isValid)
-            $this->params = $this->getPattern()->match($text); // Get params from command
+        if (!$isValid)
+            return false;
 
-        return $isValid;
+        $this->params = $this->getPattern()->match($text); // Get params from command
+        return true;
     }
 
     public function param(string $key, mixed $default = null): mixed
@@ -56,8 +57,6 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     {
         return $this->format;
     }
-
-    abstract public function execute(Api $bot, Context $context, array $args = []);
 
     /**
      * Set event type
@@ -76,4 +75,6 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
         $this->pattern = new Matcher($this->format());
         return $this->pattern;
     }
+
+    abstract public function execute(array $args = []);
 }

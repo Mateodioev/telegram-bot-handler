@@ -5,7 +5,6 @@ namespace Mateodioev\TgHandler\Events;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
-use Mateodioev\TgHandler\Filters\Filter;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -17,6 +16,11 @@ interface EventInterface
      * Get event type
      */
     public function type(): EventType;
+
+    /**
+     * Set api and context vars
+     */
+    public function setVars(Api $bot, Context $ctx): static;
 
     /**
      * Get description
@@ -70,15 +74,9 @@ interface EventInterface
     public function hasFilters(): bool;
 
     /**
-     * Get filter
-     * @return Filter[]
-     */
-    public function filters(): array;
-
-    /**
      * Validates all filters, return `false` if any of them fail
      */
-    public function validateFilters(Context $ctx): bool;
+    public function validateFilters(): bool;
 
     /**
      * Add single middleware
@@ -93,7 +91,7 @@ interface EventInterface
     /**
      * Return true if the event is valid
      */
-    public function isValid(Api $bot, Context $context): bool;
+    public function isValid(): bool;
 
     /**
      * Run event
@@ -101,5 +99,15 @@ interface EventInterface
      * @param Context $context Update context
      * @param array $args Middlewares results
      */
-    public function execute(Api $bot, Context $context, array $args = []);
+    public function execute(array $args = []);
+
+    /**
+     * Get Telegram bot api instance
+     */
+    public function api(): Api;
+
+    /**
+     * Get Context
+     */
+    public function ctx(): Context;
 }

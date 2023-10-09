@@ -20,6 +20,7 @@ final class FilterCollection implements Filter
 	 */
 	public function apply(Context $ctx): bool
 	{
+		// array_reduce($this->filters, fn (Filter $filter) => $filter->apply($ctx));
 		foreach ($this->filters as $filter) {
 			if ($filter->apply($ctx) === false)
 				return false;

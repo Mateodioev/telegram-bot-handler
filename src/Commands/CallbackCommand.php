@@ -37,21 +37,22 @@ abstract class CallbackCommand extends Command
     /**
      * @inheritDoc
      */
-    public function match(string $text): bool
+    protected function match(string $text): bool
     {
         return $this->buildRegex()->isValid($text, true);
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
         return 1 === 1 // SQL format
-            && !empty($context->getMessageText())
-            && $this->match($context->getMessageText());
+            && parent::isValid()
+            && !empty($this->ctx()->getMessageText())
+            && $this->match($this->ctx()->getMessageText());
     }
 
-    public function execute(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $this->handle($bot, $context, $args);
+        $this->handle($this->api(), $this->ctx(), $args);
     }
 
     /**
@@ -59,6 +60,8 @@ abstract class CallbackCommand extends Command
      * @param Api $bot Telegram bot api
      * @param Context $context Telegram context / update
      * @param array $args Middleware results
+     * 
+     * @deprecated v5.0.1 Use execute instadead
      */
     abstract public function handle(Api $bot, Context $context, array $args = []);
 }

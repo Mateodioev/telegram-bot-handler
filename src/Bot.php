@@ -193,7 +193,9 @@ class Bot
     {
         $api = $this->getApi();
         try {
-            if ($event->isValid($api, $ctx) === false || $event->validateFilters($ctx) === false) {
+            $event->setVars($api, $ctx);
+
+            if ($event->isValid() === false || $event->validateFilters() === false) {
                 // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',
@@ -206,8 +208,6 @@ class Bot
             }
 
             $return = $event->setLogger($this->getLogger())->execute(
-                $api,
-                $ctx,
                 $this->handleMiddlewares($event, $ctx)
             );
 

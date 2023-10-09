@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Tests\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
@@ -24,10 +24,9 @@ class EventStorageTest extends TestCase
      */
     public static function getExampleEvent(): EventInterface
     {
-        return ClosureMessageCommand::fromClosure(
-            function (Api $bot, Context $ctx, array $args = []) {
-            },
-            'test'
+        return ClosureMessageCommand::new(
+            name: 'test',
+            fn: function (Api $bot, Context $ctx, array $args = []) {},
         );
     }
 
