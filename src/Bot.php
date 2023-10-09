@@ -164,7 +164,7 @@ class Bot
 
     public function onCommand(string $name, Closure $fn): ClosureMessageCommand
     {
-        $command = ClosureMessageCommand::fromClosure($fn, $name);
+        $command = ClosureMessageCommand::fromClosure(name: $name, fn: $fn);
         $this->onEvent($command);
         return $command;
     }
@@ -265,18 +265,13 @@ class Bot
     /**
      * Run bot in webhook mode
      *
-     * @param string $resource Resource to get update
+     * @param array $up Update array
      * @param bool $async Run in async mode using AMPHP
      */
-    public function byWebhook($resource = 'php://input', bool $async = false): void
+    public function byWebhook(array $up, bool $async = false): void
     {
         self::$state = RunState::webhook;
 
-        $up = json_decode(
-            file_get_contents($resource),
-            true
-        );
-        /** @var Update $update */
         $update = new Update($up);
 
         $this->getApi()->setAsync($async);

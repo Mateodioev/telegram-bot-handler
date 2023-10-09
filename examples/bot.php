@@ -23,7 +23,7 @@ $bot->onEvent(new Message)
 try {
     $bot->longPolling(
         timeout: 60,
-        ignoreOldUpdates: false,
+        ignoreOldUpdates: true,
         async: $config->async()
     );
 } catch (Exception $e) {

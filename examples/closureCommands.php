@@ -20,8 +20,7 @@ $startCommand = function (Api $bot, Context $ctx, array $args = []) {
 $bot->onCommand('start', $startCommand)->setPrefixes(['/', '.', '!']);
 
 $bot->onCommand('notes', function (Api $bot, Context $ctx, array $args = []) {
-    $bot->replyTo($ctx->getChatId(), 'Find your notes heres', $ctx->getMessageId());
-    # ... implementes your logic
+    $bot->replyTo($ctx->getChatId(), 'Find your notes here', $ctx->getMessageId());
 })->setPrefixes(['#']);
 
 // set timeout to 20s and run in async mode

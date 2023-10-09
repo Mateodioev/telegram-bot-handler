@@ -38,9 +38,8 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     
-    public function handle(Api $bot, Context $context){
-         // TODO: Implement handle() method.
-         $bot->sendMessage($context->getChatId(), 'Hello!!!');
+    public function execute(array $args = []){
+         $this->api()->sendMessage($this->ctx()->getChatId(), 'Hello!!!');
     }
 }
 
@@ -82,9 +81,9 @@ class MyCommand extends MessageCommand
         'authUser'
     ];
     
-    public function handle(Api $bot, Context $context, array $args = []){
+    public function execute(array $args = []){
         // $args[0] is the result of the middleware authUser
-        // Your logic here
+        // Your logic here ...
     }
 }
 
@@ -142,7 +141,7 @@ class TestChat extends MessageEvent {
 }
 ```
 
-Or can use this sintax
+Or can use this syntax
 ```php
 use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
@@ -150,7 +149,7 @@ use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMes
 #[FilterMessageChat(TestChat::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
 class TestChat extends MessageEvent {
     const CHAT_ID = 'Put your chat id here';
-    public function execute(Api $bot, Context $context, array $args = []) {
+    public function execute(array $args = []) {
         // your logic here
     }
 }
@@ -171,11 +170,11 @@ class MyConversation extends MessageConversation
 {
     // This is optional, only for validate the user input message
     protected string $format = 'My name is {w:name}';
-    public function execute(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $bot->sendMessage(
-            $context->getChatId(),
-            'Nice to meet you ' . $this->param('name')
+        $this->api()->sendMessage(
+            $this->ctx()->getChatId(),
+            'Nice to meet you ' . $this->param('name') // Get param defined in $format, if not defined return null
         );
     }
 }
@@ -192,16 +191,16 @@ class Name extends MessageCommand
 {
     protected string $name = 'name';
 
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $bot->replyTo(
-            $context->getChatId(),
+        $this->api()->replyTo(
+            $this->ctx()->getChatId(),
             'Please give me your name:',
-            $context->getMessageId(),
+            $this->ctx()->getMessageId(),
         );
 
         // Register next conversation handler
-        return nameConversation::new($context->getChatId(), $context->getUserId());
+        return nameConversation::new($this->ctx()->getChatId(), $this->ctx()->getUserId());
     }
 }
 ```
@@ -214,7 +213,7 @@ $bot->onEvent(Name::get());
 
 > For more details see [examples](examples/) folder
 
-### Loging
+### Logging
 
 #### Basic usage
 
@@ -230,10 +229,12 @@ $bot->setLogger($log); // Save logger
 ```php
 use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
 
-BulkStream::add(new TerminalStream); // print logs in terminal
-BulkStream::add((new PhpNativeStream)->activate(__DIR__)); // save logs in .log file and catch php warnings
+$bulkStream = new BulkStream(
+    new TerminalStream(), // Print logs in terminal
+    (new PhpNativeStream)->activate(__DIR__) // save logs in .log file and catch php warnings
+);
 
-$bot->setLogger(new Logger(new BulkStream));
+$bot->setLogger(new Logger($bulkStream));
 ```
 
 #### Set log level
@@ -277,11 +278,11 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     
-    public function handle(Api $bot, Context $context)
+    public function execute(array $args = [])
     {
-         $this->logger()->debug('Loging inside event');
+         $this->logger()->debug('Logging inside event');
          $this->logger()->info('User {name} use the command {commandName}', [
-            'name'        => $context->getUserName() ?? 'null',
+            'name'        => $this->ctx()->getUserName() ?? 'null',
             'commandName' => $this->name
          ]);
     }
@@ -311,8 +312,8 @@ $bot->setExceptionHandler(UserBanned::class, function (UserBanned $e, Bot $bot, 
     $bot->getApi()->sendMessage($ctx->getChatId(), 'You are banned');
 });
 
-// This manage all UserException sub classes
+// This manage all UserException subclasses
 $bot->setExceptionHandler(UserException::class, function (UserException $e, Bot $bot, Context $ctx) {
-    $bot->getLogger()->warning('Ocurrs an user exception in chat id: ' . $ctx->getChatId());
+    $bot->getLogger()->warning('Occurs an user exception in chat id: ' . $ctx->getChatId());
 });
 ```

@@ -10,10 +10,10 @@ use Mateodioev\TgHandler\Context;
  */
 class All extends AllEvent
 {
-    public function execute(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $type = $context->eventType()->prettyName();
-        $raw = $context->toString(JSON_PRETTY_PRINT) . PHP_EOL;
+        $type = $this->ctx()->eventType()->prettyName();
+        $raw = $this->ctx()->toString(JSON_PRETTY_PRINT) . PHP_EOL;
 
         // $this->getLogger()->info('Receive new {type} event', ['type' => $type]);
         // $this->getLogger()->info('Update: {raw}', ['raw' => $raw]);

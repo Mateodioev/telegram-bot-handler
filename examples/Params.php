@@ -16,13 +16,13 @@ class Params extends MessageCommand
      */
     public function handle(Api $bot, Context $context, array $args = [])
     {
-        $bot->replyTo(
-            $context->getChatId(),
+        $this->api()->replyTo(
+            $this->ctx()->getChatId(),
             \sprintf(
                 'User: %s | Name: %s | Age: %d',
                 $this->param('user'), $this->param('name'), $this->param('age')
             ),
-            $context->getMessageId()
+            $this->ctx()->getMessageId()
         );
     }
 }

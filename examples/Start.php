@@ -18,19 +18,19 @@ class Start extends MessageCommand
      */
     public function handle(Api $bot, Context $context, array $args = [])
     {
-        $bot->replyTo($context->getChatId(), 'Hello world!', $context->getMessageId(), params: [
+        $this->api()->replyTo($this->ctx()->getChatId(), 'Hello world!', $this->ctx()->getMessageId(), params: [
             'reply_markup' => (string) $this->getButton()  // get json button
         ]);
 
         // log telegram context using psr/log
-        $this->logger()->info('Received new text: {text}', ['text' => $context->message()->text()]);
+        $this->logger()->info('Received new text: {text}', ['text' => $this->ctx()->message()->text()]);
 
         // Get payload from command
         $this->logger()->info('Payload: "{payload}"', ['payload' => $this->param('payload', 'Not payload')]);
 
-        $message = $bot->sendMessage($context->getChatId(), 'Please wait 5 seconds...');
+        $message = $this->api()->sendMessage($this->ctx()->getChatId(), 'Please wait 5 seconds...');
         $this->sleep(5); // wait 5 seconds
-        $result = $bot->editMessageText($message->chat()->id(), '5 seconds passed!', ['message_id' => $message->messageId()]);
+        $result = $this->api()->editMessageText($message->chat()->id(), '5 seconds passed!', ['message_id' => $message->messageId()]);
 
         $this->logger()->info('Result: {res}', ['res' => json_encode($result->getReduced())]);
 

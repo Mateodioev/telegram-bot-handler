@@ -17,14 +17,14 @@ class ButtonCallback extends CallbackCommand
         $this->logger()->info('Button 1 pressed');
         // log telegram context
         $this->logger()->info('Update: {up}', [
-            'up' => \json_encode($context->getReduced(), JSON_PRETTY_PRINT)
+            'up' => \json_encode($this->ctx()->getReduced(), JSON_PRETTY_PRINT)
         ]);
 
-        $payload = $context->getPayload();
+        $payload = $this->ctx()->getPayload();
         // send answerCallbackQuery method
         // if payload is empty, StopCommand will be thrown and this method will not be called
         $bot->answerCallbackQuery(
-            $context?->callbackQuery()->id(),
+            $this->ctx()->callbackQuery()?->id(),
             [
                 'text'       => "Button 1 pressed\nPayload: " . $payload,
                 'show_alert' => true,
