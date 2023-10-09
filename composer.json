@@ -7,7 +7,7 @@
         "psr/log": "^3.0",
         "smoren/string-formatter": "^1.0",
         "mateodioev/string-vars": "^1.2",
-        "mateodioev/tgbot": "^4.1"
+        "mateodioev/tgbot": "^v4.2"
     },
     "license": "MIT",
     "autoload": {
@@ -15,7 +15,6 @@
             "Mateodioev\\TgHandler\\": "src/"
         }
     },
-    "minimum-stability": "beta",
     "require-dev": {
         "phpunit/phpunit": "^10"
     },

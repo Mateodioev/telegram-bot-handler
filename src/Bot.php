@@ -153,15 +153,6 @@ class Bot
         return $this;
     }
 
-    /**
-     * @deprecated use onEvent
-     * @throws Exception is `$type` is invalid Event type
-     */
-    public function on(string $type, EventInterface $command): Bot
-    {
-        return $this->onEvent($command);
-    }
-
     public function onCommand(string $name, Closure $fn): ClosureMessageCommand
     {
         $command = ClosureMessageCommand::fromClosure(name: $name, fn: $fn);
@@ -193,7 +184,8 @@ class Bot
     {
         $api = $this->getApi();
         try {
-            $event->setVars($api, $ctx);
+            $event->setVars($api, $ctx)
+                ->setDb($this->getDb());
 
             if ($event->isValid() === false || $event->validateFilters() === false) {
                 // Invalid event

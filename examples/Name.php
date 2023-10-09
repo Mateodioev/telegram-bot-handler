@@ -17,7 +17,7 @@ class Name extends MessageCommand
         );
 
         // Register next conversation handler
-        return nameConversation::fromContext($context);
+        return nameConversation::fromContext($this->ctx());
     }
 
     /**
