@@ -6,7 +6,7 @@ use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
- * This filter validate the user id of the message
+ * Validate if the message is from the user id specified
  */
 #[Attribute]
 final class FilterFromUserId implements Filter

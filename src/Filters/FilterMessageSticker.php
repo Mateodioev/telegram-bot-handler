@@ -5,18 +5,14 @@ namespace Mateodioev\TgHandler\Filters;
 use Attribute;
 use Mateodioev\TgHandler\Context;
 
+/**
+ * Validate if the message is a sticker
+ */
 #[Attribute]
-class FilterMessageSticker implements Filter
+class FilterMessageSticker extends FilterMessageMedia
 {
-    private Filter $filter;
-
     public function __construct()
     {
-        $this->filter = new FilterMessageMedia(MediaType::sticker);
-    }
-
-    public function apply(Context $ctx): bool
-    {
-        return $this->filter->apply($ctx);
+        parent::__construct(MessageType::sticker);
     }
 }

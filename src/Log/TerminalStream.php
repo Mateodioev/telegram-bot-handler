@@ -2,12 +2,19 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use Mateodioev\TgHandler\BotException;
 use function fwrite;
 
+/**
+ * Print logs in terminal
+ */
 final class TerminalStream implements Stream
 {
-    private $stdout;
+    private ResourceStream $stdout;
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     public function __construct($stdout = STDOUT)
     {
         if (!$stdout)
@@ -19,5 +26,10 @@ final class TerminalStream implements Stream
     public function push(string $message, ?string $level = null): void
     {
         $this->stdout->push($message, $level);
+    }
+
+    public function __destruct()
+    {
+        $this->stdout->close();
     }
 }

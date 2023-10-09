@@ -5,6 +5,10 @@ namespace Mateodioev\TgHandler\Filters;
 use Attribute;
 use Mateodioev\TgHandler\Context;
 
+/**
+ * Collection of filters
+ * @internal
+ */
 #[Attribute]
 final class FilterCollection implements Filter
 {

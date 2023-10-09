@@ -2,16 +2,24 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use Amp\ByteStream\{ClosedException, StreamException};
+use Amp\File\{FilesystemException, File};
 use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 
 use function date, realpath;
 
+/**
+ * Write logs to a file
+ */
 class FileStream implements Stream
 {
     const OPEN_MODE = 'a';
 
-    protected $file;
+    protected File $file;
 
+    /**
+     * @throws FilesystemException
+     */
     public function __construct(string $fileName)
     {
         $this->file = \Amp\File\openFile($fileName, self::OPEN_MODE);
@@ -21,18 +29,29 @@ class FileStream implements Stream
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
     }
 
+    /**
+     * Create a new file stream with today's date
+     * @throws FilesystemException
+     */
     public static function fromToday(string $dir): FileStream
     {
         $fileName = date('Y-m-d') . '-php_error.log';
         return new static(realpath($dir) . '/' . $fileName);
     }
 
+    /**
+     * @throws ClosedException
+     * @throws StreamException
+     */
     public function push(string $message, ?string $level = null): void
     {
         $this->file->write($message);
-        // fwrite($this->file, $message);
     }
 
+    /**
+     * @throws StreamException
+     * @throws ClosedException
+     */
     public function __destruct()
     {
         $this->file->end();

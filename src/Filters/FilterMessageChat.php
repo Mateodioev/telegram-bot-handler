@@ -6,7 +6,7 @@ use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
- * This filter validate the chat id of the message
+ * Validate if the message is from the chat id specified
  */
 #[Attribute]
 final class FilterMessageChat implements Filter

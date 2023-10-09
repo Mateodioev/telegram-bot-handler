@@ -7,13 +7,13 @@ use Mateodioev\TgHandler\Context;
 use function preg_match;
 
 /**
- * This filter validate the regex in the messages
+ * Validate if the message text match with the pattern
  */
 #[Attribute]
 final class FilterMessageRegex implements Filter
 {
 	public function __construct(
-		private readonly string $regex
+		private readonly string $pattern
 	) {
 	}
 
@@ -21,6 +21,6 @@ final class FilterMessageRegex implements Filter
 	{
 		$text = $ctx->getMessageText() ?? '';
 
-		return preg_match($this->regex, $text) === 1;
+		return preg_match($this->pattern, $text) === 1;
 	}
 }

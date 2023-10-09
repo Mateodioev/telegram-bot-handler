@@ -6,13 +6,13 @@ use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
- * This filter validates that the chat is private
+ * Validate if the chat type is private
  */
 #[Attribute]
-final class FilterPrivateChat implements Filter
+final class FilterPrivateChat extends FilterChatType
 {
-	public function apply(Context $ctx): bool
-	{
-		return $ctx->getChatType() === 'private';
-	}
+    public function __construct()
+    {
+        parent::__construct('private');
+    }
 }
