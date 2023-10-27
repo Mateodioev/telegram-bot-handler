@@ -17,7 +17,7 @@ class Container
         if (isset(self::$builders[$class])) { // if already exists
             return self::$builders[$class];
         }
-        
+
         $builder = Builder::default($class, $fn);
 
         self::$builders[$class] = $builder;
@@ -65,23 +65,25 @@ class Container
 
     /**
      * Get class object
-     * 
+     *
      * @param class-string $class
      */
     public static function make(string $class): object
     {
-        if (isset(self::$instances[$class]))
+        if (isset(self::$instances[$class])) {
             return self::$instances[$class];
+        }
 
         if (isset(self::$builders[$class]) === false) {
-            return new $class;
+            return new $class();
         }
 
         $builder  = self::$builders[$class] ?? null;
         $instance = $builder->build();
 
-        if ($builder->singleton)
+        if ($builder->singleton) {
             self::$instances[$class] = $instance;
+        }
 
         return $instance;
     }

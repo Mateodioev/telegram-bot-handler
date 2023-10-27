@@ -4,7 +4,7 @@ use Mateodioev\TgHandler\Conversations\MessageConversation;
 
 class nameConversation extends MessageConversation
 {
-    const NAME_TOKEN = '%d_nameconversation';
+    public const NAME_TOKEN = '%d_nameconversation';
     protected string $format = 'My name is {w:name}';
     public function execute(array $args = [])
     {
@@ -30,7 +30,7 @@ class nameConversation extends MessageConversation
 
 class ageConversation extends MessageConversation
 {
-    const NAME_TOKEN = '%d_ageconversation';
+    public const NAME_TOKEN = '%d_ageconversation';
     protected string $format = 'My age is {d:age}';
 
     public function execute(array $args = [])
@@ -76,8 +76,9 @@ class confirmConversation extends MessageConversation
         }
 
         $msg = 'Welcome ' . $name;
-        if ($age < 18)
+        if ($age < 18) {
             $msg .= ', you are still a minor';
+        }
 
         $this->api()->sendMessage($this->ctx()->getChatId(), $msg);
         $this->deleteDb($userId); // Clear this conversation data

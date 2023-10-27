@@ -1,7 +1,6 @@
 <?php
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Config\ParseMode;
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Mateodioev\TgHandler\{Bot, Context};
 
@@ -9,7 +8,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
 
-$bot->setLogger(new Logger(new TerminalStream));
+$bot->setLogger(new Logger(new TerminalStream()));
 
 // New closure must receive Api and Context params
 $startCommand = function (Api $bot, Context $ctx, array $args = []) {

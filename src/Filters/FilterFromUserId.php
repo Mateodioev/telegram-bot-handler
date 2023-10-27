@@ -11,13 +11,13 @@ use Mateodioev\TgHandler\Context;
 #[Attribute]
 final class FilterFromUserId implements Filter
 {
-	public function __construct(
-		private readonly int $userId
-	) {
-	}
+    public function __construct(
+        private readonly int $userId
+    ) {
+    }
 
-	public function apply(Context $ctx): bool
-	{
-		return $this->userId === $ctx->getUserId();
-	}
+    public function apply(Context $ctx): bool
+    {
+        return $this->userId === $ctx->getUserId();
+    }
 }

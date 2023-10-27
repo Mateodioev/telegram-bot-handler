@@ -20,7 +20,9 @@ class Params extends MessageCommand
             $this->ctx()->getChatId(),
             \sprintf(
                 'User: %s | Name: %s | Age: %d',
-                $this->param('user'), $this->param('name'), $this->param('age')
+                $this->param('user'),
+                $this->param('name'),
+                $this->param('age')
             ),
             $this->ctx()->getMessageId()
         );

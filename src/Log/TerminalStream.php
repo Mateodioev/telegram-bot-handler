@@ -2,9 +2,6 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use Mateodioev\TgHandler\BotException;
-use function fwrite;
-
 /**
  * Print logs in terminal
  */
@@ -17,8 +14,9 @@ final class TerminalStream implements Stream
      */
     public function __construct($stdout = STDOUT)
     {
-        if (!$stdout)
+        if (!$stdout) {
             $stdout = STDOUT;
+        }
 
         $this->stdout = new ResourceStream($stdout);
     }

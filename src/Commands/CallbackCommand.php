@@ -18,8 +18,9 @@ abstract class CallbackCommand extends Command
      */
     protected function buildRegex(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
         $format = '(%s)(?: .+)?';
         $alias = [$this->getName(), ...$this->getAliases()];
@@ -60,7 +61,7 @@ abstract class CallbackCommand extends Command
      * @param Api $bot Telegram bot api
      * @param Context $context Telegram context / update
      * @param array $args Middleware results
-     * 
+     *
      * @deprecated v5.0.1 Use execute instadead
      */
     abstract public function handle(Api $bot, Context $context, array $args = []);

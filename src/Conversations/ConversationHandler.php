@@ -24,8 +24,9 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
      */
     protected static function create(EventType $type, int $chatId, int $userId): static
     {
-        if (Bot::$state === RunState::webhook)
+        if (Bot::$state === RunState::webhook) {
             throw new ConversationException('Can\'t use Conversation handlers while bot is running in webhook mode');
+        }
 
         return (new static($chatId, $userId))
             ->setType($type);
@@ -41,8 +42,9 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
             && $this->userId === $this->ctx()->getUserId() // validate user id
             && $this->getPattern()->isValid($text, true); // Validate pattern
 
-        if (!$isValid)
+        if (!$isValid) {
             return false;
+        }
 
         $this->params = $this->getPattern()->match($text); // Get params from command
         return true;
@@ -69,8 +71,9 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
 
     private function getPattern(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
         $this->pattern = new Matcher($this->format());
         return $this->pattern;

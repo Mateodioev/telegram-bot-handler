@@ -8,8 +8,8 @@ use Psr\Log\LoggerInterface;
 
 class BotConfig
 {
-    const DEFAULT_DB = Memory::class;
-    const DEFAULT_STREAM_LOGGER = PhpNativeStream::class;
+    public const DEFAULT_DB = Memory::class;
+    public const DEFAULT_STREAM_LOGGER = PhpNativeStream::class;
 
     protected ?string $botToken = null;
     protected ?DbInterface $db = null;
@@ -25,17 +25,20 @@ class BotConfig
 
     public static function fromEnv(): BotConfig
     {
-        $obj = new static;
+        $obj = new static();
         $obj->setToken(self::env(self::$envToken['botToken']));
 
-        if (($db = self::env(self::$envToken['db'])) !== null)
+        if (($db = self::env(self::$envToken['db'])) !== null) {
             $obj->setDbStr($db);
+        }
 
-        if (($logger = self::env(self::$envToken['logger'])) !== null)
+        if (($logger = self::env(self::$envToken['logger'])) !== null) {
             $obj->setLoggerStr($logger);
+        }
 
-        if (($async = self::env(self::$envToken['async'])) !== null)
+        if (($async = self::env(self::$envToken['async'])) !== null) {
             $obj->setAsync($async);
+        }
 
         return $obj;
     }
@@ -50,8 +53,9 @@ class BotConfig
 
     public function db(): DbInterface
     {
-        if ($this->db instanceof DbInterface)
+        if ($this->db instanceof DbInterface) {
             return $this->db;
+        }
 
         $this->db = $this->createClass(self::DEFAULT_DB);
         return $this->db;
@@ -59,8 +63,9 @@ class BotConfig
 
     public function logger(): LoggerInterface
     {
-        if ($this->logger instanceof LoggerInterface)
+        if ($this->logger instanceof LoggerInterface) {
             return $this->logger;
+        }
 
         $stream = $this->createClass(self::DEFAULT_STREAM_LOGGER);
         $this->logger = new Logger($stream->activate(__DIR__));
@@ -114,14 +119,15 @@ class BotConfig
 
     protected static function evalbool($value): bool
     {
-        if (\is_string($value) && \strtolower($value) === 'false')
+        if (\is_string($value) && \strtolower($value) === 'false') {
             return false;
+        }
 
         return \boolval($value);
     }
 
     private function createClass(string $class): object
     {
-        return new $class;
+        return new $class();
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Mateodioev\TgHandler\Events\Types;
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
 
 /**

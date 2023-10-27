@@ -9,13 +9,13 @@ use Mateodioev\TgHandler\Events\EventInterface;
  */
 interface CommandInterface extends EventInterface
 {
-	/**
-	 * The name of the telegram command
-	 */
-	public function getName(): string;
+    /**
+     * The name of the telegram command
+     */
+    public function getName(): string;
 
-	/**
-	 * Command aliases
-	 */
-	public function getAliases(): array;
+    /**
+     * Command aliases
+     */
+    public function getAliases(): array;
 }

@@ -2,15 +2,12 @@
 
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Containers\Container;
 use Mateodioev\TgHandler\Events\abstractEvent;
 
 abstract class Command extends abstractEvent implements CommandInterface
 {
-
     protected string $name = '';
     protected array $alias = [];
 

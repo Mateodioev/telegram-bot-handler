@@ -3,7 +3,6 @@
 namespace Tests;
 
 use Mateodioev\TgHandler\Log\{Logger, ResourceStream};
-use Mateodioev\TgHandler\Log\BulkStream;
 use PHPUnit\Framework\TestCase;
 
 use function fopen;
@@ -31,9 +30,9 @@ class LoggerTest extends TestCase
 
     protected function logger(): Logger
     {
-        return new Logger(new BulkStream(
-            new ResourceStream(self::streamResource()),
-        ));
+        return new Logger(
+            new ResourceStream(self::streamResource())
+        );
     }
 
     public function testLogMessage()

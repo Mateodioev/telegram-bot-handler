@@ -15,10 +15,10 @@ require __DIR__ . '/TestFilters.php';
 
 // Log php error and print in terminal
 $streamCollection = new BulkStream(
-    new TerminalStream,
-    (new PhpNativeStream)->activate(__DIR__)
+    new TerminalStream(),
+    (new PhpNativeStream())->activate(__DIR__)
 );
-$logger = new Logger($streamCollection);
+$logger = new Logger(new TerminalStream());
 
 // Config from env vars
 $config = BotConfig::fromEnv()

@@ -12,9 +12,9 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
     $bot->getLogger()->error($e::class . ': ' . $e->getMessage());
 });
 
-$bot->onEvent(new Message)
-    ->onEvent(new TestFilters)
-    ->onEvent(new All)
+$bot->onEvent(new Message())
+    ->onEvent(new TestFilters())
+    ->onEvent(new All())
     ->onEvent(Start::get())
     ->onEvent(ButtonCallback::get())
     ->onEvent(Params::get())

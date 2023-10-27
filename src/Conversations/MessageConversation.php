@@ -14,7 +14,7 @@ abstract class MessageConversation extends ConversationHandler
 
     /**
      * Create a new instance from context
-     * 
+     *
      * @see MessageConversation::new()
      */
     public static function fromContext(Context $ctx): static

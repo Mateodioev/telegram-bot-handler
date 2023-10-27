@@ -21,8 +21,9 @@ class StopCommand extends BotException
      */
     public static function handler(StopCommand $e, Bot $bot, Context $ctx): void
     {
-        if (empty($e->getMessage()))
+        if (empty($e->getMessage())) {
             return;
+        }
 
         if (is_callable(self::$handler)) {
             call_user_func(self::$handler, $e, $bot, $ctx);

@@ -1,7 +1,5 @@
 <?php
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\{FilterMessageChat, FilterMessageRegex};
 
@@ -11,7 +9,7 @@ use Mateodioev\TgHandler\Filters\{FilterMessageChat, FilterMessageRegex};
 #[FilterMessageChat(TestFilters::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
 class TestFilters extends MessageEvent
 {
-    const CHAT_ID = 996202950;
+    public const CHAT_ID = 996202950;
 
     public function execute(array $args = [])
     {

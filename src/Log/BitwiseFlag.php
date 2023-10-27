@@ -7,19 +7,19 @@ namespace Mateodioev\TgHandler\Log;
  */
 trait BitwiseFlag
 {
-  	protected int $flags = 0;
+    protected int $flags = 0;
 
-	protected function isFlagSet($flag): bool
+    protected function isFlagSet($flag): bool
     {
-		return (($this->flags & $flag) == $flag);
-	}
+        return (($this->flags & $flag) == $flag);
+    }
 
-	protected function setFlag(int $flag, bool $value): void
+    protected function setFlag(int $flag, bool $value): void
     {
-		if ($value) {
-			$this->flags |= $flag;
-		} else {
-			$this->flags &= ~$flag;
-		}
-	}
+        if ($value) {
+            $this->flags |= $flag;
+        } else {
+            $this->flags &= ~$flag;
+        }
+    }
 }

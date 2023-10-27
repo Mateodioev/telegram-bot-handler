@@ -4,6 +4,7 @@ namespace Mateodioev\TgHandler\Filters;
 
 use Attribute;
 use Mateodioev\TgHandler\Context;
+
 use function preg_match;
 
 /**
@@ -12,15 +13,15 @@ use function preg_match;
 #[Attribute]
 final class FilterMessageRegex implements Filter
 {
-	public function __construct(
-		private readonly string $pattern
-	) {
-	}
+    public function __construct(
+        private readonly string $pattern
+    ) {
+    }
 
-	public function apply(Context $ctx): bool
-	{
-		$text = $ctx->getMessageText() ?? '';
+    public function apply(Context $ctx): bool
+    {
+        $text = $ctx->getMessageText() ?? '';
 
-		return preg_match($this->pattern, $text) === 1;
-	}
+        return preg_match($this->pattern, $text) === 1;
+    }
 }

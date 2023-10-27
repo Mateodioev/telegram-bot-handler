@@ -2,7 +2,7 @@
 
 namespace Mateodioev\TgHandler\Filters;
 
-enum MessageType
+enum MediaType
 {
     case animation;
     case audio;

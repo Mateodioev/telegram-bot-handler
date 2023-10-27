@@ -12,10 +12,10 @@ use Mateodioev\TgHandler\Context;
 #[Attribute]
 class FilterMessageMedia implements Filter
 {
-    private readonly MessageType $mediaType;
+    private readonly MediaType $mediaType;
 
     public function __construct(
-        MessageType $mediaType
+        MediaType $mediaType
     ) {
         $this->mediaType = $mediaType;
     }

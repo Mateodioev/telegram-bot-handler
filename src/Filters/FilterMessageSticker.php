@@ -3,7 +3,6 @@
 namespace Mateodioev\TgHandler\Filters;
 
 use Attribute;
-use Mateodioev\TgHandler\Context;
 
 /**
  * Validate if the message is a sticker
@@ -13,6 +12,6 @@ class FilterMessageSticker extends FilterMessageMedia
 {
     public function __construct()
     {
-        parent::__construct(MessageType::sticker);
+        parent::__construct(MediaType::sticker);
     }
 }

@@ -9,7 +9,6 @@ use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
 use Mateodioev\TgHandler\Commands\Command;
 use Mateodioev\TgHandler\Commands\MessageCommand;
 use Mateodioev\TgHandler\Context;
-use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Conversations\MessageConversation;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +16,7 @@ class EventsTest extends TestCase
 {
     public function testCreateAbstractEvent()
     {
-        $ev = new class extends abstractEvent {
+        $ev = new class () extends abstractEvent {
             public function execute(array $args = [])
             {
             }
@@ -28,8 +27,7 @@ class EventsTest extends TestCase
 
     public function testCreateCommand()
     {
-        $cmd = new class extends Command {
-
+        $cmd = new class () extends Command {
             public function execute(array $args = [])
             {
             }
@@ -50,7 +48,7 @@ class EventsTest extends TestCase
 
     public function testCreateMessageCommand()
     {
-        $msgCommand = new class extends MessageCommand {
+        $msgCommand = new class () extends MessageCommand {
             protected string $name = 'example'; // /example
             public function handle(Api $bot, Context $context, array $args = [])
             {
@@ -67,7 +65,7 @@ class EventsTest extends TestCase
 
     public function testCreateConversation()
     {
-        $conversation = new class(1,1) extends MessageConversation {
+        $conversation = new class (1, 1) extends MessageConversation {
             public function __construct(int $chatId, int $userId)
             {
                 parent::__construct($chatId, $userId);

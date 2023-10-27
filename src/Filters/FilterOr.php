@@ -10,14 +10,14 @@ use Mateodioev\TgHandler\Context;
 #[\Attribute]
 final class FilterOr implements Filter
 {
-	function __construct(
-		private readonly Filter $a,
-		private readonly Filter $b
-	) {
-	}
+    public function __construct(
+        private readonly Filter $a,
+        private readonly Filter $b
+    ) {
+    }
 
-	public function apply(Context $ctx): bool
-	{
-		return $this->a->apply($ctx) || $this->b->apply($ctx);
-	}
+    public function apply(Context $ctx): bool
+    {
+        return $this->a->apply($ctx) || $this->b->apply($ctx);
+    }
 }

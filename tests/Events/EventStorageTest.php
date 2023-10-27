@@ -14,7 +14,7 @@ class EventStorageTest extends TestCase
     public static function eventStorage(): EventStorage
     {
         static $eventStorage;
-        $eventStorage ??= new EventStorage;
+        $eventStorage ??= new EventStorage();
 
         return $eventStorage;
     }

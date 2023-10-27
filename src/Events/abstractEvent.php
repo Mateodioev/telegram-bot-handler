@@ -59,7 +59,7 @@ abstract class abstractEvent implements EventInterface
 
     /**
      * Async sleep
-     * 
+     *
      * @param float $seconds Number of seconds to sleep
      * @see \Amp\delay()
      */
@@ -131,8 +131,9 @@ abstract class abstractEvent implements EventInterface
     public function hasFilters(): bool
     {
         // Filter already mapped
-        if ($this->filters !== null)
+        if ($this->filters !== null) {
             return empty($this->filters) === false;
+        }
 
         $this->filters();
         return empty($this->filters) === false;
@@ -196,8 +197,9 @@ abstract class abstractEvent implements EventInterface
         $filters = [];
 
         foreach ($attributes as $attribute) {
-            if (is_subclass_of($attribute->getName(), Filter::class) === false)
+            if (is_subclass_of($attribute->getName(), Filter::class) === false) {
                 continue;
+            }
 
             $filters[] = $attribute->newInstance();
         }

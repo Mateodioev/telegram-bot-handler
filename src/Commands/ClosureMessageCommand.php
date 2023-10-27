@@ -13,7 +13,6 @@ use function call_user_func;
  */
 class ClosureMessageCommand extends MessageCommand
 {
-
     private function __construct(
         private readonly Closure $command
     ) {
@@ -40,7 +39,7 @@ class ClosureMessageCommand extends MessageCommand
     {
         call_user_func($this->command, $this->api(), $this->ctx(), $args);
     }
-    
+
     /**
      * @deprecated v5.0.1 Use execute instadead
      */
