@@ -4,9 +4,8 @@ namespace Tests\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\EventInterface;
-use Mateodioev\TgHandler\EventStorage;
+use Mateodioev\TgHandler\{Context, EventStorage};
 use PHPUnit\Framework\TestCase;
 
 class EventStorageTest extends TestCase

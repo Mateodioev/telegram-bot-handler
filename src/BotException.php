@@ -2,6 +2,8 @@
 
 namespace Mateodioev\TgHandler;
 
-class BotException extends \Exception
+use Exception;
+
+class BotException extends Exception
 {
 }

@@ -6,6 +6,10 @@ use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Psr\Log\LoggerInterface;
 
+use function is_string;
+use function strtolower;
+use function boolval;
+
 class BotConfig
 {
     public const DEFAULT_DB = Memory::class;
@@ -119,11 +123,11 @@ class BotConfig
 
     protected static function evalbool($value): bool
     {
-        if (\is_string($value) && \strtolower($value) === 'false') {
+        if (is_string($value) && strtolower($value) === 'false') {
             return false;
         }
 
-        return \boolval($value);
+        return boolval($value);
     }
 
     private function createClass(string $class): object

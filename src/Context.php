@@ -11,7 +11,10 @@ use Mateodioev\Bots\Telegram\Types\{
 use Mateodioev\TgHandler\Events\EventType;
 use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
 
-use function explode, substr, strlen, trim;
+use function explode;
+use function substr;
+use function strlen;
+use function trim;
 
 /**
  * Telegram context
@@ -131,8 +134,9 @@ class Context extends Update
      */
     public function eventType(): EventType
     {
-        if ($this->type instanceof EventType)
+        if ($this->type instanceof EventType) {
             return $this->type;
+        }
 
         $eventTypes = $this->properties();
         unset($eventTypes['update_id']);
@@ -150,18 +154,19 @@ class Context extends Update
 
     /**
      * Resolve a value
-     * 
+     *
      * @template T
-     * 
+     *
      * @param string $key
      * @param \Closure(...): T $callback
-     * 
+     *
      * @return T
      */
     private function resolve(string $key, Closure $callback)
     {
-        if (isset($this->cache[$key]))
+        if (isset($this->cache[$key])) {
             return $this->cache[$key];
+        }
 
         $this->cache[$key] = $callback();
         return $this->cache[$key];

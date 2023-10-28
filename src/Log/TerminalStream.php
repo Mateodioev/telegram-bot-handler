@@ -2,6 +2,8 @@
 
 namespace Mateodioev\TgHandler\Log;
 
+use InvalidArgumentException;
+
 /**
  * Print logs in terminal
  */
@@ -10,7 +12,7 @@ final class TerminalStream implements Stream
     private ResourceStream $stdout;
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct($stdout = STDOUT)
     {

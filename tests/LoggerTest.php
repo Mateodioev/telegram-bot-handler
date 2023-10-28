@@ -6,6 +6,7 @@ use Mateodioev\TgHandler\Log\{Logger, ResourceStream};
 use PHPUnit\Framework\TestCase;
 
 use function fopen;
+use function str_contains;
 
 class LoggerTest extends TestCase
 {
@@ -47,7 +48,7 @@ class LoggerTest extends TestCase
             // var_dump($output);
 
             $this->assertNotEmpty($output, $level);
-            $this->assertTrue(\str_contains($output, $message), $level);
+            $this->assertTrue(str_contains($output, $message), $level);
         }
     }
 

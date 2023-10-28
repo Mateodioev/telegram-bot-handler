@@ -6,7 +6,9 @@ use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
 
-use function array_map, array_filter, call_user_func;
+use function array_map;
+use function array_filter;
+use function call_user_func;
 
 trait middlewares
 {
@@ -16,13 +18,14 @@ trait middlewares
      */
     protected function handleMiddlewares(EventInterface $event, Context $context): array
     {
-        if (!$event->hasMiddlewares()) // Check if command has middlewares
+        if (!$event->hasMiddlewares()) { // Check if command has middlewares
             return [];
+        }
 
         $middlewares = $event->middlewares();
 
-        $params = array_map(fn($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
-        return array_filter($params, fn($param) => $param !== null);
+        $params = array_map(fn ($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
+        return array_filter($params, fn ($param) => $param !== null);
     }
 
     /**

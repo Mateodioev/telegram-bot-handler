@@ -3,11 +3,12 @@
 namespace Mateodioev\TgHandler\Filters;
 
 use Mateodioev\TgHandler\Context;
+use Attribute;
 
 /**
  * Return true is `$a` or `$b` return true after call method {@see Filter::apply}
  */
-#[\Attribute]
+#[Attribute]
 final class FilterOr implements Filter
 {
     public function __construct(

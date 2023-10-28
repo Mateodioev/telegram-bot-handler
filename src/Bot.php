@@ -2,7 +2,7 @@
 
 namespace Mateodioev\TgHandler;
 
-use Closure, Exception, Throwable;
+use Closure, Throwable;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\{Update, Error};
 use Mateodioev\TgHandler\Conversations\Conversation;
@@ -15,7 +15,9 @@ use Psr\Log\LoggerInterface;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use function array_merge, call_user_func;
+use function array_merge;
+use function call_user_func;
+use function is_a;
 
 class Bot
 {
@@ -38,7 +40,7 @@ class Bot
     public function __construct(string $token)
     {
         $this->api = new Api($token);
-        $this->eventStorage = new EventStorage;
+        $this->eventStorage = new EventStorage();
 
         $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
     }
@@ -73,7 +75,7 @@ class Bot
     public function setDefaultLogger(): Bot
     {
         // $stream = new PhpNativeStream;
-        return $this->setLogger(new Logger(new TerminalStream));
+        return $this->setLogger(new Logger(new TerminalStream()));
     }
 
     /**
@@ -96,10 +98,11 @@ class Bot
 
     protected function getDb(): DbInterface
     {
-        if ($this->db instanceof DbInterface)
+        if ($this->db instanceof DbInterface) {
             return $this->db;
+        }
 
-        $this->db = new Memory; // Default database
+        $this->db = new Memory(); // Default database
         return $this->db;
     }
 
@@ -119,12 +122,14 @@ class Bot
         $exceptionName = $exception::class;
         $handler = $this->exceptionHandlers[$exceptionName] ?? null;
 
-        if ($handler !== null)
+        if ($handler !== null) {
             return $handler;
+        }
 
         foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
-            if (\is_a($exception, $name)) // Check is same class or subclass
+            if (is_a($exception, $name)) { // Check is same class or subclass
                 return $exceptionHandler;
+            }
         }
 
         return null;
@@ -137,8 +142,9 @@ class Bot
     {
         $handler = $this->findExceptionHandler($e);
 
-        if ($handler === null)
+        if ($handler === null) {
             return false;
+        }
 
         call_user_func($handler, $e, $api, $ctx);
         return true;
@@ -212,8 +218,9 @@ class Bot
                 $this->onEvent($return);
             }
         } catch (Throwable $e) {
-            if ($this->handleException($e, $this, $ctx))
+            if ($this->handleException($e, $this, $ctx)) {
                 return;
+            }
 
             $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
                 'name'      => $event::class,
@@ -295,8 +302,9 @@ class Bot
             try {
                 /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
-                if ($updates instanceof Error)
+                if ($updates instanceof Error) {
                     throw new TelegramApiException('(' . ($updates->error_code ?? 0) . ') ' . ($updates->description ?? ''));
+                }
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');

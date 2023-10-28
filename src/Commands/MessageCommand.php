@@ -7,7 +7,9 @@ use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\EventType;
 
-use function sprintf, str_replace, join;
+use function sprintf;
+use function str_replace;
+use function join;
 
 abstract class MessageCommand extends Command
 {
@@ -84,8 +86,9 @@ abstract class MessageCommand extends Command
      */
     protected function buildRegex(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
         // prefix names parameters
         $format = '(?:%s)(?:%s)%s';
@@ -96,7 +99,7 @@ abstract class MessageCommand extends Command
             str_replace('#', '\#', join('|', $this->getPrefix())),
             // for commands like #start
             join('|', $alias),
-                // if params was not set, optional payload are allowed
+            // if params was not set, optional payload are allowed
             ($this->params() === self::DEFAULT_PARAMS
                 ? '( ' . self::DEFAULT_PARAMS . ')?'
                 : ' ' . $this->params())
@@ -112,8 +115,9 @@ abstract class MessageCommand extends Command
     protected function match(string $text): bool
     {
         $isValid = $this->buildRegex()->isValid($text, true);
-        if ($isValid)
+        if ($isValid) {
             $this->commandParams = $this->pattern->match($text);
+        }
 
         return $isValid;
     }
@@ -136,7 +140,7 @@ abstract class MessageCommand extends Command
      * @param Api $bot Telegram bot api
      * @param Context $context Telegram context / Update
      * @param array $args Middlewares results
-     * 
+     *
      * @deprecated v5.0.1 Use execute instead
      */
     abstract public function handle(Api $bot, Context $context, array $args = []);

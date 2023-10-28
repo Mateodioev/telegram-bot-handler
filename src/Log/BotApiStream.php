@@ -4,7 +4,8 @@ namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Api;
 
-use function str_replace, preg_replace;
+use function str_replace;
+use function preg_replace;
 
 /**
  * Push messages to telegram channel/chat
@@ -28,8 +29,9 @@ class BotApiStream implements Stream
 
     public function push(string $message, ?string $level = null): void
     {
-        if ($this->isFlagSet(Logger::levelToInt($level ?? '')) === false)
+        if ($this->isFlagSet(Logger::levelToInt($level ?? '')) === false) {
             return;
+        }
 
         $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
 

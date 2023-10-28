@@ -8,6 +8,8 @@ use Mateodioev\TgHandler\Events\{
 };
 
 use function spl_object_id;
+use function count;
+use function array_keys;
 
 /**
  * Class to store events.
@@ -44,10 +46,10 @@ final class EventStorage
     public function total(?EventType $eventType = null): int
     {
         if ($eventType === null) {
-            return \count($this->eventsPointers);
+            return count($this->eventsPointers);
         }
 
-        return \count($this->events[$eventType->name()] ?? []);
+        return count($this->events[$eventType->name()] ?? []);
     }
 
     /**
@@ -161,7 +163,7 @@ final class EventStorage
      */
     public function types(): array
     {
-        $types = \array_keys($this->events);
+        $types = array_keys($this->events);
         unset($types['all']);
 
         return $types;

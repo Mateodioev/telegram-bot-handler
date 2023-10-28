@@ -4,6 +4,7 @@ namespace Tests\Db;
 
 use Mateodioev\TgHandler\Db\Memory;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 class MemoryTest extends TestCase
 {
@@ -16,7 +17,7 @@ class MemoryTest extends TestCase
             ['key2', 100],
             ['key3', 100.111],
             ['key4', false],
-            ['key5', new \stdClass()],
+            ['key5', new stdClass()],
         ];
     }
 

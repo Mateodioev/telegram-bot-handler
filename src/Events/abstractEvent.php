@@ -9,6 +9,9 @@ use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
+use ReflectionException;
+
+use function strtolower;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -104,7 +107,7 @@ abstract class abstractEvent implements EventInterface
             return $this->privateDb;
         }
 
-        $currentClassName = \strtolower((new ReflectionClass($this))->getShortName()) . '.';
+        $currentClassName = strtolower((new ReflectionClass($this))->getShortName()) . '.';
         $this->privateDb  = new PrefixDb($this->db(), $currentClassName);
 
         return $this->privateDb;
@@ -126,7 +129,7 @@ abstract class abstractEvent implements EventInterface
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function hasFilters(): bool
     {
@@ -142,7 +145,7 @@ abstract class abstractEvent implements EventInterface
     /**
      * Get event filters
      * @return Filter[]
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function filters(): array
     {
@@ -151,7 +154,7 @@ abstract class abstractEvent implements EventInterface
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function validateFilters(): bool
     {
@@ -189,7 +192,7 @@ abstract class abstractEvent implements EventInterface
     /**
      * Map Filters of any subclass of EventInterface
      * @return Filter[]
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private static function mapFilters(string|object $class): array
     {

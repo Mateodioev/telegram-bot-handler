@@ -6,14 +6,15 @@ use Amp\ByteStream\{ClosedException, StreamException};
 use Amp\File\{FilesystemException, File};
 use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 
-use function date, realpath;
+use function date;
+use function realpath;
 
 /**
  * Write logs to a file
  */
 class FileStream implements Stream
 {
-    const OPEN_MODE = 'a';
+    public const OPEN_MODE = 'a';
 
     protected File $file;
 
@@ -25,8 +26,9 @@ class FileStream implements Stream
         $this->file = \Amp\File\openFile($fileName, self::OPEN_MODE);
         // $this->file = fopen($fileName, 'a');
 
-        if (!$this->file->isWritable())
+        if (!$this->file->isWritable()) {
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
+        }
     }
 
     /**

@@ -6,21 +6,22 @@ use DateTime, Stringable;
 use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 
-use function preg_replace, strtoupper;
+use function preg_replace;
+use function strtoupper;
 
 class Logger extends AbstractLogger implements LoggerInterface
 {
     use BitwiseFlag;
 
-    const ALL = 255;
-    const CRITICAL = 128;
-    const ERROR = 64;
-    const EMERGENCY = 32;
-    const ALERT = 16;
-    const WARNING = 8;
-    const NOTICE = 4;
-    const INFO = 2;
-    const DEBUG = 1;
+    public const ALL = 255;
+    public const CRITICAL = 128;
+    public const ERROR = 64;
+    public const EMERGENCY = 32;
+    public const ALERT = 16;
+    public const WARNING = 8;
+    public const NOTICE = 4;
+    public const INFO = 2;
+    public const DEBUG = 1;
 
     public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
 
@@ -43,8 +44,9 @@ class Logger extends AbstractLogger implements LoggerInterface
      */
     public function log($level, Stringable|string $message, array $context = []): void
     {
-        if (!$this->canAccess(self::levelToInt($level)))
+        if (!$this->canAccess(self::levelToInt($level))) {
             return;
+        }
 
         $date = (new DateTime())->format('Y-m-d H:i:s');
 
@@ -68,8 +70,9 @@ class Logger extends AbstractLogger implements LoggerInterface
     protected function makeLogMessage(string $message, array $context = []): string
     {
         // if context is empty, delete brackets
-        if (empty($context))
+        if (empty($context)) {
             return $this->deleteBrackets($message);
+        }
 
         return StringFormatter::format($message, $context);
     }

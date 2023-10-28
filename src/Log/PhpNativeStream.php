@@ -7,7 +7,17 @@ use Amp\File\FilesystemException;
 use Mateodioev\Utils\Exceptions\FileException;
 use Mateodioev\Utils\Files;
 
-use function is_dir, date, error_reporting, ini_set, set_error_handler, fclose, fopen, restore_error_handler, sprintf;
+use DateTime;
+
+use function is_dir;
+use function date;
+use function error_reporting;
+use function ini_set;
+use function set_error_handler;
+use function fclose;
+use function fopen;
+use function restore_error_handler;
+use function sprintf;
 
 /**
  * Log php errors into a file setting an error_handler
@@ -18,8 +28,9 @@ final class PhpNativeStream implements Stream
 
     public function activate(string $dir, ?string $file = null): PhpNativeStream
     {
-        if (is_dir($dir) && $file !== null)
+        if (is_dir($dir) && $file !== null) {
             throw new FileException('Invalid dir');
+        }
 
         if ($file !== null) {
             if (!Files::isFile($file)) {
@@ -59,10 +70,11 @@ final class PhpNativeStream implements Stream
 
     public function errorHandler(int $errno, string $errorStr, string $errorFile, int $errorLine): bool
     {
-        if (!(error_reporting() & $errno))
+        if (!(error_reporting() & $errno)) {
             return false;
+        }
 
-        $date = (new \DateTime())->format('Y-m-d H:i:s');
+        $date = (new DateTime())->format('Y-m-d H:i:s');
         $format = "[%s] [%s] %s in %s(%d)" . PHP_EOL;
 
         switch ($errno) {
@@ -108,4 +120,3 @@ final class PhpNativeStream implements Stream
         $this->deactivate();
     }
 }
-
