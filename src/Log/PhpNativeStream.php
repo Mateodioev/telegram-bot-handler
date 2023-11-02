@@ -26,6 +26,9 @@ final class PhpNativeStream implements Stream
 {
     public string $fileLog;
 
+    /**
+     * @throws FileException
+     */
     public function activate(string $dir, ?string $file = null): PhpNativeStream
     {
         if (is_dir($dir) && $file !== null) {
@@ -39,7 +42,7 @@ final class PhpNativeStream implements Stream
                 $this->setFile($file);
             }
         } else {
-            $this->setFile($dir . '/' . date('Y-m-d') . '-php_error.log');
+            $this->setFile($dir . $this->getFileName());
         }
 
         error_reporting(E_ALL);
@@ -50,6 +53,11 @@ final class PhpNativeStream implements Stream
         set_error_handler($this->errorHandler(...));
 
         return $this;
+    }
+
+    private function getFileName(): string
+    {
+        return '/' . date('Y-m-d') . '-php_error.log';
     }
 
     public function setFile(string $path): PhpNativeStream
