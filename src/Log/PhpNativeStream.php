@@ -22,7 +22,7 @@ use function sprintf;
 /**
  * Log php errors into a file setting an error_handler
  */
-final class PhpNativeStream implements Stream
+class PhpNativeStream implements Stream
 {
     public string $fileLog;
 

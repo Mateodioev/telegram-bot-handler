@@ -6,7 +6,7 @@ use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
- * Collection of filters
+ * Collection of filters (FilterAnd)
  * @internal
  */
 #[Attribute]
