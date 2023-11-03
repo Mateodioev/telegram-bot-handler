@@ -18,10 +18,11 @@ $streamCollection = new BulkStream(
     new TerminalStream(),
     (new PhpNativeStream())->activate(__DIR__)
 );
-$logger = new Logger(new TerminalStream());
+$logger = new Logger($streamCollection);
 
 // Config from env vars
 $config = BotConfig::fromEnv()
     ->setLogger($logger->setLevel(Logger::ALL))
-    ->setAsync(true);
+    ->setAsync(true)
 // ->setToken($myToken) // Set your token
+;

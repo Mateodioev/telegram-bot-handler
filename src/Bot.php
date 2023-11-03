@@ -12,6 +12,7 @@ use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Psr\Log\LoggerInterface;
+use Revolt\EventLoop;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
@@ -37,8 +38,12 @@ class Bot
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
 
-    public function __construct(string $token)
+    public function __construct(string $token, ?LoggerInterface $logger = null)
     {
+        if ($logger !== null) {
+            $this->setLogger($logger);
+        }
+
         $this->api = new Api($token);
         $this->eventStorage = new EventStorage();
 
@@ -50,11 +55,12 @@ class Bot
      */
     public static function fromConfig(BotConfig $config): Bot
     {
-        $bot = (new static($config->token()))
-            ->setDb($config->db())
-            ->setLogger($config->logger());
+        $bot = (new static($config->token(), $config->logger()))
+            ->setDb($config->db());
 
         $bot->getApi()->setAsync($config->async());
+
+        $bot->getLogger()->debug('Bot created from config {config}', ['config' => $config::class]);
         return $bot;
     }
 
@@ -65,6 +71,7 @@ class Bot
 
     public function setLogger(LoggerInterface $logger): Bot
     {
+        $logger->debug('Set logger {name}', ['name' => $logger::class]);
         $this->logger = $logger;
         return $this;
     }
@@ -86,12 +93,15 @@ class Bot
         try {
             return $this->logger;
         } catch (Throwable) {
-            return $this->setDefaultLogger()->logger;
+            $logger = $this->setDefaultLogger()->logger;
+            $logger->debug('Set default logger {logger} with {stream}', ['logger' => $logger::class, 'stream' => TerminalStream::class]);
+            return $logger;
         }
     }
 
     public function setDb(DbInterface $db): Bot
     {
+        $this->getLogger()->debug('Set db {name}', ['name' => $db::class]);
         $this->db = $db;
         return $this;
     }
@@ -102,8 +112,8 @@ class Bot
             return $this->db;
         }
 
-        $this->db = new Memory(); // Default database
-        return $this->db;
+        // Default db
+        return $this->setDb(new Memory())->db;
     }
 
     /**
@@ -113,6 +123,7 @@ class Bot
      */
     public function setExceptionHandler(string $exceptionName, Closure $handler): Bot
     {
+        $this->getLogger()->debug('Register exception handler for {exceptionName}', ['exceptionName' => $exceptionName]);
         $this->exceptionHandlers[$exceptionName] = $handler;
         return $this;
     }
@@ -147,6 +158,7 @@ class Bot
         }
 
         call_user_func($handler, $e, $api, $ctx);
+        $this->getLogger()->debug('Exception "{e}" handled by {handler}', ['e' => $e::class, 'handler' => $handler]);
         return true;
     }
 
@@ -155,6 +167,10 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
+        $this->getLogger()->debug('Register event {name} ({type})', [
+            'type' => $event->type()->prettyName(),
+            'name' => $event::class
+        ]);
         $this->eventStorage->add($event);
         return $this;
     }
@@ -252,6 +268,7 @@ class Bot
         $ctx = Context::fromUpdate($update);
 
         awaitAll(
+            // Create Futures of all commands
             array_map(function (EventInterface $event) use ($ctx) {
                 // create async function for each command
                 return async(function (EventInterface $event, Context $ctx) {
@@ -259,6 +276,7 @@ class Bot
                 }, $event, $ctx);
             }, $this->resolveEvents($ctx))
         );
+        // Wait all futures
     }
 
     /**
@@ -318,7 +336,8 @@ class Bot
             if ($async) {
                 array_map(function (Update $update) use (&$offset) {
                     $offset = $update->updateId() + 1;
-                    async(fn (Update $up) => $this->runAsync($up), $update);
+                    // $future = async(fn (Update $up) => $this->runAsync($up), $update);
+                    EventLoop::queue(fn (Update $up) => $this->runAsync($up), $update);
                 }, $updates);
 
                 \Amp\delay(1);
