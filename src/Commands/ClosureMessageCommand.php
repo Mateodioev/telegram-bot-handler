@@ -2,9 +2,9 @@
 
 namespace Mateodioev\TgHandler\Commands;
 
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
-use Closure;
 
 use function call_user_func;
 

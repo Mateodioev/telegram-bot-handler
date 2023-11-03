@@ -2,7 +2,7 @@
 
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\TgHandler\{Bot, Context, BotException};
+use Mateodioev\TgHandler\{Bot, BotException, Context};
 
 /**
  * Throw this exception to stop command execution

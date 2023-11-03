@@ -2,9 +2,9 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use DateTime, Stringable;
-use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
+use DateTime;use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LogLevel, LoggerInterface};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
+use Stringable;
 
 use function preg_replace;
 use function strtoupper;

@@ -4,10 +4,10 @@ namespace Mateodioev\TgHandler\Log;
 
 use InvalidArgumentException;
 
+use function fclose;
+use function ftruncate;
 use function fwrite;
 use function rewind;
-use function ftruncate;
-use function fclose;
 
 /**
  * Send logs to a resource

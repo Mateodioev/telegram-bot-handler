@@ -7,9 +7,9 @@ use Mateodioev\TgHandler\Events\{
     EventType
 };
 
-use function spl_object_id;
-use function count;
 use function array_keys;
+use function count;
+use function spl_object_id;
 
 /**
  * Class to store events.

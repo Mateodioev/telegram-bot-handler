@@ -3,7 +3,7 @@
 namespace Mateodioev\TgHandler\Log;
 
 use Amp\ByteStream\{ClosedException, StreamException};
-use Amp\File\{FilesystemException, File};
+use Amp\File\{File, FilesystemException};
 use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 
 use function date;

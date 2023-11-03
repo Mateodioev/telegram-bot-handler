@@ -2,17 +2,17 @@
 
 namespace Mateodioev\TgHandler;
 
-use Closure, Throwable;
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Types\{Update, Error};
-use Mateodioev\TgHandler\Conversations\Conversation;
-use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
-use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
-use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
-use Mateodioev\TgHandler\Db\{DbInterface, Memory};
+use Closure, Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
+use Mateodioev\Bots\Telegram\Types\{Error, Update};
+use Mateodioev\TgHandler\Commands\{ClosureMessageCommand, StopCommand};
+use Mateodioev\TgHandler\Conversations\Conversation;
+use Mateodioev\TgHandler\Db\{DbInterface, Memory};
+use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
+use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
+use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;

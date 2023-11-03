@@ -1,7 +1,7 @@
 <?php
 
 use Mateodioev\TgHandler\BotConfig;
-use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
+use Mateodioev\TgHandler\Log\{BulkStream, Logger, PhpNativeStream, TerminalStream};
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/All.php';

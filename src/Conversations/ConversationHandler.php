@@ -3,7 +3,7 @@
 namespace Mateodioev\TgHandler\Conversations;
 
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
+use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
 use Mateodioev\TgHandler\{Bot, RunState};
 
 abstract class ConversationHandler extends abstractEvent implements Conversation

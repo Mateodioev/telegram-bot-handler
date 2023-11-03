@@ -144,8 +144,8 @@ abstract class abstractEvent implements EventInterface
 
     /**
      * Get event filters
-     * @return Filter[]
      * @throws ReflectionException
+     * @return Filter[]
      */
     private function filters(): array
     {
@@ -191,8 +191,8 @@ abstract class abstractEvent implements EventInterface
 
     /**
      * Map Filters of any subclass of EventInterface
-     * @return Filter[]
      * @throws ReflectionException
+     * @return Filter[]
      */
     private static function mapFilters(string|object $class): array
     {

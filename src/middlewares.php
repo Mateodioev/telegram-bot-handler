@@ -6,8 +6,8 @@ use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
 
-use function array_map;
 use function array_filter;
+use function array_map;
 use function call_user_func;
 
 trait middlewares

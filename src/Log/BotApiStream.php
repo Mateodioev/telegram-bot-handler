@@ -4,8 +4,8 @@ namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Api;
 
-use function str_replace;
 use function preg_replace;
+use function str_replace;
 
 /**
  * Push messages to telegram channel/chat

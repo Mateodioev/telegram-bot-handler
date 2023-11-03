@@ -22,5 +22,15 @@ return $config->setFinder($finder)
             'import_classes'   => true,
             'import_functions' => true,
         ],
+        'phpdoc_order' => [
+            'order' => ['param', 'throws', 'return']
+        ],
+        'ordered_imports' => [
+            'imports_order'  => ['class', 'function', 'const'],
+            'sort_algorithm' => 'alpha',
+        ],
+        'ordered_class_elements' => [
+            'order' => ['use_trait']
+        ],
     ])
 ;

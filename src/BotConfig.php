@@ -6,9 +6,9 @@ use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Log\{Logger, PhpNativeStream};
 use Psr\Log\LoggerInterface;
 
+use function boolval;
 use function is_string;
 use function strtolower;
-use function boolval;
 
 class BotConfig
 {

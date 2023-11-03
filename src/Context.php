@@ -3,17 +3,17 @@
 namespace Mateodioev\TgHandler;
 
 use Closure;
+use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
 use Mateodioev\Bots\Telegram\Types\{
     Document,
     Update,
     User
 };
 use Mateodioev\TgHandler\Events\EventType;
-use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
 
 use function explode;
-use function substr;
 use function strlen;
+use function substr;
 use function trim;
 
 /**

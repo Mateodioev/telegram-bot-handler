@@ -4,19 +4,19 @@ namespace Mateodioev\TgHandler\Log;
 
 use Amp\File;
 use Amp\File\FilesystemException;
+use DateTime;
 use Mateodioev\Utils\Exceptions\FileException;
+
 use Mateodioev\Utils\Files;
 
-use DateTime;
-
-use function is_dir;
 use function date;
 use function error_reporting;
-use function ini_set;
-use function set_error_handler;
 use function fclose;
 use function fopen;
+use function ini_set;
+use function is_dir;
 use function restore_error_handler;
+use function set_error_handler;
 use function sprintf;
 
 /**

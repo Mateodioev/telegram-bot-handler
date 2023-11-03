@@ -2,12 +2,12 @@
 
 namespace Tests\Events;
 
-use Mateodioev\TgHandler\Events\{abstractEvent, EventInterface};
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Commands\{ClosureMessageCommand, Command, MessageCommand};
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Conversations\MessageConversation;
+use Mateodioev\TgHandler\Events\{EventInterface, abstractEvent};
 use PHPUnit\Framework\TestCase;
 
 class EventsTest extends TestCase

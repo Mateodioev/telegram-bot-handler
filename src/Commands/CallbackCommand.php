@@ -3,8 +3,8 @@
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
+use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\EventType;
 
 abstract class CallbackCommand extends Command
