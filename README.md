@@ -1,5 +1,7 @@
 # Telegram bot handler
 
+[![CodeFactor](https://www.codefactor.io/repository/github/mateodioev/telegram-bot-handler/badge)](https://www.codefactor.io/repository/github/mateodioev/telegram-bot-handler)
+
 ## Installation
 
 ```bash
