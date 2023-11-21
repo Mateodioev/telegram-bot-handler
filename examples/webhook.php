@@ -45,6 +45,7 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
 $bot->onEvent(new Message())
     ->onEvent(new TestFilters())
     ->onEvent(new All())
+    ->onEvent(new StickerListener())
     ->onEvent(Start::get())
     ->onEvent(ButtonCallback::get())
     ->onEvent(Params::get())
@@ -54,8 +55,7 @@ $bot->onEvent(new Message())
 // SERVER
 //
 
-$requestHandler =  new class($bot, $logger) implements RequestHandler
-{
+$requestHandler =  new class ($bot, $logger) implements RequestHandler {
     public function __construct(private Bot $bot, private Logger $logger)
     {
     }
@@ -72,7 +72,7 @@ $requestHandler =  new class($bot, $logger) implements RequestHandler
             );
         }
 
-        $this->logger->debug('Webhook received: ', ['payload' => $a]);
+        $this->logger->debug('Webhook received: {payload}', ['payload' => $a]);
 
         try {
             $this->bot->byWebhook(json_decode($a, true), async: true, disableStateCheck: true);

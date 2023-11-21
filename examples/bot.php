@@ -15,6 +15,7 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
 $bot->onEvent(new Message())
     ->onEvent(new TestFilters())
     ->onEvent(new All())
+    ->onEvent(new StickerListener())
     ->onEvent(Start::get())
     ->onEvent(ButtonCallback::get())
     ->onEvent(Params::get())

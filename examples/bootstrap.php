@@ -5,6 +5,7 @@ use Mateodioev\TgHandler\Log\{BulkStream, Logger, PhpNativeStream, TerminalStrea
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/All.php';
+require __DIR__ . '/StickerListener.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/Params.php';
 require __DIR__ . '/ButtonCallback.php';
@@ -24,5 +25,5 @@ $logger = new Logger($streamCollection);
 $config = BotConfig::fromEnv()
     ->setLogger($logger->setLevel(Logger::ALL))
     ->setAsync(true)
-// ->setToken($myToken) // Set your token
+    // ->setToken($myToken) // Set your token
 ;
