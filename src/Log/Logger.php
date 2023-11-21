@@ -2,7 +2,8 @@
 
 namespace Mateodioev\TgHandler\Log;
 
-use DateTime;use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LogLevel, LoggerInterface};
+use DateTime;
+use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LogLevel, LoggerInterface};
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 use Stringable;
 
@@ -96,14 +97,14 @@ class Logger extends AbstractLogger implements LoggerInterface
     {
         return match ($level) {
             LogLevel::EMERGENCY => self::EMERGENCY,
-            LogLevel::ALERT => self::ALERT,
-            LogLevel::CRITICAL => self::CRITICAL,
-            LogLevel::ERROR => self::ERROR,
-            LogLevel::WARNING => self::WARNING,
-            LogLevel::NOTICE => self::NOTICE,
-            LogLevel::INFO => self::INFO,
-            LogLevel::DEBUG => self::DEBUG,
-            default => self::ALL
+            LogLevel::ALERT     => self::ALERT,
+            LogLevel::CRITICAL  => self::CRITICAL,
+            LogLevel::ERROR     => self::ERROR,
+            LogLevel::WARNING   => self::WARNING,
+            LogLevel::NOTICE    => self::NOTICE,
+            LogLevel::INFO      => self::INFO,
+            LogLevel::DEBUG     => self::DEBUG,
+            default             => self::ALL
         };
     }
 }

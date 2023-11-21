@@ -38,16 +38,13 @@ class Bot
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
 
-    public function __construct(string $token, ?LoggerInterface $logger = null)
+    public function __construct(string $token, LoggerInterface $logger)
     {
-        if ($logger !== null) {
-            $this->setLogger($logger);
-        }
-
-        $this->api = new Api($token);
-        $this->eventStorage = new EventStorage();
-
+        $this->setLogger($logger);
         $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
+
+        $this->api          = new Api($token);
+        $this->eventStorage = new EventStorage();
     }
 
     /**
@@ -158,7 +155,7 @@ class Bot
         }
 
         call_user_func($handler, $e, $api, $ctx);
-        $this->getLogger()->debug('Exception "{e}" handled by {handler}', ['e' => $e::class, 'handler' => $handler]);
+        $this->getLogger()->debug('Exception "{e}" handled', ['e' => $e::class]);
         return true;
     }
 
@@ -284,15 +281,18 @@ class Bot
      *
      * @param array $up Update array
      * @param bool $async Run in async mode using AMPHP
+     * @param bool $disableStateCheck Ignore status setting to webhook mode (Useful for conversations or use of Db\Memory)
      */
     public function byWebhook(array $up, bool $async = false): void
     {
         self::$state = RunState::webhook;
-
-        $update = new Update($up);
+        $update      = new Update($up);
 
         $this->getApi()->setAsync($async);
-        $async ? $this->runAsync($update) : $this->run($update);
+
+        $async
+            ? $this->runAsync($update)
+            : $this->run($update);
     }
 
     /**
