@@ -283,10 +283,16 @@ class Bot
      * @param bool $async Run in async mode using AMPHP
      * @param bool $disableStateCheck Ignore status setting to webhook mode (Useful for conversations or use of Db\Memory)
      */
-    public function byWebhook(array $up, bool $async = false): void
+    public function byWebhook(array $up, bool $async = false, bool $disableStateCheck = false): void
     {
-        self::$state = RunState::webhook;
-        $update      = new Update($up);
+        if ($disableStateCheck) {
+            $this->getLogger()->notice('Disable state check');
+            $this->getLogger()->debug('Bot current state: {state}', ['state' => self::$state]);
+        } else {
+            self::$state = RunState::webhook;
+        }
+
+        $update = new Update($up);
 
         $this->getApi()->setAsync($async);
 
