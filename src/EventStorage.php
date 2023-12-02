@@ -50,7 +50,7 @@ final class EventStorage
     {
         $events = [];
 
-        foreach ($this->events[$eventType->name()] as $eventId) {
+        foreach (($this->events[$eventType->name()] ?? []) as $eventId) {
             $event = $this->get($eventId);
             if ($event === null) {
                 continue;
