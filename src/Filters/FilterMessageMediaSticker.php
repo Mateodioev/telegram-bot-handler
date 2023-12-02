@@ -8,7 +8,7 @@ use Attribute;
  * Validate if the message is a sticker
  */
 #[Attribute]
-class FilterMessageSticker extends FilterMessageMedia
+class FilterMessageMediaSticker extends FilterMessageMedia
 {
     public function __construct()
     {
