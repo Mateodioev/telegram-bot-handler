@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-composer require mateodioev/tg-handler:"~5.1"
+composer require mateodioev/tg-handler:"~5.3"
 ```
 
 ```php
