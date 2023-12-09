@@ -58,10 +58,10 @@ abstract class Command extends abstractEvent implements CommandInterface
 
     /**
      * Run when command filter is invalid but command is valid
-     * @return bool Return true if command is valid
+     * @return bool true = execute handle method, false = not execute handle method but command is marked as execute, null = not execute nothing
      */
-    public function onInvalidFilters(): bool
+    public function onInvalidFilters(): ?bool
     {
-        return false;
+        return null;
     }
 }

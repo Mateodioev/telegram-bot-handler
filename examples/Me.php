@@ -11,6 +11,8 @@ use Mateodioev\TgHandler\Filters\FilterPrivateChat;
 #[FilterPrivateChat]
 class Me extends MessageCommand
 {
+    private const ADMIN_ID = 996202950;
+
     protected string $name = 'me';
 
     /**
@@ -32,8 +34,12 @@ class Me extends MessageCommand
         );
     }
 
-    public function onInvalidFilters(): bool
+    public function onInvalidFilters(): ?bool
     {
+        if ($this->ctx()->getUserId() === self::ADMIN_ID) {
+            return true; // execute method handle
+        }
+
         $this->api()->replyToMessage(
             $this->ctx()->message(),
             'This command only works in private chat',
@@ -44,6 +50,7 @@ class Me extends MessageCommand
                 ])
             ]
         );
-        return true;
+
+        return false;
     }
 }

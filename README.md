@@ -136,7 +136,7 @@ use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMes
     new FilterMessageRegex('/.*(mt?proto).*/i')
 )]
 class TestChat extends MessageEvent {
-    const CHAT_ID = 'Put your chat id here';
+    const CHAT_ID = 1111111111111;
     public function execute(Api $bot, Context $context, array $args = []) {
         // your logic here
     }
@@ -150,11 +150,60 @@ use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMes
 
 #[FilterMessageChat(TestChat::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
 class TestChat extends MessageEvent {
-    const CHAT_ID = 'Put your chat id here';
+    const CHAT_ID = 1111111111111;
     public function execute(array $args = []) {
         // your logic here
     }
 }
+```
+
+If your filters cannot be validated you must implement the `Mateodioev\TgHandler\Commands\Command::onInvalidFilters` method, this method must return true. This is optional
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Filters\FilterPrivateChat;
+
+#[FilterPrivateChat]
+class Me extends MessageCommand
+{
+    protected string $name = 'me';
+
+    public function handle(Api $bot, Context $context, array $args = [])
+    {
+        // Your logic here
+    }
+
+    public function onInvalidFilters(): bool
+    {
+        $id = $this->ctx()->getUserId();
+
+        if (isAllowed($id)) {
+            return true; // Return true is this user can use the command in public chats
+        } else {
+            $this->api()->sendMessage($this->ctx()->getChatId(), 'Only execute this command in a private chat');
+            return false;
+        }
+    }
+}
+```
+
+### Fallback command
+
+If you want to execute a command when no registered command could be validated, you must register the command with the `Mateodioev\TgHandler\Bot::registerCommand` method, which returns an instance of GenericCommand.
+
+```php
+$bot->registerCommand(Start::get())
+    // ->add(OtherCommand::get()) // use this to register more commands
+    ->setFallbackCommand(new YourFallbackCommand);
+// or can use default fallback
+$bot->registerCommand(Start::get())
+    ->withDefaultFallbackCommand(new YourFallbackCommand);
 ```
 
 ### Conversations

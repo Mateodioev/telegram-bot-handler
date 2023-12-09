@@ -89,8 +89,18 @@ abstract class GenericCommand extends abstractEvent
             return false;
         }
 
+        // Cant validate filter but method onInvalidFilter return true
         if (!$cmd->validateFilters()) {
-            return $cmd->onInvalidFilters();
+            $executed = $cmd->onInvalidFilters();
+            // null = not execute
+            // false = execute, but cant continue
+            // true = execute, and continue
+            if ($executed === null) {
+                return false;
+            }
+            if ($executed === false) {
+                return true;
+            }
         }
 
         $return = $cmd->setLogger($this->logger())->execute(
