@@ -4,10 +4,12 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Containers\Container;
-use Mateodioev\TgHandler\Events\abstractEvent;
+use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
 
 abstract class Command extends abstractEvent implements CommandInterface
 {
+    public EventType $type = EventType::none;
+
     protected string $name = '';
     protected array $alias = [];
 
@@ -51,4 +53,13 @@ abstract class Command extends abstractEvent implements CommandInterface
      * @return bool Return true if is valid command
      */
     abstract protected function match(string $text): bool;
+
+    /**
+     * Run when command filter is invalid but command is valid
+     * @return bool Return true if command is valid
+     */
+    public function onInvalidFilters(): bool
+    {
+        return false;
+    }
 }

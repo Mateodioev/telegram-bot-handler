@@ -88,6 +88,10 @@ final class EventStorage
     {
         $eventId = $this->getEventId($event);
 
+        if ($this->exitsEventId($eventId)) {
+            return $eventId;
+        }
+
         $this->eventsPointers[$eventId]         = $event;
         $this->events[$event->type()->name()][] = $eventId;
 
