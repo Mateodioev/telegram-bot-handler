@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands\Generics;
 
 use Amp\DeferredCancellation;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\Bots\Telegram\Api;
@@ -13,7 +15,7 @@ use function str_replace;
 
 abstract class MessageCommand extends Command
 {
-    private const DEFAULT_PARAMS = '{all:payload}?';
+    public const DEFAULT_PARAMS = '{all:payload}?';
     public EventType $type = EventType::message;
 
     /**
@@ -81,9 +83,6 @@ abstract class MessageCommand extends Command
         return $this->commandParams[$key] ?? $default;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function buildRegex(): Matcher
     {
         if ($this->pattern instanceof Matcher) {
@@ -109,9 +108,6 @@ abstract class MessageCommand extends Command
         return $this->pattern;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function match(string $text): bool
     {
         $isValid = $this->buildRegex()->isValid($text, true);

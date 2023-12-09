@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Api;

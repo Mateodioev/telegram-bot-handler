@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands\Generics;
 
 use Mateodioev\Bots\Telegram\Api;
@@ -8,6 +10,7 @@ use Mateodioev\TgHandler\Context;
 
 /**
  * Command to execute when cant find a valid command
+ * @internal
  */
 final class FallbackMessageCommand implements FallbackCommand
 {
@@ -20,6 +23,11 @@ final class FallbackMessageCommand implements FallbackCommand
 
         foreach ($this->commands() as $name => $cmd) {
             $cmds .= '> ' . $prefix . $name;
+
+            // Add params if is not empty
+            if (($params = $cmd->params()) !== MessageCommand::DEFAULT_PARAMS) {
+                $cmds .= ' <code>' . $params . '</code>';
+            }
 
             // Only add description if is not empty
             if (empty($description = $cmd->description()) === false) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\TgHandler\Conversations\MessageConversation;
 
 class nameConversation extends MessageConversation
@@ -75,7 +77,7 @@ class confirmConversation extends MessageConversation
             return ageConversation::fromContext($this->ctx());
         }
 
-        $msg = 'Welcome ' . $name;
+        $msg = 'Welcome ' . $this->ctx()->getUser()->mention(customName: $name);
         if ($age < 18) {
             $msg .= ', you are still a minor';
         }

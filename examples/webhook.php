@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Amp\ByteStream;
 use Amp\Http\HttpStatus;
 use Amp\Http\Server\{DefaultErrorHandler, Request, RequestHandler, Response, SocketHttpServer};

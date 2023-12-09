@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Buttons\{ButtonFactory, InlineKeyboardMarkupFactory};
 use Mateodioev\Bots\Telegram\Types\InlineKeyboardButton;

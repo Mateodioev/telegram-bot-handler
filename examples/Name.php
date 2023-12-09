@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\MessageCommand;
 use Mateodioev\TgHandler\Context;

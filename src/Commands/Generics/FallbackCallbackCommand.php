@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands\Generics;
 
 use Mateodioev\Bots\Telegram\Api;
@@ -9,6 +11,7 @@ use function explode;
 
 /**
  * Command to execute when cant find a valid command
+ * @internal
  */
 final class FallbackCallbackCommand implements FallbackCommand
 {

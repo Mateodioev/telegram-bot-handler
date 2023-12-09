@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\Bots\Telegram\Types\{InputFile, Sticker};
-use Mateodioev\TgHandler\Events\Types\AllEvent;
+use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\FilterMessageMediaSticker;
 
 #[FilterMessageMediaSticker]
-class StickerListener extends AllEvent
+class StickerListener extends MessageEvent
 {
     public function execute(array $args = [])
     {

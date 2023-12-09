@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
 use Closure, Mateodioev\Bots\Telegram\Api;
@@ -196,16 +198,6 @@ class Bot
         $generic->add($command);
 
         return $generic;
-    }
-
-    /**
-     * @deprecated v5.2.0
-     */
-    public function onCommand(string $name, Closure $fn): ClosureMessageCommand
-    {
-        $command = ClosureMessageCommand::fromClosure(name: $name, fn: $fn);
-        $this->onEvent($command);
-        return $command;
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\TgHandler\Events\Types\AllEvent;
 
 /**

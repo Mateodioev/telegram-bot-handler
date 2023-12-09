@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Events\Types;
 
 use Mateodioev\TgHandler\Events\{EventType, abstractEvent};

@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
+
+use Revolt\EventLoop;
 
 use function array_walk;
 
@@ -32,7 +36,9 @@ class BulkStream implements Stream
     {
         array_walk(
             $this->streams,
-            fn (Stream $stream) => $stream->push($message, $level)
+            function (Stream $stream) use ($message, $level): void {
+                EventLoop::queue(fn () => $stream->push($message, $level));
+            }
         );
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Events;
 
 use Closure;
@@ -33,6 +35,9 @@ abstract class abstractEvent implements EventInterface
         return $this->type;
     }
 
+    /**
+     * @internal
+     */
     public function setVars(Api $bot, Context $ctx): static
     {
         $this->botApi = $bot;
@@ -81,6 +86,9 @@ abstract class abstractEvent implements EventInterface
         return $this->logger();
     }
 
+    /**
+     * @internal
+     */
     public function setLogger(LoggerInterface $logger): static
     {
         $this->logger = $logger;
@@ -92,6 +100,9 @@ abstract class abstractEvent implements EventInterface
         return $this->db;
     }
 
+    /**
+     * @internal
+     */
     public function setDb(DbInterface $db): static
     {
         $this->db = $db;
@@ -154,6 +165,7 @@ abstract class abstractEvent implements EventInterface
     }
 
     /**
+     * @internal
      * @throws ReflectionException
      */
     public function validateFilters(): bool
@@ -180,6 +192,9 @@ abstract class abstractEvent implements EventInterface
         return $this;
     }
 
+    /**
+     * @internal
+     */
     public function isValid(): bool
     {
         return $this->ctx()->eventType() == $this->type();

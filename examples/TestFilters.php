@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\{FilterMessageChat, FilterMessageRegex};
 
@@ -20,7 +22,7 @@ class TestFilters extends MessageEvent
         );
 
         $this->logger()->debug('Result message of test filter: {msg}', [
-            'msg' => $message->toString(JSON_PRETTY_PRINT)
+            'msg' => $message->toString()
         ]);
     }
 }

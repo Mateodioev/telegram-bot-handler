@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\TgHandler\{Bot, BotException, Context};
+
+use function call_user_func;
+use function is_callable;
 
 /**
  * Throw this exception to stop command execution

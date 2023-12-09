@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
