@@ -40,4 +40,16 @@ class filterChatTypeTest extends TestCase
             $ctx
         ));
     }
+
+    #[DataProvider('chatTypesProvider')]
+    public function testApplyWrongChatTypeFilter(string $chatType)
+    {
+        $filter                   = new FilterChatType($chatType);
+        $ctx                      = fakeContextChatType::new();
+        $ctx->message->chat->type = 'invalid chat type';
+
+        $this->assertFalse($filter->apply(
+            $ctx
+        ));
+    }
 }

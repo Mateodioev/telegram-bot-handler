@@ -2,13 +2,13 @@
 
 namespace Tests\Db;
 
-use Mateodioev\TgHandler\Db\Memory;
+use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class MemoryTest extends TestCase
 {
-    protected static Memory $db;
+    protected static DbInterface $db;
 
     public static function providerDb(): array
     {

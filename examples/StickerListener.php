@@ -2,9 +2,9 @@
 
 use Mateodioev\Bots\Telegram\Types\{InputFile, Sticker};
 use Mateodioev\TgHandler\Events\Types\AllEvent;
-use Mateodioev\TgHandler\Filters\FilterMessageSticker;
+use Mateodioev\TgHandler\Filters\FilterMessageMediaSticker;
 
-#[FilterMessageSticker]
+#[FilterMessageMediaSticker]
 class StickerListener extends AllEvent
 {
     public function execute(array $args = [])
