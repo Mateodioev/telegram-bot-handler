@@ -5,13 +5,15 @@ namespace Mateodioev\TgHandler;
 use Closure, Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\{Error, Update};
-use Mateodioev\TgHandler\Commands\{ClosureMessageCommand, StopCommand};
+use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
+use Mateodioev\TgHandler\Commands\{ClosureMessageCommand, Command, StopCommand};
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
+
 use Throwable;
 
 use function Amp\async;
@@ -26,6 +28,9 @@ class Bot
 
     private const EVENTS_CACHE = 'events.cache.json';
 
+    /** @var RunState Bot run mode */
+    public static RunState $state = RunState::none;
+
     private Api $api;
     private LoggerInterface $logger;
     private ?DbInterface $db = null;
@@ -35,8 +40,8 @@ class Bot
     /** @var array<string,Closure> */
     private array $exceptionHandlers = [];
 
-    /** @var RunState Bot run mode */
-    public static RunState $state = RunState::none;
+    /** @var array<string, GenericCommand> */
+    private array $genericCommands = [];
 
     public function __construct(string $token, LoggerInterface $logger)
     {
@@ -45,6 +50,14 @@ class Bot
 
         $this->api          = new Api($token);
         $this->eventStorage = new EventStorage();
+
+        $this->genericCommands = [
+            EventType::message->value()        => new GenericMessageCommand($this),
+            EventType::callback_query->value() => new GenericCallbackCommand($this),
+        ];
+        foreach ($this->genericCommands as $generic) {
+            $this->eventStorage->add($generic);
+        }
     }
 
     /**
@@ -146,7 +159,7 @@ class Bot
     /**
      * @return bool Return true if exception handled
      */
-    protected function handleException(Throwable $e, Bot $api, Context $ctx): bool
+    public function handleException(Throwable $e, Bot $api, Context $ctx): bool
     {
         $handler = $this->findExceptionHandler($e);
 
@@ -164,6 +177,11 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
+        if ($event instanceof Command) {
+            $this->registerCommand($event);
+            return $this;
+        }
+
         $this->getLogger()->debug('Register event {name} ({type})', [
             'type' => $event->type()->prettyName(),
             'name' => $event::class
@@ -172,6 +190,17 @@ class Bot
         return $this;
     }
 
+    public function registerCommand(Command $command): GenericCommand
+    {
+        $generic = $this->genericCommands[$command->type()->value()];
+        $generic->add($command);
+
+        return $generic;
+    }
+
+    /**
+     * @deprecated v5.2.0
+     */
     public function onCommand(string $name, Closure $fn): ClosureMessageCommand
     {
         $command = ClosureMessageCommand::fromClosure(name: $name, fn: $fn);
@@ -191,7 +220,7 @@ class Bot
         );
     }
 
-    protected function deleteEvent(EventInterface $event): void
+    public function deleteEvent(EventInterface $event): void
     {
         $this->eventStorage->delete($event);
     }

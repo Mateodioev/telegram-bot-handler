@@ -165,11 +165,7 @@ abstract class abstractEvent implements EventInterface
 
         $filterCollection = new FilterCollection(...$this->filters());
 
-        if ($filterCollection->apply($this->ctx()) === false) {
-            return false;
-        }
-
-        return true;
+        return $filterCollection->apply($this->ctx());
     }
 
     public function addMiddleware(Closure $middleware): static

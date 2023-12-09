@@ -16,7 +16,7 @@ trait middlewares
      * @throws Exception
      * @return array Returns array of middlewares results, only include results that are not null
      */
-    protected function handleMiddlewares(EventInterface $event, Context $context): array
+    public function handleMiddlewares(EventInterface $event, Context $context): array
     {
         if (!$event->hasMiddlewares()) { // Check if command has middlewares
             return [];

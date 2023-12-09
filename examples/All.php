@@ -12,7 +12,7 @@ class All extends AllEvent
         $type = $this->ctx()->eventType()->prettyName();
         $raw = json_encode($this->ctx()->getReduced(), JSON_PRETTY_PRINT) . PHP_EOL;
 
-        $this->logger()->info('Receive new {type} event', ['type' => $type]);
-        $this->logger()->info('Update: {raw}', ['raw' => $raw]);
+        /* $this->logger()->info('Receive new {type} event', ['type' => $type]);
+        $this->logger()->info('Update: {raw}', ['raw' => $raw]); */
     }
 }

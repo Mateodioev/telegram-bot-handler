@@ -6,7 +6,7 @@ use Mateodioev\TgHandler\{Bot, Context};
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$bot = new Bot($_ENV['BOT_TOKEN']); // put your bot token here
+$bot = new Bot($_ENV['BOT_TOKEN'], new Logger(new TerminalStream())); // put your bot token here
 
 $bot->setLogger(new Logger(new TerminalStream()));
 
