@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mateodioev\TgHandler\BotConfig;
 use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream};
 
@@ -9,6 +11,7 @@ require __DIR__ . '/StickerListener.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/Params.php';
 require __DIR__ . '/Me.php';
+require __DIR__ . '/GetUssage.php';
 require __DIR__ . '/ButtonCallback.php';
 require __DIR__ . '/Message.php';
 require __DIR__ . '/Name.php';
