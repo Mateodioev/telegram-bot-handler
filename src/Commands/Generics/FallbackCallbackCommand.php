@@ -5,6 +5,8 @@ namespace Mateodioev\TgHandler\Commands\Generics;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 
+use function explode;
+
 /**
  * Command to execute when cant find a valid command
  */
@@ -13,7 +15,7 @@ final class FallbackCallbackCommand implements FallbackCommand
     public function handle(Api $bot, Context $context): void
     {
         $command = $context->callbackQuery()->data() ?? '';
-        $command = \explode(' ', $command)[0];
+        $command = explode(' ', $command)[0];
 
         $bot->answerCallbackQuery($context->callbackQuery()->id(), [
             'text' => 'Command "' . $command . '" not found',

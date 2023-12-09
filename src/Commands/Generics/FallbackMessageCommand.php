@@ -19,7 +19,6 @@ final class FallbackMessageCommand implements FallbackCommand
         $cmds   = 'Hi ' . $context->getUser()->mention() . ", this is a the list of commands available:\n\n";
 
         foreach ($this->commands() as $name => $cmd) {
-            var_dump($name);
             $cmds .= '> ' . $prefix . $name;
 
             // Only add description if is not empty

@@ -1,7 +1,7 @@
 <?php
 
-use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\TgHandler\Commands\Generics\FallbackCallbackCommand;
+use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/bootstrap.php';
@@ -28,7 +28,8 @@ $bot->registerCommand(Start::get())
 
 // Register callback command
 $bot->registerCommand(ButtonCallback::get())
-    ->setFallbackCommand(new FallbackCallbackCommand);
+    ->setFallbackCommand(new FallbackCallbackCommand());
+
 try {
     $bot->longPolling(
         timeout: 60,

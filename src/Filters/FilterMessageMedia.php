@@ -19,6 +19,6 @@ class FilterMessageMedia implements Filter
 
     public function apply(Context $ctx): bool
     {
-        return $ctx->message->{$this->mediaType->name} !== abstractType::DEFAULT_PARAM;
+        return $ctx->message?->{$this->mediaType->name} !== abstractType::DEFAULT_PARAM;
     }
 }

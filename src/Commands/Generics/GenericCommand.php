@@ -2,6 +2,7 @@
 
 namespace Mateodioev\TgHandler\Commands\Generics;
 
+use Amp\DeferredCancellation;
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\Command;
@@ -10,6 +11,9 @@ use Mateodioev\TgHandler\Events\{TemporaryEvent, abstractEvent};
 use Mateodioev\TgHandler\{Bot, Context};
 use Revolt\EventLoop;
 use Throwable;
+
+use function Amp\async;
+use function Amp\Future\await;
 
 abstract class GenericCommand extends abstractEvent
 {
@@ -26,29 +30,51 @@ abstract class GenericCommand extends abstractEvent
 
     public function execute($args = [])
     {
-        $this->fallbackCommand?->setCommands($this->commands);
-        $handled = false; // If any command is handled set to true
+        $handled      = false;                     // If any command is handled set to true
+        $cancellation = new DeferredCancellation();
 
+        /** @var \Amp\Future[] $futures */
+        $futures = [];
         foreach ($this->commands as $cmd) {
-            try {
-                $handled = $this->runCommand($cmd);
-            } catch (Throwable $e) {
-                if ($this->bot->handleException($e, $this->bot, $this->ctx())) {
-                    return;
+            // Run command in parallel
+            // If any command is handled, cancel the rest
+            $futures[] = async(function (Command $cmd) use ($handled, $cancellation) {
+                $handled = $this->safeRunCommand($cmd);
+                if ($handled) {
+                    $cancellation->cancel();
                 }
+            }, $cmd);
+        }
 
-                $this->logger()->error('Fail to run command {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                    'name'      => $cmd::class,
-                    'eventType' => $cmd->type()->prettyName(),
-                    'reason'    => $e->getMessage(),
-                    'file'      => $e->getFile(),
-                    'line'      => $e->getLine()
-                ]);
-            }
+        try {
+            await($futures, $cancellation->getCancellation());
+        } catch (Throwable $e) {
+            return;
         }
 
         if ($handled === false) {
+            $this->fallbackCommand?->setCommands($this->commands);
             $this->fallbackCommand?->handle($this->api(), $this->ctx());
+        }
+    }
+
+    private function safeRunCommand(Command $cmd): bool
+    {
+        try {
+            return $this->runCommand($cmd);
+        } catch (Throwable $e) {
+            if ($this->bot->handleException($e, $this->bot, $this->ctx())) {
+                return true;
+            }
+
+            $this->logger()->error('Fail to run command {name} ({eventType}), reason: {reason} on {file}:{line}', [
+                'name'      => $cmd::class,
+                'eventType' => $cmd->type()->prettyName(),
+                'reason'    => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine()
+            ]);
+            return false;
         }
     }
 

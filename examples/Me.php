@@ -28,11 +28,6 @@ class Me extends MessageCommand
                 $user->username() ?? 'none'
             )
         );
-
-        $bot->sendMessage(
-            $context->getChatId(),
-            'Chat: ' . $context->message()->chat
-        );
     }
 
     public function onInvalidFilters(): bool
