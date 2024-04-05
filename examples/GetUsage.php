@@ -8,7 +8,7 @@ use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Filters\FilterPrivateChat;
 
 #[FilterPrivateChat]
-class GetUssage extends MessageCommand
+class GetUsage extends MessageCommand
 {
     protected string $name = 'usage';
     protected string $description = 'Get memory usage';
@@ -32,5 +32,11 @@ class GetUssage extends MessageCommand
                 $bytesToMb($current_memory_usage - $memory_usage)
             ),
         );
+    }
+
+    public function onInvalidFilters(): ?bool
+    {
+        $this->api()->replyToMessage($this->ctx()->message(), 'Use this command in private chat');
+        return false;
     }
 }

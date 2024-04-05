@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Mateodioev\Bots\Telegram\Config\ParseMode;
 use Mateodioev\TgHandler\Conversations\MessageConversation;
 
 class nameConversation extends MessageConversation
@@ -82,7 +83,7 @@ class confirmConversation extends MessageConversation
             $msg .= ', you are still a minor';
         }
 
-        $this->api()->sendMessage($this->ctx()->getChatId(), $msg);
+        $this->api()->sendMessage($this->ctx()->getChatId(), $msg, ['parse_mode' => ParseMode::HTML]);
         $this->deleteDb($userId); // Clear this conversation data
     }
 
