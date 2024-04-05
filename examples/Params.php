@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\MessageCommand;
-use Mateodioev\TgHandler\Context;
 
 class Params extends MessageCommand
 {
@@ -17,7 +15,7 @@ class Params extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
         $this->api()->replyTo(
             $this->ctx()->getChatId(),

@@ -48,7 +48,7 @@ class EventsTest extends TestCase
     {
         $msgCommand = new class () extends MessageCommand {
             protected string $name = 'example'; // /example
-            public function handle(Api $bot, Context $context, array $args = [])
+            public function execute(array $args = [])
             {
             }
         };

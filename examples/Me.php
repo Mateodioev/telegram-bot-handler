@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Buttons\ButtonFactory;
 use Mateodioev\TgHandler\Commands\MessageCommand;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Filters\FilterPrivateChat;
 
 #[FilterPrivateChat]
@@ -19,12 +17,12 @@ class Me extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $user = $context->getUser();
+        $user = $this->ctx()->getUser();
 
-        $bot->replyToMessage(
-            $context->message(),
+        $this->api()->replyToMessage(
+            $this->ctx()->message(),
             \sprintf(
                 'Hello %s, your id is <code>%d</code> and your username is <i>%s</i>',
                 $user->mention(),

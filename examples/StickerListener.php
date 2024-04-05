@@ -20,7 +20,7 @@ class StickerListener extends MessageEvent
         );
     }
 
-    // DONT use  this shit
+    // DON'T use this shit
     private function pickOneSticker(Sticker $sticker): string
     {
         $id = $sticker->file_id;

@@ -183,17 +183,57 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
-        if ($event instanceof Command) {
-            $this->registerCommand($event);
-            return $this;
+        $this->registerEvent($event);
+        return $this;
+    }
+
+    /**
+     * Register new event.
+     * @return int Event id, return -1 if event is a command
+     */
+    private function registerEvent(EventInterface $eventInterface): int
+    {
+        if ($eventInterface instanceof Command) {
+            $this->registerCommand($eventInterface);
+            return -1;
         }
 
         $this->getLogger()->debug('Register event {name} ({type})', [
-            'type' => $event->type()->prettyName(),
-            'name' => $event::class
+            'type' => $eventInterface->type()->prettyName(),
+            'name' => $eventInterface::class
         ]);
-        $this->eventStorage->add($event);
-        return $this;
+
+        return $this->eventStorage->add($eventInterface);
+    }
+
+    /**
+     * Register a conversation with ttl. If ttl is Conversation::UNDEFINED_TTL, the conversation will not be registered.
+     */
+    private function registerConversation(Conversation $conversation): void
+    {
+        $ttl = $conversation->ttl();
+        $conversationId = $this->registerEvent($conversation);
+
+        if ($ttl === Conversation::UNDEFINED_TTL) {
+            return;
+        }
+
+        $this->getLogger()->debug('Conversation {name} with id {id} will be removed after {ttl} seconds', [
+            'name' => $conversation::class,
+            'id'   => $conversationId,
+            'ttl'  => $ttl
+        ]);
+
+        EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
+            $deleted = $this->eventStorage->deleteById($conversationId);
+
+            if ($deleted) {
+                $this->getLogger()->debug(
+                    message: 'Conversation with id {id} removed because exceded the ttl ({ttl})',
+                    context: ['id' => $conversationId, 'ttl' => $conversation->ttl()]
+                );
+            }
+        });
     }
 
     public function registerCommand(Command $command): GenericCommand
@@ -243,7 +283,7 @@ class Bot
                 return;
             }
 
-            $return = $event->setLogger($this->getLogger())->execute(
+            $nextEvent = $event->setLogger($this->getLogger())->execute(
                 $this->handleMiddlewares($event, $ctx)
             );
 
@@ -252,8 +292,8 @@ class Bot
                 $this->deleteEvent($event);
             }
             // Register next conversation
-            if ($return instanceof Conversation) {
-                $this->onEvent($return);
+            if ($nextEvent instanceof Conversation) {
+                $this->registerConversation($nextEvent);
             }
         } catch (Throwable $e) {
             if ($this->handleException($e, $this, $ctx)) {

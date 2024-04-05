@@ -14,7 +14,7 @@ class ButtonCallback extends CallbackCommand
         'echoPayload',
     ];
 
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
         $this->logger()->info('Button 1 pressed');
         // log telegram context
@@ -25,7 +25,7 @@ class ButtonCallback extends CallbackCommand
         $payload = $this->ctx()->getPayload();
         // send answerCallbackQuery method
         // if payload is empty, StopCommand will be thrown and this method will not be called
-        $bot->answerCallbackQuery(
+        $this->api()->answerCallbackQuery(
             $this->ctx()->callbackQuery()?->id(),
             [
                 'text'       => "Button 1 pressed\nPayload: " . $payload,
@@ -47,5 +47,5 @@ function echoPayload(Context $ctx, Api $bot): void
     }
 
     $payload = $ctx->getPayload();
-    echo sprintf($message, $payload) . PHP_EOL;
+    echo \sprintf($message, $payload) . PHP_EOL;
 }

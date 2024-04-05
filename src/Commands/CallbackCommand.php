@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Context;
-use Mateodioev\TgHandler\Events\EventType;
+use Mateodioev\TgHandler\Events\{EventType};
 
 abstract class CallbackCommand extends Command
 {
@@ -34,6 +32,7 @@ abstract class CallbackCommand extends Command
             )
         );
 
+        /** @var Matcher $this->pattern */
         return $this->pattern;
     }
 
@@ -52,19 +51,4 @@ abstract class CallbackCommand extends Command
             && !empty($this->ctx()->getMessageText())
             && $this->match($this->ctx()->getMessageText());
     }
-
-    public function execute(array $args = [])
-    {
-        $this->handle($this->api(), $this->ctx(), $args);
-    }
-
-    /**
-     * Run command
-     * @param Api $bot Telegram bot api
-     * @param Context $context Telegram context / update
-     * @param array $args Middleware results
-     *
-     * @deprecated v5.0.1 Use execute instadead
-     */
-    abstract public function handle(Api $bot, Context $context, array $args = []);
 }

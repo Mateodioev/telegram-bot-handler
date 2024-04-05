@@ -41,11 +41,6 @@ abstract class Command extends abstractEvent implements CommandInterface
     }
 
     /**
-     * Run command
-     */
-    abstract public function execute(array $args = []);
-
-    /**
      * Crete regex for use in match method
      */
     abstract protected function buildRegex(): Matcher;

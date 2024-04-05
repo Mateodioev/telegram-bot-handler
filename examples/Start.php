@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Buttons\{ButtonFactory, InlineKeyboardMarkupFactory};
 use Mateodioev\Bots\Telegram\Types\InlineKeyboardButton;
-use Mateodioev\Request\Request;
+use Mateodioev\Request\Clients\Curl;
 use Mateodioev\TgHandler\Commands\MessageCommand;
-use Mateodioev\TgHandler\Context;
 
 class Start extends MessageCommand
 {
@@ -18,7 +16,7 @@ class Start extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
         $this->api()->replyTo($this->ctx()->getChatId(), 'Hello world!', $this->ctx()->getMessageId(), params: [
             'reply_markup' => (string) $this->getButton()  // get json button
@@ -37,7 +35,7 @@ class Start extends MessageCommand
         $this->logger()->info('Result: {res}', ['res' => json_encode($result->getReduced())]);
 
         // This will throw an exception
-        Request::GET('https://invalidurl.invalid')->run();
+        Curl::GET('https://invalidurl.invalid')->run();
     }
 
     protected function getButton(): InlineKeyboardMarkupFactory

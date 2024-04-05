@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\MessageCommand;
-use Mateodioev\TgHandler\Context;
 
 class Name extends MessageCommand
 {
@@ -20,20 +18,5 @@ class Name extends MessageCommand
 
         // Register next conversation handler
         return nameConversation::fromContext($this->ctx());
-    }
-
-    /**
-     * @deprecated
-     */
-    public function handle(Api $bot, Context $context, array $args = [])
-    {
-        $bot->replyTo(
-            $context->getChatId(),
-            'Please give me your name:',
-            $context->getMessageId(),
-        );
-
-        // Register next conversation handler
-        return nameConversation::fromContext($context);
     }
 }

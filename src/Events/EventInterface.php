@@ -97,9 +97,8 @@ interface EventInterface
 
     /**
      * Run event
-     * @param Api $bot Telegram bot api
-     * @param Context $context Update context
      * @param array $args Middlewares results
+     * @return ?EventInterface|void
      */
     public function execute(array $args = []);
 
