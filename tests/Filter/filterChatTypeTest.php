@@ -3,7 +3,7 @@
 namespace Tests\Filter;
 
 use Mateodioev\TgHandler\Filters\FilterChatType;
-use PHPUnit\Framework\Attributes\{DataProvider, Depends};
+use PHPUnit\Framework\Attributes\{DataProvider};
 use PHPUnit\Framework\TestCase;
 use Tests\FakeCtx\fakeContextChatType;
 

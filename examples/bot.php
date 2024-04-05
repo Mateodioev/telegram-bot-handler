@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Mateodioev\TgHandler\Commands\Generics\FallbackCallbackCommand;
 use Mateodioev\TgHandler\Db\Memory;
+use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
 use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\Utils\Exceptions\RequestException;
 
@@ -29,14 +30,19 @@ $bot->registerCommand(Start::get())
     ->add(Params::get())
     ->add(Name::get())
     ->add(Me::get())
-    ->add(GetUssage::get())
+    ->add(GetUsage::get())
     ->withDefaultFallbackCommand(); // use this to register the fallback command
 
 // Register callback command
 $bot->registerCommand(ButtonCallback::get())
     ->setFallbackCommand(new FallbackCallbackCommand());
 
+$streamCollection->add((new BotApiStream($bot->getApi(), '996202950')));
+$bot->setLogger(new Logger($streamCollection));
+
 try {
+    $data = (string) $bot->getApi()->getMe();
+    $bot->getLogger()->info('Bot data: {data}', ['data' => $data]);
     $bot->longPolling(
         timeout: 60,
         ignoreOldUpdates: true,

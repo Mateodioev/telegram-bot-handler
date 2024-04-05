@@ -8,7 +8,7 @@ use Closure, Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\{Error, Update};
 use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
-use Mateodioev\TgHandler\Commands\{ClosureMessageCommand, Command, StopCommand};
+use Mateodioev\TgHandler\Commands\{Command, StopCommand};
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
@@ -20,9 +20,13 @@ use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
+use function array_map;
 use function array_merge;
 use function call_user_func;
+use function gc_collect_cycles;
+use function gc_enable;
 use function is_a;
+use function sleep;
 
 class Bot
 {
@@ -315,6 +319,14 @@ class Bot
 
         $update = new Update($up);
 
+        $this->handleUpdate($update, $async);
+    }
+
+    /**
+     * Handle the given update
+     */
+    public function handleUpdate(Update $update, bool $async = false): void
+    {
         $this->getApi()->setAsync($async);
 
         $async
@@ -360,24 +372,33 @@ class Bot
                 continue;
             }
 
-            if ($async) {
-                array_map(function (Update $update) use (&$offset) {
-                    $offset = $update->updateId() + 1;
-                    // $future = async(fn (Update $up) => $this->runAsync($up), $update);
-                    EventLoop::queue(fn (Update $up) => $this->runAsync($up), $update);
-                }, $updates);
-
-                \Amp\delay(1);
-            } else {
-                array_map(function (Update $update) use (&$offset) {
-                    $offset = $update->updateId() + 1;
-                    $this->run($update);
-                }, $updates);
-            }
-
+            $offset = $this->queueUpdates($updates, $offset, $async);
             unset($updates);
+
             gc_collect_cycles();
         }
+    }
+
+    private function queueUpdates(array $updates, int $offset, bool $async): int
+    {
+        if ($async) {
+            // queue to the event loop
+            async(function () use ($updates, &$offset) {
+                array_map(function (Update $update) use (&$offset): void {
+                    $offset = $update->updateId() + 1;
+                    EventLoop::queue(fn (Update $up) => $this->runAsync($up), $update);
+                }, $updates);
+                \Amp\delay(1);
+            })->await();
+        } else {
+            // run in the same thread
+            array_map(function (Update $update) use (&$offset): void {
+                $offset = $update->updateId() + 1;
+                $this->run($update);
+            }, $updates);
+        }
+
+        return $offset;
     }
 
     private function getAllowedUpdates(): array
