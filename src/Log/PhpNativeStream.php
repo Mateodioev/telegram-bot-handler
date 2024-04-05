@@ -13,8 +13,6 @@ use Mateodioev\Utils\Files;
 
 use function date;
 use function error_reporting;
-use function fclose;
-use function fopen;
 use function ini_set;
 use function is_dir;
 use function restore_error_handler;
@@ -66,10 +64,6 @@ class PhpNativeStream implements Stream
     {
         $this->fileLog = $path;
 
-        if (!Files::isFile($path)) {
-            fclose(fopen($path, 'a')); // create file if not exists
-        }
-
         return $this;
     }
 
@@ -114,8 +108,7 @@ class PhpNativeStream implements Stream
     protected function write(string $path, string $content): bool
     {
         try {
-            $fileContent = File\read($path) . $content;
-            File\write($path, $fileContent);
+            File\openFile($path, 'a')->write($content); // Create file if not exists
             return true;
         } catch (FilesystemException) {
             return false;

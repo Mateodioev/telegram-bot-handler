@@ -11,7 +11,7 @@ abstract class MessageConversation extends ConversationHandler
 {
     public static function new(int $chatId, int $userId): static
     {
-        return self::create(EventType::message, $chatId, $userId);
+        return static::create(EventType::message, $chatId, $userId);
     }
 
     /**
@@ -21,6 +21,6 @@ abstract class MessageConversation extends ConversationHandler
      */
     public static function fromContext(Context $ctx): static
     {
-        return self::new($ctx->getChatId(), $ctx->getUserId());
+        return static::new($ctx->getChatId(), $ctx->getUserId());
     }
 }

@@ -103,9 +103,14 @@ abstract class GenericCommand extends abstractEvent
             }
         }
 
-        $return = $cmd->setLogger($this->logger())->execute(
+        $nextEvent = $cmd->setLogger($this->logger())->execute(
             $this->bot->handleMiddlewares($cmd, $this->ctx())
         );
+
+        $this->getLogger()->debug('Command {name} ({eventType}) executed', [
+            'name'      => $cmd::class,
+            'eventType' => $cmd->type()->prettyName(),
+        ]);
 
         // Delete temporary event
         if ($cmd instanceof TemporaryEvent) {
@@ -113,8 +118,11 @@ abstract class GenericCommand extends abstractEvent
         }
 
         // Register next conversation
-        if ($return instanceof Conversation) {
-            $this->bot->onEvent($return);
+        if ($nextEvent instanceof Conversation) {
+            $this->bot->registerConversation(
+                $nextEvent->setVars($this->botApi, $this->botContext)
+                    ->setDb($this->db())
+            );
         }
 
         return true;

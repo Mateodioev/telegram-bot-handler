@@ -50,9 +50,28 @@ abstract class abstractEvent implements EventInterface
         return $this->botApi;
     }
 
+    /**
+     * @internal
+     */
+    public function setApi(Api $api): static
+    {
+        $this->botApi = $api;
+        return $this;
+    }
+
+
     public function ctx(): Context
     {
         return $this->botContext;
+    }
+
+    /**
+     * @internal
+     */
+    public function setCtx(Context $ctx): static
+    {
+        $this->botContext = $ctx;
+        return $this;
     }
 
     public function description(): string

@@ -29,6 +29,7 @@ $bot->onEvent(new Message())
 $bot->registerCommand(Start::get())
     ->add(Params::get())
     ->add(Name::get())
+    ->add(TriggerConversationCommand::get())
     ->add(Me::get())
     ->add(GetUsage::get())
     ->withDefaultFallbackCommand(); // use this to register the fallback command

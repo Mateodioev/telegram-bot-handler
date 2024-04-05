@@ -208,8 +208,9 @@ class Bot
 
     /**
      * Register a conversation with ttl. If ttl is Conversation::UNDEFINED_TTL, the conversation will not be registered.
+     * @internal
      */
-    private function registerConversation(Conversation $conversation): void
+    public function registerConversation(Conversation $conversation): void
     {
         $ttl = $conversation->ttl();
         $conversationId = $this->registerEvent($conversation);
@@ -224,7 +225,7 @@ class Bot
             'ttl'  => $ttl
         ]);
 
-        EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
+        $id = EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
             $deleted = $this->eventStorage->deleteById($conversationId);
 
             if ($deleted) {
@@ -232,13 +233,20 @@ class Bot
                     message: 'Conversation with id {id} removed because exceded the ttl ({ttl})',
                     context: ['id' => $conversationId, 'ttl' => $conversation->ttl()]
                 );
+                EventLoop::queue($conversation->onExpired(...));
             }
         });
     }
 
+    /**
+     * @throws BotException If command type is invalid
+     */
     public function registerCommand(Command $command): GenericCommand
     {
-        $generic = $this->genericCommands[$command->type()->value()];
+        $type    = $command->type();
+        $generic = $this->genericCommands[$type->value()]
+            ?? throw new BotException('Invalid command type: ' . $type->prettyName());
+
         $generic->add($command);
 
         return $generic;
@@ -293,7 +301,11 @@ class Bot
             }
             // Register next conversation
             if ($nextEvent instanceof Conversation) {
-                $this->registerConversation($nextEvent);
+                $this->getLogger()->debug('Register next conversation {name}', ['name' => $nextEvent::class]);
+                $this->registerConversation(
+                    $nextEvent->setVars($api, $ctx)
+                        ->setDb($this->getDb())
+                );
             }
         } catch (Throwable $e) {
             if ($this->handleException($e, $this, $ctx)) {

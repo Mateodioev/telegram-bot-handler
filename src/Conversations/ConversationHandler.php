@@ -6,7 +6,6 @@ namespace Mateodioev\TgHandler\Conversations;
 
 use Mateodioev\StringVars\Matcher;
 use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
-use Mateodioev\TgHandler\{Bot, RunState};
 
 abstract class ConversationHandler extends abstractEvent implements Conversation
 {
@@ -15,9 +14,11 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     private ?Matcher $pattern = null;
     private array $params = [];
 
+    protected ?int $ttl = Conversation::UNDEFINED_TTL;
+
     protected function __construct(
-        private readonly int $chatId,
-        private readonly int $userId,
+        protected readonly int $chatId,
+        protected readonly int $userId,
     ) {
     }
 
@@ -26,9 +27,10 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
      */
     protected static function create(EventType $type, int $chatId, int $userId): static
     {
-        if (Bot::$state === RunState::webhook) {
+        /// You can use in webhook mode if you are using servers like amphp or swoole
+        /* if (Bot::$state === RunState::webhook) {
             throw new ConversationException('Can\'t use Conversation handlers while bot is running in webhook mode');
-        }
+        } */
 
         return (new static($chatId, $userId))
             ->setType($type);
@@ -71,15 +73,23 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
         return $this;
     }
 
+    public function ttl(): ?int
+    {
+        return $this->ttl;
+    }
+
+    public function onExpired(): void
+    {
+    }
+
     private function getPattern(): Matcher
     {
         if ($this->pattern instanceof Matcher) {
             return $this->pattern;
         }
 
+        /** @var Matcher $this->pattern */
         $this->pattern = new Matcher($this->format());
         return $this->pattern;
     }
-
-    abstract public function execute(array $args = []);
 }

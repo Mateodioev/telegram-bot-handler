@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use Mateodioev\TgHandler\BotConfig;
-use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream};
+use Mateodioev\TgHandler\Log\{BulkStream, Logger, PhpNativeStream, TerminalStream};
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/All.php';
 require __DIR__ . '/StickerListener.php';
+require __DIR__ . '/TemporaryConversation.php';
 require __DIR__ . '/Start.php';
 require __DIR__ . '/Params.php';
 require __DIR__ . '/Me.php';
@@ -21,7 +22,7 @@ require __DIR__ . '/TestFilters.php';
 // Log php error and print in terminal
 $streamCollection = new BulkStream(
     new TerminalStream(),
-    // (new PhpNativeStream())->activate(__DIR__)
+    (new PhpNativeStream())->activate(__DIR__)
 );
 $logger = new Logger($streamCollection);
 

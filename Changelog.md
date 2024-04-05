@@ -1,7 +1,14 @@
 
-n.n.n / 2024-04-04
+n.n.n / 2024-04-05
 ==================
 
+
+
+v5.3.1 / 2024-04-05
+===================
+
+  * feat: :warning: Delete method handle
+  * add: changelog file
   * add: more examples
   * feat: use gc
   * fix: version
