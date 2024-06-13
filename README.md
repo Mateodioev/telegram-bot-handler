@@ -125,25 +125,6 @@ Now this command only respond to the user ID `996202950`
 
 #### Using multiple filters
 
-You can use `FilterCollection` 
-
-```php
-use Mateodioev\TgHandler\Events\Types\MessageEvent;
-use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
-
-#[FilterCollection(
-    new FilterMessageChat(TestChat::CHAT_ID),
-    new FilterMessageRegex('/.*(mt?proto).*/i')
-)]
-class TestChat extends MessageEvent {
-    const CHAT_ID = 1111111111111;
-    public function execute(Api $bot, Context $context, array $args = []) {
-        // your logic here
-    }
-}
-```
-
-Or can use this syntax
 ```php
 use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
@@ -184,7 +165,8 @@ class Me extends MessageCommand
         $id = $this->ctx()->getUserId();
 
         if (isAllowed($id)) {
-            return true; // Return true is this user can use the command in public chats
+            // Returning true, the code inside handle method will be executed
+            return true;
         } else {
             $this->api()->sendMessage($this->ctx()->getChatId(), 'Only execute this command in a private chat');
             return false;

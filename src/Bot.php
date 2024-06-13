@@ -26,6 +26,7 @@ use function call_user_func;
 use function gc_collect_cycles;
 use function gc_enable;
 use function is_a;
+use function json_encode;
 use function sleep;
 
 class Bot
@@ -400,14 +401,14 @@ class Bot
         $offset = ($ignoreOldUpdates) ? -1 : 0;
 
         // Get updates only for registered commands
-        $allowedUpdates = $this->getAllowedUpdates();
+        $allowedUpdates = $this->eventStorage->types();
+        $this->getLogger()->info('Allowed updates: {updates}', ['updates' => json_encode($allowedUpdates)]);
 
         $this->getApi()->setAsync($async);
 
         // enable garbage collector
         gc_enable();
         while (true) {
-
             try {
                 /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
@@ -451,10 +452,5 @@ class Bot
         }
 
         return $offset;
-    }
-
-    private function getAllowedUpdates(): array
-    {
-        return $this->eventStorage->types();
     }
 }

@@ -169,6 +169,11 @@ final class EventStorage
      */
     public function types(): array
     {
+        // receive all events if we have a listener for all events
+        if (isset($this->events['all'])) {
+            return [];
+        }
+
         $types = array_keys($this->events);
         unset($types['all']);
 
