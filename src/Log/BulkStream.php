@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mateodioev\TgHandler\Log;
 
 use Revolt\EventLoop;
+use SimpleLogger\streams\LogResult;
 
 use function array_walk;
 
@@ -32,7 +33,7 @@ class BulkStream implements Stream
         return $this;
     }
 
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
         array_walk(
             $this->streams,

@@ -74,7 +74,8 @@ abstract class GenericCommand extends abstractEvent
                 'eventType' => $cmd->type()->prettyName(),
                 'reason'    => $e->getMessage(),
                 'file'      => $e->getFile(),
-                'line'      => $e->getLine()
+                'line'      => $e->getLine(),
+                'exception' => $e,
             ]);
             return false;
         }

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler\Log;
 
-use DateTime;
 use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LogLevel, LoggerInterface};
+use SimpleLogger\streams\LogResult;
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
 use Stringable;
 
 use function preg_replace;
-use function strtoupper;
 
 class Logger extends AbstractLogger implements LoggerInterface
 {
@@ -25,8 +24,6 @@ class Logger extends AbstractLogger implements LoggerInterface
     public const NOTICE = 4;
     public const INFO = 2;
     public const DEBUG = 1;
-
-    public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
 
     public function __construct(private readonly Stream $stream)
     {
@@ -51,17 +48,13 @@ class Logger extends AbstractLogger implements LoggerInterface
             return;
         }
 
-        $date = (new DateTime())->format('Y-m-d H:i:s');
-
         try {
-            $logMessage = StringFormatter::format(self::$messageFormat, [
-                'time' => $date,
-                'level' => strtoupper($level),
-                'message' => $this->makeLogMessage($message, $context),
-                'EOL' => PHP_EOL
-            ]);
-
-            $this->stream->push($logMessage, $level);
+            $message = new LogResult(
+                level: $level,
+                message: $this->makeLogMessage($message, $context),
+                exception: $context['exception'] ?? null,
+            );
+            $this->stream->push($message, $level);
         } catch (StringFormatterException $th) {
             throw new LogInvalidArgumentException($th->getMessage(), $th->getCode(), $th);
         }

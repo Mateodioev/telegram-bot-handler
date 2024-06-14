@@ -16,7 +16,7 @@ $db->save('memory_usage', memory_get_usage());
 
 // Exception handler for RequestException
 $bot->setExceptionHandler(RequestException::class, function (RequestException $e, Bot $bot, Context $ctx) {
-    $bot->getLogger()->error($e::class . ': ' . $e->getMessage());
+    $bot->getLogger()->error('New Request exception', ['exception' => $e]);
 });
 
 $bot->onEvent(new Message())

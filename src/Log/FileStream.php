@@ -7,6 +7,8 @@ namespace Mateodioev\TgHandler\Log;
 use Amp\ByteStream\{ClosedException, StreamException};
 use Amp\File\{File, FilesystemException};
 use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
+use SimpleLogger\Formatters\{DefaultFormatter, Formatter};
+use SimpleLogger\streams\LogResult;
 
 use function date;
 use function realpath;
@@ -19,6 +21,7 @@ class FileStream implements Stream
     public const OPEN_MODE = 'a';
 
     protected File $file;
+    private Formatter $formatter;
 
     /**
      * @throws FilesystemException
@@ -31,6 +34,8 @@ class FileStream implements Stream
         if (!$this->file->isWritable()) {
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
         }
+
+        $this->formatter = new DefaultFormatter();
     }
 
     /**
@@ -47,9 +52,9 @@ class FileStream implements Stream
      * @throws ClosedException
      * @throws StreamException
      */
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
-        $this->file->write($message);
+        $this->file->write($this->formatter->format($message));
     }
 
     /**

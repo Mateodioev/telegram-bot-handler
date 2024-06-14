@@ -6,10 +6,10 @@ namespace Mateodioev\TgHandler\Log;
 
 use Amp\File;
 use Amp\File\FilesystemException;
-use DateTime;
 use Mateodioev\Utils\Exceptions\FileException;
-
 use Mateodioev\Utils\Files;
+use SimpleLogger\Formatters\{DefaultFormatter, Formatter};
+use SimpleLogger\streams\LogResult;
 
 use function date;
 use function error_reporting;
@@ -25,6 +25,12 @@ use function sprintf;
 class PhpNativeStream implements Stream
 {
     public string $fileLog;
+    private Formatter $formatter;
+
+    public function __construct(?Formatter $formatter = null)
+    {
+        $this->formatter = new DefaultFormatter();
+    }
 
     /**
      * @throws FileException
@@ -78,9 +84,6 @@ class PhpNativeStream implements Stream
             return false;
         }
 
-        $date = (new DateTime())->format('Y-m-d H:i:s');
-        $format = "[%s] [%s] %s in %s(%d)" . PHP_EOL;
-
         switch ($errno) {
             case E_DEPRECATED || E_USER_DEPRECATED:
                 $level = 'DEPRECATED';
@@ -95,20 +98,21 @@ class PhpNativeStream implements Stream
                 return false;
         }
 
-        $message = sprintf($format, $date, $level, $errorStr, $errorFile, $errorLine);
-
-        return $this->write($this->fileLog, $message);
+        return $this->write($this->fileLog, new LogResult(
+            level: $level,
+            message: sprintf('%s in %s:%s', $errorStr, $errorFile, $errorLine),
+        ));
     }
 
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
         $this->write($this->fileLog, $message);
     }
 
-    protected function write(string $path, string $content): bool
+    protected function write(string $path, LogResult $content): bool
     {
         try {
-            File\openFile($path, 'a')->write($content); // Create file if not exists
+            File\openFile($path, 'a')->write($this->formatter->format($content)); // Create file if not exists
             return true;
         } catch (FilesystemException) {
             return false;
