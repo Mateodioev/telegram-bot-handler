@@ -42,8 +42,6 @@ $streamCollection->add((new BotApiStream($bot->getApi(), '996202950')));
 $bot->setLogger(new Logger($streamCollection));
 
 try {
-    $data = (string) $bot->getApi()->getMe();
-    $bot->getLogger()->info('Bot data: {data}', ['data' => $data]);
     $bot->longPolling(
         timeout: 60,
         ignoreOldUpdates: true,

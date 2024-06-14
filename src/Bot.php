@@ -140,7 +140,7 @@ class Bot
      */
     public function setExceptionHandler(string $exceptionName, Closure $handler): Bot
     {
-        $this->getLogger()->debug('Register exception handler for {exceptionName}', ['exceptionName' => $exceptionName]);
+        $this->getLogger()->info('Register exception handler for {exceptionName}', ['exceptionName' => $exceptionName]);
         $this->exceptionHandlers[$exceptionName] = $handler;
         return $this;
     }
@@ -175,7 +175,7 @@ class Bot
         }
 
         call_user_func($handler, $e, $api, $ctx);
-        $this->getLogger()->debug('Exception "{e}" handled', ['e' => $e::class]);
+        $this->getLogger()->info('Exception "{e}" handled', ['e' => $e::class]);
         return true;
     }
 
@@ -220,7 +220,7 @@ class Bot
             return;
         }
 
-        $this->getLogger()->debug('Conversation {name} with id {id} will be removed after {ttl} seconds', [
+        $this->getLogger()->info('Conversation {name} with id {id} will be removed after {ttl} seconds', [
             'name' => $conversation::class,
             'id'   => $conversationId,
             'ttl'  => $ttl
@@ -302,7 +302,7 @@ class Bot
             }
             // Register next conversation
             if ($nextEvent instanceof Conversation) {
-                $this->getLogger()->debug('Register next conversation {name}', ['name' => $nextEvent::class]);
+                $this->getLogger()->info('Register next conversation {name}', ['name' => $nextEvent::class]);
                 $this->registerConversation(
                     $nextEvent->setVars($api, $ctx)
                         ->setDb($this->getDb())
@@ -414,13 +414,16 @@ class Bot
                 /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
                 if ($updates instanceof Error) {
+                    $this->getLogger()->emergency('Fail to get updates: {error}', ['error' => $updates->description]);
                     throw new TelegramApiException('(' . ($updates->error_code ?? 0) . ') ' . ($updates->description ?? ''));
                 }
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
+                    $this->terminate();
                     exit(1);
                 }
+
                 $this->getLogger()->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
                 sleep(1);
                 continue;
@@ -453,5 +456,10 @@ class Bot
         }
 
         return $offset;
+    }
+
+    private function terminate()
+    {
+        EventLoop::getDriver()->stop();
     }
 }
