@@ -23,7 +23,7 @@ final class ResourceStream implements Stream
      */
     public function __construct(
         $stream,
-        ?Formatter $formatter,
+        ?Formatter $formatter = null,
     ) {
         if (!is_resource($stream)) {
             throw new InvalidArgumentException('stream must be a resource');

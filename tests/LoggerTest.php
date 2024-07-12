@@ -45,7 +45,6 @@ class LoggerTest extends TestCase
 
         foreach ($loggers as $level) {
             $output = $this->getStdOutput($logger, $level, $message);
-            // var_dump($output);
 
             $this->assertNotEmpty($output, $level);
             $this->assertTrue(str_contains($output, $message), $level);
