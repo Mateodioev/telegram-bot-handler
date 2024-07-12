@@ -29,7 +29,7 @@ class PhpNativeStream implements Stream
 
     public function __construct(?Formatter $formatter = null)
     {
-        $this->formatter = new DefaultFormatter();
+        $this->formatter = $formatter ?? new DefaultFormatter();
     }
 
     /**
@@ -112,7 +112,8 @@ class PhpNativeStream implements Stream
     protected function write(string $path, LogResult $content): bool
     {
         try {
-            File\openFile($path, 'a')->write($this->formatter->format($content)); // Create file if not exists
+            File\openFile($path, 'a')
+                ->write($this->formatter->format($content)); // Create file if not exists
             return true;
         } catch (FilesystemException) {
             return false;

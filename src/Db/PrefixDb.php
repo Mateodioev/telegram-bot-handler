@@ -7,8 +7,8 @@ namespace Mateodioev\TgHandler\Db;
 class PrefixDb implements DbInterface
 {
     public function __construct(
-        private DbInterface $db,
-        private string $prefix
+        readonly private DbInterface $db,
+        readonly private string $prefix
     ) {
     }
 
@@ -37,6 +37,6 @@ class PrefixDb implements DbInterface
      */
     private function prefix(string $key): string
     {
-        return $this->prefix . $key;
+        return "{$this->prefix}$key";
     }
 }

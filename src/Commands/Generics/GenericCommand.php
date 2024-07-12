@@ -40,7 +40,7 @@ abstract class GenericCommand extends abstractEvent
         foreach ($this->commands as $cmd) {
             // Run command in parallel
             // If any command is handled, cancel the rest
-            $futures[] = async(function (Command $cmd) use ($handled, $cancellation) {
+            $futures[] = async(function (Command $cmd) use (&$handled, $cancellation) {
                 $handled = $this->safeRunCommand($cmd);
                 if ($handled) {
                     $cancellation->cancel();
@@ -50,7 +50,7 @@ abstract class GenericCommand extends abstractEvent
 
         try {
             await($futures, $cancellation->getCancellation());
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return;
         }
 
@@ -147,7 +147,7 @@ abstract class GenericCommand extends abstractEvent
     }
 
     /**
-     * @param Closure(Bot, Context, Commands[]) $name
+     * @param Closure(Bot, Context, Commands[]) $fallbackCommand
      * @return static
      */
     public function setFallbackCallable(Closure $fallbackCommand): static
@@ -155,7 +155,7 @@ abstract class GenericCommand extends abstractEvent
         return $this->setFallbackCommand(new class ($fallbackCommand) implements FallbackCommand {
             private array $cmds = [];
 
-            public function __construct(private Closure $fallbackCommand)
+            public function __construct(private readonly Closure $fallbackCommand)
             {
             }
 
@@ -186,6 +186,9 @@ abstract class GenericCommand extends abstractEvent
         return $this;
     }
 
+    /**
+     * @api
+     */
     public function setBot(Bot $bot): static
     {
         $this->bot = $bot;

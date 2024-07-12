@@ -27,6 +27,7 @@ $bot->onEvent(new Message())
 
 // Register text command
 $bot->registerCommand(Start::get())
+    ->add(DynamicStart::get())
     ->add(Params::get())
     ->add(Name::get())
     ->add(TriggerConversationCommand::get())

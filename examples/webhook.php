@@ -58,7 +58,7 @@ $bot->onEvent(new Message())
 //
 
 $requestHandler =  new class ($bot, $logger) implements RequestHandler {
-    public function __construct(private Bot $bot, private Logger $logger)
+    public function __construct(private readonly Bot $bot, private readonly Logger $logger)
     {
     }
 

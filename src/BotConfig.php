@@ -64,6 +64,7 @@ class BotConfig
         }
 
         $this->db = $this->createClass(self::DEFAULT_DB);
+        /** @var DbInterface $this->db */
         return $this->db;
     }
 
@@ -75,7 +76,7 @@ class BotConfig
 
         $stream = $this->createClass(self::DEFAULT_STREAM_LOGGER);
         $this->logger = new Logger($stream->activate(__DIR__));
-
+        /** @var LoggerInterface $this->logger */
         return $this->logger;
     }
 

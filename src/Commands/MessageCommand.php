@@ -30,8 +30,15 @@ abstract class MessageCommand extends Command
      */
     protected string $params = self::DEFAULT_PARAMS;
 
-    private ?Matcher $pattern = null;
-    private array $commandParams = [];
+    /**
+     * @var Matcher|null Regex used to match the input
+     */
+    protected ?Matcher $pattern = null;
+
+    /**
+     * @var array Contains the
+     */
+    protected array $commandParams = [];
 
     /**
      * @return array
@@ -89,17 +96,24 @@ abstract class MessageCommand extends Command
 
         // prefix names parameters
         $format = '(?:%s)(?:%s)%s';
+
         $alias = [$this->getName(), ...$this->getAliases()];
+        // For commands like #start
+        $prefixes = str_replace(
+            '#',
+            '\#',
+            join('|', $this->getPrefix()),
+        );
+        // if params was not set, optional payload are allowed
+        $paramsMatcher = $this->params() === self::DEFAULT_PARAMS
+            ? '( ' . self::DEFAULT_PARAMS . ')?'
+            : ' ' . $this->params();
 
         $pattern = sprintf(
             $format,
-            str_replace('#', '\#', join('|', $this->getPrefix())),
-            // for commands like #start
+            $prefixes,
             join('|', $alias),
-            // if params was not set, optional payload are allowed
-            ($this->params() === self::DEFAULT_PARAMS
-                ? '( ' . self::DEFAULT_PARAMS . ')?'
-                : ' ' . $this->params())
+            $paramsMatcher
         );
 
         $this->pattern = new Matcher($pattern);
