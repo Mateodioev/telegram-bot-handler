@@ -1,33 +1,29 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Mateodioev\TgHandler;
 
-use Closure, Mateodioev\Bots\Telegram\Api;
+use Closure;
+use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\{Error, Update};
 use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
 use Mateodioev\TgHandler\Commands\{Command, StopCommand};
 use Mateodioev\TgHandler\Conversations\Conversation;
+
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
+
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
-
 use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
 use function array_map;
-use function array_merge;
-use function call_user_func;
-use function gc_collect_cycles;
-use function gc_enable;
 use function is_a;
-use function json_encode;
-use function sleep;
 
 class Bot
 {
@@ -55,11 +51,11 @@ class Bot
         $this->setLogger($logger);
         $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
 
-        $this->api          = new Api($token);
+        $this->api = new Api($token);
         $this->eventStorage = new EventStorage();
 
         $this->genericCommands = [
-            EventType::message->value()        => new GenericMessageCommand($this),
+            EventType::message->value() => new GenericMessageCommand($this),
             EventType::callback_query->value() => new GenericCallbackCommand($this),
         ];
         foreach ($this->genericCommands as $generic) {
@@ -201,7 +197,7 @@ class Bot
 
         $this->getLogger()->debug('Register event {name} ({type})', [
             'type' => $eventInterface->type()->prettyName(),
-            'name' => $eventInterface::class
+            'name' => $eventInterface::class,
         ]);
 
         return $this->eventStorage->add($eventInterface);
@@ -222,8 +218,8 @@ class Bot
 
         $this->getLogger()->info('Conversation {name} with id {id} will be removed after {ttl} seconds', [
             'name' => $conversation::class,
-            'id'   => $conversationId,
-            'ttl'  => $ttl
+            'id' => $conversationId,
+            'ttl' => $ttl,
         ]);
 
         $id = EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
@@ -244,9 +240,8 @@ class Bot
      */
     public function registerCommand(Command $command): GenericCommand
     {
-        $type    = $command->type();
-        $generic = $this->genericCommands[$type->value()]
-            ?? throw new BotException('Invalid command type: ' . $type->prettyName());
+        $type = $command->type();
+        $generic = $this->genericCommands[$type->value()] ?? throw new BotException('Invalid command type: ' . $type->prettyName());
 
         $generic->add($command);
 
@@ -286,7 +281,7 @@ class Bot
                     'It\'s not possible to validate the event {name} ({type})',
                     [
                         'type' => $event->type()->prettyName(),
-                        'name' => $event::class
+                        'name' => $event::class,
                     ]
                 );
                 return;
@@ -314,12 +309,12 @@ class Bot
             }
 
             $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name'      => $event::class,
+                'name' => $event::class,
                 'eventType' => $event->type()->prettyName(),
-                'reason'    => $e->getMessage(),
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine(),
-                'exception' => $e
+                'reason' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'exception' => $e,
             ]);
         }
     }
@@ -384,8 +379,8 @@ class Bot
         $this->getApi()->setAsync($async);
 
         $async
-            ? $this->runAsync($update)
-            : $this->run($update);
+        ? $this->runAsync($update)
+        : $this->run($update);
     }
 
     /**
@@ -395,7 +390,7 @@ class Bot
      * @param boolean $ignoreOldUpdates Ignore old updates
      * @param boolean $async Run in async mode using AMPHP
      */
-    public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): never
+    public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): void
     {
         self::$state = RunState::longpolling;
 
@@ -410,6 +405,11 @@ class Bot
         // enable garbage collector
         gc_enable();
         while (true) {
+            if (RunState::stop === self::$state) {
+                $this->getLogger()->notice('Bot stop');
+                break;
+            }
+
             try {
                 /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
@@ -420,7 +420,7 @@ class Bot
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
-                    $this->terminate();
+                    self::terminate();
                     exit(1);
                 }
 
@@ -458,8 +458,14 @@ class Bot
         return $offset;
     }
 
-    private function terminate()
+    /**
+     * Stop the bot in the next iteration.
+     * Only works in long polling mode
+     * @protected
+     */
+    public static function terminate(): void
     {
+        self::$state = RunState::none;
         EventLoop::getDriver()->stop();
     }
 }

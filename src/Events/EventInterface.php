@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Mateodioev\TgHandler\Events;
 
@@ -111,4 +111,10 @@ interface EventInterface
      * Get Context
      */
     public function ctx(): Context;
+
+    /**
+     * Stop the bot in the next iteration
+     * @return void
+     */
+    public function stop(): void;
 }

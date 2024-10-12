@@ -1,19 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Mateodioev\TgHandler\Events;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
+
 use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
+use Mateodioev\TgHandler\{Bot, Context};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
-
-use function strtolower;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -58,7 +57,6 @@ abstract class abstractEvent implements EventInterface
         $this->botApi = $api;
         return $this;
     }
-
 
     public function ctx(): Context
     {
@@ -138,7 +136,7 @@ abstract class abstractEvent implements EventInterface
         }
 
         $currentClassName = strtolower((new ReflectionClass($this))->getShortName()) . '.';
-        $this->privateDb  = new PrefixDb($this->db(), $currentClassName);
+        $this->privateDb = new PrefixDb($this->db(), $currentClassName);
 
         return $this->privateDb;
     }
@@ -207,7 +205,7 @@ abstract class abstractEvent implements EventInterface
 
     public function setMiddlewares(array $middlewares): static
     {
-        $this->middlewares = [...$this->middlewares(), ...$middlewares];
+        $this->middlewares = [ ...$this->middlewares(), ...$middlewares];
         return $this;
     }
 
@@ -224,7 +222,7 @@ abstract class abstractEvent implements EventInterface
      * @throws ReflectionException
      * @return Filter[]
      */
-    private static function mapFilters(string|object $class): array
+    private static function mapFilters(string | object $class): array
     {
         $attributes = (new ReflectionClass($class))->getAttributes();
         $filters = [];
@@ -238,5 +236,10 @@ abstract class abstractEvent implements EventInterface
         }
 
         return $filters;
+    }
+
+    public function stop(): void
+    {
+        Bot::terminate();
     }
 }
