@@ -39,7 +39,7 @@ $bot->registerCommand(Start::get())
 $bot->registerCommand(ButtonCallback::get())
     ->setFallbackCommand(new FallbackCallbackCommand());
 
-$streamCollection->add((new BotApiStream($bot->getApi(), '996202950')));
+$streamCollection->add(new BotApiStream($bot->getApi(), '996202950'));
 $bot->setLogger(new Logger($streamCollection));
 
 try {

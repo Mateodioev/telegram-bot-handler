@@ -11,9 +11,7 @@ use Mateodioev\Bots\Telegram\Types\{Error, Update};
 use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
 use Mateodioev\TgHandler\Commands\{Command, StopCommand};
 use Mateodioev\TgHandler\Conversations\Conversation;
-
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
-
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Psr\Log\LoggerInterface;
@@ -23,7 +21,6 @@ use Throwable;
 use function Amp\async;
 use function Amp\Future\awaitAll;
 use function array_map;
-use function is_a;
 
 class Bot
 {
@@ -421,7 +418,7 @@ class Bot
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
                     self::terminate();
-                    exit(1);
+                    continue;
                 }
 
                 $this->getLogger()->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
@@ -434,6 +431,12 @@ class Bot
 
             gc_collect_cycles();
         }
+        if ($async === false) {
+            return;
+        }
+
+        \Amp\delay(1);
+        EventLoop::getDriver()->stop();
     }
 
     private function queueUpdates(array $updates, int $offset, bool $async): int
@@ -441,9 +444,12 @@ class Bot
         if ($async) {
             // queue to the event loop
             async(function () use ($updates, &$offset) {
+                // Add all the updates to the event loop and run in the next tick
                 array_map(function (Update $update) use (&$offset): void {
                     $offset = $update->updateId() + 1;
-                    EventLoop::queue(fn (Update $up) => $this->runAsync($up), $update);
+                    EventLoop::defer(function ($callbackId) use ($update) {
+                        $this->runAsync($update);
+                    });
                 }, $updates);
                 \Amp\delay(1);
             })->await();
@@ -465,7 +471,6 @@ class Bot
      */
     public static function terminate(): void
     {
-        self::$state = RunState::none;
-        EventLoop::getDriver()->stop();
+        self::$state = RunState::stop;
     }
 }
