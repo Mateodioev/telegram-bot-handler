@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\StringVars\{Config, Matcher};
-
-use function sprintf;
 
 /**
  * This command is similar to {@see MessageCommand} but allows any string in the command
@@ -52,8 +50,8 @@ abstract class DynamicMessageCommand extends MessageCommand
         $alias = [$this->getName(), ...$this->getAliases()];
         $prefixes = str_replace('#', '\#', join('|', $this->getPrefix()));
         $paramsMatcher = $this->params() === static::DEFAULT_PARAMS
-            ? '( ' . static::DEFAULT_PARAMS . ')?'
-            : ' ' . $this->params();
+        ? '( ' . static::DEFAULT_PARAMS . ')?'
+        : ' ' . $this->params();
 
         $pattern = sprintf(
             $regexFormat,
@@ -71,7 +69,7 @@ abstract class DynamicMessageCommand extends MessageCommand
     private function getMatcherConfig(): Config
     {
         return new Config([
-            'x' => '([a-zA-Z\d_]+)',
+            'x' => '([\S]+)',
         ]);
     }
 }
