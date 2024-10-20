@@ -8,9 +8,10 @@ use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
 
+use Mateodioev\TgHandler\Middleware\Middleware;
+
 use function array_filter;
 use function array_map;
-use function call_user_func;
 
 trait middlewares
 {
@@ -23,7 +24,6 @@ trait middlewares
         if (!$event->hasMiddlewares()) { // Check if command has middlewares
             return [];
         }
-
         $middlewares = $event->middlewares();
 
         $params = array_map(fn ($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
@@ -33,10 +33,10 @@ trait middlewares
     /**
      * @throws Exception
      */
-    protected function runMiddleware($middleware, Context $context): mixed
+    protected function runMiddleware(Middleware $middleware, Context $context): mixed
     {
         try {
-            return call_user_func($middleware, $context, $this->getApi());
+            return $middleware($context, $this->getApi());
         } catch (StopCommand $e) {
             throw $e;
         } catch (Exception $e) {

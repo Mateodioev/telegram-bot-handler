@@ -70,7 +70,7 @@ $myCommand->setPrefixes(['/', '!']); // Set prefix, no need to set `$prefix` pro
 
 ### Using middlewares
 
-You can add middlewares to your command. Middlewares are closures that will be executed before the command. All middlewares results will be passed to the command as an array.
+You can add middlewares to your command. Middlewares will be executed before the command. All middlewares results will be passed to the command as an array with the name of the middleware as a key.
 
 For example, you can create a middleware that will check if the user is authorized, and if not, the command will not be executed.
 
@@ -80,23 +80,27 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     protected array $middlewares = [
-        'authUser'
+        AuthUserMiddleware::class,
     ];
     
     public function execute(array $args = []){
-        // $args[0] is the result of the middleware authUser
-        // Your logic here ...
+        $authenticatedUser = $args[AuthUserMiddleware::class];
     }
 }
+$cmd = MyCommand::get();
+$cmd->addMiddleware(new AuthUserMiddleware); // This works too
 
-// Your middleware function 
-function authUser(Context $ctx, Api $bot) {
-    $user = User::find($ctx->getUserId());
-    if (!$user) {
-        $bot->replyTo($ctx->getChatId(), 'You are not authorized', $ctx->getMessageId())
-        throw new \Mateodioev\TgHandler\Commands\StopCommand(); // Stop command execution
+// Your middleware definition
+class AuthUserMiddleware extends \Mateodioev\TgHandler\Middleware\Middleware
+{
+    public function __invoke(\Mateodioev\TgHandler\Context $ctx,\Mateodioev\Bots\Telegram\Api $api){
+        $user = User::find($ctx->getUserId());
+        if (!$user) {
+            $bot->replyTo($ctx->getChatId(), 'You are not authorized', $ctx->getMessageId())
+            throw new \Mateodioev\TgHandler\Commands\StopCommand(); // Stop command execution
+        }
+        return $user; 
     }
-    return $user;
 }
 ```
 > You can use `StopCommand` exception to stop command execution
@@ -111,12 +115,12 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 
 [\Mateodioev\TgHandler\Filters\FilterFromUserId(996202950)];
-class FilterCommand extends MessageCommand
+class FilterCommand extends \Mateodioev\TgHandler\Commands\MessageCommand
 {
     protected string $name = 'filter';
     
-    public function handle(Api $bot, Context $context, array $args = [])
-    {
+    public function execute(array $args = []) {
+        // TODO: Implement execute() method.
     }
 }
 ```
@@ -155,7 +159,7 @@ class Me extends MessageCommand
 {
     protected string $name = 'me';
 
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = []) {
     {
         // Your logic here
     }

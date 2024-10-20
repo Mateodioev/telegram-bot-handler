@@ -7,6 +7,7 @@ namespace Mateodioev\TgHandler\Events;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
+use Mateodioev\TgHandler\Middleware\Middleware;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -67,6 +68,7 @@ interface EventInterface
 
     /**
      * Get middlewares
+     * @return Middleware[]
      */
     public function middlewares(): array;
 
@@ -81,7 +83,7 @@ interface EventInterface
     public function validateFilters(): bool;
 
     /**
-     * Add single middleware
+     * Add single middleware. If two middlewares have the same name, the last one will be used
      */
     public function addMiddleware(\Closure $middleware): static;
 

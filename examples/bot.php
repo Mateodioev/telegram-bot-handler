@@ -22,8 +22,7 @@ $bot->setExceptionHandler(RequestException::class, function (RequestException $e
 $bot->onEvent(new Message())
     ->onEvent(new TestFilters())
     ->onEvent(new All())
-    ->onEvent(new StickerListener())
-    ->onEvent(ButtonCallback::get());
+    ->onEvent(new StickerListener());
 
 // Register text command
 $bot->registerCommand(Start::get())

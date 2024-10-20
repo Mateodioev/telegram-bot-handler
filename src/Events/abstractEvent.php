@@ -6,13 +6,14 @@ namespace Mateodioev\TgHandler\Events;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
-
 use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
-use Mateodioev\TgHandler\{Bot, Context};
+use Mateodioev\TgHandler\{Bot, Context, Middleware\ClosureMiddleware, Middleware\Middleware};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
+
+use function Amp\delay;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -23,7 +24,15 @@ abstract class abstractEvent implements EventInterface
     protected DbInterface $db;
     protected Api $botApi;
     protected Context $botContext;
+    /**
+     * @var array<class-string<Middleware>|Middleware|Closure>
+     */
     protected array $middlewares = [];
+
+    /**
+     * @var bool Transform middlewares to Middleware instances
+     */
+    private bool $transformMiddlewares = true;
 
     /** @var Filter[] Event filters */
     private ?array $filters = null;
@@ -51,6 +60,7 @@ abstract class abstractEvent implements EventInterface
 
     /**
      * @internal
+     * @api
      */
     public function setApi(Api $api): static
     {
@@ -65,6 +75,7 @@ abstract class abstractEvent implements EventInterface
 
     /**
      * @internal
+     * @api
      */
     public function setCtx(Context $ctx): static
     {
@@ -86,11 +97,11 @@ abstract class abstractEvent implements EventInterface
      * Async sleep
      *
      * @param float $seconds Number of seconds to sleep
-     * @see \Amp\delay()
+     * @see delay
      */
     public function sleep(float $seconds): void
     {
-        \Amp\delay($seconds);
+        delay($seconds);
     }
 
     public function logger(): LoggerInterface
@@ -149,10 +160,34 @@ abstract class abstractEvent implements EventInterface
     /**
      * Get all middlewares
      *
-     * @return array
+     * @return Middleware[]
      */
     public function middlewares(): array
     {
+        if ($this->transformMiddlewares === false) {
+            return $this->middlewares;
+        }
+        $middlewares = [];
+        foreach ($this->middlewares as $i => $middleware) {
+            if ($middleware instanceof Closure) {
+                $middlewares[(string) $i] = ClosureMiddleware::create($middleware)
+                    ->withId($i);
+                continue;
+            }
+            if (is_string($middleware)) {
+                $middleware = new $middleware();
+                $middlewares[$middleware->name()] = $middleware;
+                continue;
+            }
+            if ($middleware instanceof Middleware) {
+                $middlewares[$middleware->name()] = $middleware;
+                continue;
+            }
+            // Keep everything else (or maybe throw an exception?)
+            $middlewares[(string) $i] = $middleware;
+        }
+        $this->middlewares = $middlewares;
+        $this->transformMiddlewares = false;
         return $this->middlewares;
     }
 
@@ -197,14 +232,17 @@ abstract class abstractEvent implements EventInterface
         return $filterCollection->apply($this->ctx());
     }
 
-    public function addMiddleware(Closure $middleware): static
+    public function addMiddleware(Closure|Middleware $middleware): static
     {
+        $this->transformMiddlewares = true;
+        $middleware = $middleware instanceof Closure ? ClosureMiddleware::create($middleware) : $middleware;
         $this->middlewares[] = $middleware;
         return $this;
     }
 
     public function setMiddlewares(array $middlewares): static
     {
+        $this->transformMiddlewares = true;
         $this->middlewares = [ ...$this->middlewares(), ...$middlewares];
         return $this;
     }

@@ -5,17 +5,20 @@ declare(strict_types=1);
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\{CallbackCommand, StopCommand};
 use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Middleware\Middleware;
 
 class ButtonCallback extends CallbackCommand
 {
     protected string $name = 'button1';
     protected string $description = 'Button 1 callback';
     protected array $middlewares = [
-        'echoPayload',
+        EchoPayload::class,
     ];
 
     public function execute(array $args = [])
     {
+        $value = $args[EchoPayload::class];
+        $this->logger()->info('Middleware result: {result}', ['result' => $value]);
         $this->logger()->info('Button 1 pressed');
         // log telegram context
         $this->logger()->info('Update: {up}', [
@@ -35,17 +38,20 @@ class ButtonCallback extends CallbackCommand
     }
 }
 
-/**
- * @throws StopCommand Stop execution command if payload is empty
- */
-function echoPayload(Context $ctx, Api $bot): void
+class EchoPayload extends Middleware
 {
-    $message = 'Received new payload: "%s"';
+    /**
+     * @throws StopCommand Stop execution command if payload is empty
+     */
+    public function __invoke(Context $ctx, Api $api)
+    {
+        $message = 'Received new payload: "%s"';
 
-    if (empty($ctx->getPayload())) {
-        throw new StopCommand('Button payload empty');
+        if (empty($ctx->getPayload())) {
+            throw new StopCommand('Button payload empty');
+        }
+
+        $payload = $ctx->getPayload();
+        return \sprintf($message, $payload) . PHP_EOL;
     }
-
-    $payload = $ctx->getPayload();
-    echo \sprintf($message, $payload) . PHP_EOL;
 }
