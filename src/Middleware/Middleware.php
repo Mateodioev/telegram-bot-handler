@@ -27,10 +27,11 @@ abstract class Middleware implements Stringable
     }
 
     /**
+     * @param array<string, mixed> $args Results of the previous middlewares execution
      * @throws StopCommand to stop the current command execution
      * @throws Exception
      */
-    abstract public function __invoke(Context $ctx, Api $api);
+    abstract public function __invoke(Context $ctx, Api $api, array $args = []);
 
     /**
      * @inheritDoc

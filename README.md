@@ -93,7 +93,7 @@ $cmd->addMiddleware(new AuthUserMiddleware); // This works too
 // Your middleware definition
 class AuthUserMiddleware extends \Mateodioev\TgHandler\Middleware\Middleware
 {
-    public function __invoke(\Mateodioev\TgHandler\Context $ctx,\Mateodioev\Bots\Telegram\Api $api){
+    public function __invoke(\Mateodioev\TgHandler\Context $ctx,\Mateodioev\Bots\Telegram\Api $api, array $args = [])****{
         $user = User::find($ctx->getUserId());
         if (!$user) {
             $bot->replyTo($ctx->getChatId(), 'You are not authorized', $ctx->getMessageId())

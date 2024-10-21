@@ -43,8 +43,9 @@ class EchoPayload extends Middleware
     /**
      * @throws StopCommand Stop execution command if payload is empty
      */
-    public function __invoke(Context $ctx, Api $api)
+    public function __invoke(Context $ctx, Api $api, array $args = [])
     {
+        var_dump('Old results: ', $args);
         $message = 'Received new payload: "%s"';
 
         if (empty($ctx->getPayload())) {

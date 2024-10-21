@@ -11,7 +11,6 @@ use Mateodioev\TgHandler\Events\EventInterface;
 use Mateodioev\TgHandler\Middleware\Middleware;
 
 use function array_filter;
-use function array_map;
 
 trait middlewares
 {
@@ -26,17 +25,21 @@ trait middlewares
         }
         $middlewares = $event->middlewares();
 
-        $params = array_map(fn ($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
+        $params = [];
+        foreach ($middlewares as $middleware) {
+            $params[] = $this->runMiddleware($middleware, $context, $params);
+        }
+
         return array_filter($params, fn ($param) => $param !== null);
     }
 
     /**
      * @throws Exception
      */
-    protected function runMiddleware(Middleware $middleware, Context $context): mixed
+    protected function runMiddleware(Middleware $middleware, Context $context, array $previousResults): mixed
     {
         try {
-            return $middleware($context, $this->getApi());
+            return $middleware($context, $this->getApi(), $previousResults);
         } catch (StopCommand $e) {
             throw $e;
         } catch (Exception $e) {
