@@ -12,6 +12,7 @@ use Mateodioev\Bots\Telegram\Types\{
     User
 };
 use Mateodioev\TgHandler\Events\EventType;
+use Psr\Log\LoggerInterface;
 
 use function explode;
 use function strlen;
@@ -25,6 +26,16 @@ class Context extends Update
 {
     private ?EventType $type = null;
     private array $cache = [];
+    public ?LoggerInterface $logger = null;
+
+    /**
+     * Add logger to the context
+     */
+    public function withLogger(LoggerInterface $logger): static
+    {
+        $this->logger = $logger;
+        return $this;
+    }
 
     public static function fromUpdate(Update $update): Context
     {

@@ -321,7 +321,7 @@ class Bot
      */
     public function run(Update $update): void
     {
-        $ctx = Context::fromUpdate($update);
+        $ctx = Context::fromUpdate($update)->withLogger($this->getLogger());
 
         array_map(function (EventInterface $event) use ($ctx) {
             $this->executeCommand($event, $ctx);
@@ -333,7 +333,7 @@ class Bot
      */
     public function runAsync(Update $update): void
     {
-        $ctx = Context::fromUpdate($update);
+        $ctx = Context::fromUpdate($update)->withLogger($this->getLogger());
 
         awaitAll(
             // Create Futures of all commands

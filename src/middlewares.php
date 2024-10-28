@@ -27,9 +27,10 @@ trait middlewares
 
         $params = [];
         foreach ($middlewares as $middleware) {
-            $params[] = $this->runMiddleware($middleware, $context, $params);
+            $params[$middleware->name()] = $this->runMiddleware($middleware, $context, $params);
         }
 
+        // Delete empty outputs
         return array_filter($params, fn ($param) => $param !== null);
     }
 
