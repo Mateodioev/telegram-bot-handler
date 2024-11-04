@@ -20,13 +20,12 @@ use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use function array_map;
 
 class Bot
 {
     use middlewares;
 
-    private const EVENTS_CACHE = 'events.cache.json';
+    private const string EVENTS_CACHE = 'events.cache.json';
 
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
@@ -36,17 +35,16 @@ class Bot
     private ?DbInterface $db = null;
 
     private EventStorage $eventStorage;
-
-    /** @var array<string,Closure> */
-    private array $exceptionHandlers = [];
+    private ExceptionHandler $exceptionHandler;
 
     /** @var array<string, GenericCommand> */
     private array $genericCommands = [];
 
     public function __construct(string $token, LoggerInterface $logger)
     {
+        $this->exceptionHandler = new ExceptionHandler($logger);
+        $this->exceptionHandler->add(StopCommand::class, StopCommand::handler(...));
         $this->setLogger($logger);
-        $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
 
         $this->api = new Api($token);
         $this->eventStorage = new EventStorage();
@@ -83,6 +81,7 @@ class Bot
     {
         $logger->debug('Set logger {name}', ['name' => $logger::class]);
         $this->logger = $logger;
+        $this->exceptionHandler->logger = $logger;
         return $this;
     }
 
@@ -129,47 +128,30 @@ class Bot
     /**
      * @param string $exceptionName Exception class name
      * @param Closure $handler Handler function, must accept 3 arguments: \Throwable $e, Bot $api, Context $ctx
+     * @see ExceptionHandler::add
      * @return Bot
      */
     public function setExceptionHandler(string $exceptionName, Closure $handler): Bot
     {
-        $this->getLogger()->info('Register exception handler for {exceptionName}', ['exceptionName' => $exceptionName]);
-        $this->exceptionHandlers[$exceptionName] = $handler;
+        $this->exceptionHandler->add($exceptionName, $handler);
         return $this;
     }
 
+    /**
+     * @see ExceptionHandler::find
+     */
     private function findExceptionHandler(Throwable $exception): ?Closure
     {
-        $exceptionName = $exception::class;
-        $handler = $this->exceptionHandlers[$exceptionName] ?? null;
-
-        if ($handler !== null) {
-            return $handler;
-        }
-
-        foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
-            if (is_a($exception, $name)) { // Check is same class or subclass
-                return $exceptionHandler;
-            }
-        }
-
-        return null;
+        return $this->exceptionHandler->find($exception);
     }
 
     /**
      * @return bool Return true if exception handled
+     * @see ExceptionHandler::handle
      */
     public function handleException(Throwable $e, Bot $api, Context $ctx): bool
     {
-        $handler = $this->findExceptionHandler($e);
-
-        if ($handler === null) {
-            return false;
-        }
-
-        call_user_func($handler, $e, $api, $ctx);
-        $this->getLogger()->info('Exception "{e}" handled', ['e' => $e::class]);
-        return true;
+        return $this->exceptionHandler->handle($e, $api, $ctx);
     }
 
     /**
@@ -374,6 +356,7 @@ class Bot
     public function handleUpdate(Update $update, bool $async = false): void
     {
         $this->getApi()->setAsync($async);
+        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
 
         $async
         ? $this->runAsync($update)
@@ -390,8 +373,9 @@ class Bot
     public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): void
     {
         self::$state = RunState::longpolling;
+        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
 
-        $offset = ($ignoreOldUpdates) ? -1 : 0;
+        $offset = $ignoreOldUpdates ? -1 : 0;
 
         // Get updates only for registered commands
         $allowedUpdates = $this->eventStorage->types();
