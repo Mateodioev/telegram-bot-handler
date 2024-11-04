@@ -5,9 +5,6 @@ namespace Mateodioev\TgHandler\Middleware;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 
-use function call_user_func;
-use function spl_object_id;
-
 /**
  * Create a middleware from a closure
  */
@@ -48,8 +45,8 @@ class ClosureMiddleware extends Middleware
         return $this->id;
     }
 
-    public function __invoke(Context $ctx, Api $api)
+    public function __invoke(Context $ctx, Api $api, array $args = []): mixed
     {
-        return call_user_func($this->callable, $ctx, $api);
+        return call_user_func($this->callable, $ctx, $api, $args);
     }
 }

@@ -1,12 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
 
 namespace Tests\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\Types\AllEvent;
+
 use Mateodioev\TgHandler\Middleware\{ClosureMiddleware, Middleware};
 use Monolog\Test\TestCase;
 
@@ -79,7 +80,7 @@ class MiddlewareTest extends TestCase
                 return '#' . spl_object_id($this); // random name for testing
             }
 
-            public function __invoke(Context $context, Api $api): mixed
+            public function __invoke(Context $context, Api $api, array $args = []): mixed
             {
                 return 'middleware';
             }
