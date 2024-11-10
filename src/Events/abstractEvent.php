@@ -6,6 +6,7 @@ namespace Mateodioev\TgHandler\Events;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\BotException;
 use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
 use Mateodioev\TgHandler\{Bot, Context, Middleware\ClosureMiddleware, Middleware\Middleware};
@@ -14,7 +15,12 @@ use ReflectionClass;
 use ReflectionException;
 use Revolt\EventLoop;
 
+use Throwable;
+
 use function Amp\delay;
+use function class_exists;
+use function explode;
+use function is_callable;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -171,12 +177,11 @@ abstract class abstractEvent implements EventInterface
         $middlewares = [];
         foreach ($this->middlewares as $i => $middleware) {
             if ($middleware instanceof Closure) {
-                $middlewares[(string) $i] = ClosureMiddleware::create($middleware)
-                    ->withId($i);
+                $middlewares[(string) $i] = ClosureMiddleware::create($middleware)->withId($i);
                 continue;
             }
             if (is_string($middleware)) {
-                $middleware = new $middleware();
+                $middleware = $this->createMiddlewareFromString($middleware);
                 $middlewares[$middleware->name()] = $middleware;
                 continue;
             }
@@ -190,6 +195,32 @@ abstract class abstractEvent implements EventInterface
         $this->middlewares = $middlewares;
         $this->transformMiddlewares = false;
         return $this->middlewares;
+    }
+
+    private function createMiddlewareFromString(string $strMiddleware): Middleware
+    {
+        [$className, $parts] = explode(':', "$strMiddleware:"); // add ":" to avoid errors
+
+        $existsClass = class_exists($className);
+        if (!$existsClass && is_callable($className)) {
+            // Parts are not needed for closures
+            return ClosureMiddleware::create($className);
+        }
+        if ($existsClass === false) {
+            throw new BotException("Middleware class $className not found");
+        }
+
+        $parts = explode(',', $parts);
+
+        if (empty($parts)) {
+            return new $className();
+        }
+
+        try {
+            return new $className(...$parts);
+        } catch (Throwable $th) {
+            throw new BotException("Error creating middleware $className: " . $th->getMessage());
+        }
     }
 
     /**

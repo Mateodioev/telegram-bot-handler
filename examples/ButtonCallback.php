@@ -12,7 +12,7 @@ class ButtonCallback extends CallbackCommand
     protected string $name = 'button1';
     protected string $description = 'Button 1 callback';
     protected array $middlewares = [
-        EchoPayload::class,
+        EchoPayload::class . ':This is the example param',
     ];
 
     public function execute(array $args = [])
@@ -38,14 +38,29 @@ class ButtonCallback extends CallbackCommand
     }
 }
 
+/**
+ * This payload format the params sent in the callback query as
+ * Received new payload: "payload"
+ */
 class EchoPayload extends Middleware
 {
+    public function __construct(private string $exampleParam = '')
+    {
+    }
+
     /**
      * @throws StopCommand Stop execution command if payload is empty
      */
     public function __invoke(Context $ctx, Api $api, array $args = [])
     {
-        var_dump('Old results: ', $args);
+        $ctx->logger?->debug(
+            message: 'Old results: {args}',
+            context: ['args' => json_encode($args)]
+        );
+        $ctx->logger?->debug(
+            message: 'Param passed to the middleware: {param}',
+            context: ['param' => $this->exampleParam]
+        );
         $message = 'Received new payload: "%s"';
 
         if (empty($ctx->getPayload())) {

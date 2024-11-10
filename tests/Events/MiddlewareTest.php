@@ -7,7 +7,6 @@ namespace Tests\Events;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\Types\AllEvent;
-
 use Mateodioev\TgHandler\Middleware\{ClosureMiddleware, Middleware};
 use Monolog\Test\TestCase;
 
@@ -72,6 +71,23 @@ class MiddlewareTest extends TestCase
         }
     }
 
+    public function testMiddlewareWithParams()
+    {
+        $middleware = $this->createMiddlewareWithParams('param');
+        $this->assertIsString($middleware->name());
+        $this->assertEquals('param', $middleware->name());
+
+        $event = $this->createEvent();
+        $event->addMiddleware($middleware);
+
+        $this->assertNotEmpty($event->middlewares());
+        $this->assertEquals(1, count($event->middlewares()));
+        $this->assertIsArray($event->middlewares());
+
+        $this->assertIsString($event->middlewares()['param']->name());
+        $this->assertEquals('param', $event->middlewares()['param']->name());
+    }
+
     private function createMiddleware()
     {
         return new class () extends Middleware {
@@ -93,6 +109,26 @@ class MiddlewareTest extends TestCase
             public function execute(array $args = [])
             {
                 // TODO: Implement execute() method.
+            }
+        };
+    }
+
+    private function createMiddlewareWithParams(string $param)
+    {
+        return new class ($param) extends Middleware {
+            public function __construct(
+                private string $param
+            ) {
+            }
+
+            public function __invoke(Context $ctx, Api $api, array $args = [])
+            {
+                return $this->param;
+            }
+
+            public function name(): string
+            {
+                return $this->param; // Use the param passed
             }
         };
     }
