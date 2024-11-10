@@ -6,21 +6,19 @@ namespace Mateodioev\TgHandler\Events;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\BotException;
 use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
-use Mateodioev\TgHandler\{Bot, Context, Middleware\ClosureMiddleware, Middleware\Middleware};
+use Mateodioev\TgHandler\Middleware\{ClosureMiddleware, Middleware};
+use Mateodioev\TgHandler\{Bot, BotException, Context};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
 use Revolt\EventLoop;
-
 use Throwable;
 
 use function Amp\delay;
-use function class_exists;
 use function explode;
-use function is_callable;
+use function str_contains;
 
 abstract class abstractEvent implements EventInterface
 {
@@ -217,10 +215,27 @@ abstract class abstractEvent implements EventInterface
         }
 
         try {
-            return new $className(...$parts);
+            return new $className(...$this->transformMiddlewareParam($parts));
         } catch (Throwable $th) {
             throw new BotException("Error creating middleware $className: " . $th->getMessage());
         }
+    }
+
+    private function transformMiddlewareParam(array $params): array
+    {
+        $newParams = [];
+        foreach ($params as $param) {
+            if (is_numeric($param)) {
+                $newParams[] = str_contains($param, '.')
+                ? (float) $param
+                : (int) $param;
+            }
+            if ($param === 'true' || $param === 'false') {
+                $newParams[] = $param === 'true';
+            }
+            $newParams[] = (string) $param;
+        }
+        return $newParams;
     }
 
     /**
@@ -264,7 +279,7 @@ abstract class abstractEvent implements EventInterface
         return $filterCollection->apply($this->ctx());
     }
 
-    public function addMiddleware(Closure|Middleware $middleware): static
+    public function addMiddleware(Closure | Middleware $middleware): static
     {
         $this->transformMiddlewares = true;
         $middleware = $middleware instanceof Closure ? ClosureMiddleware::create($middleware) : $middleware;
