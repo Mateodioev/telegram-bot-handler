@@ -6,6 +6,9 @@ namespace Mateodioev\TgHandler\Containers;
 
 use Closure;
 
+/**
+ * @deprecated v5.8.0 There is no need to use this class anymore.
+ */
 class Container
 {
     /** @var array<class-string, Builder> */

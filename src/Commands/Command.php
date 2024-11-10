@@ -33,6 +33,7 @@ abstract class Command extends abstractEvent implements CommandInterface
 
     /**
      * Get new instance of the command
+     * @deprecated v5.8.0 Just create the class
      */
     public static function get(): static
     {
