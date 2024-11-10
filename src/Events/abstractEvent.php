@@ -12,6 +12,7 @@ use Mateodioev\TgHandler\{Bot, Context, Middleware\ClosureMiddleware, Middleware
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
+use Revolt\EventLoop;
 
 use function Amp\delay;
 
@@ -253,6 +254,14 @@ abstract class abstractEvent implements EventInterface
     public function isValid(): bool
     {
         return $this->ctx()->eventType() == $this->type();
+    }
+
+    /**
+     * Run a task in background
+     */
+    public function background(Closure $callback): void
+    {
+        EventLoop::defer($callback);
     }
 
     /**
