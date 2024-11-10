@@ -17,7 +17,9 @@ use Revolt\EventLoop;
 use Throwable;
 
 use function Amp\delay;
+use function array_map;
 use function explode;
+use function is_numeric;
 use function str_contains;
 
 abstract class abstractEvent implements EventInterface
@@ -223,19 +225,15 @@ abstract class abstractEvent implements EventInterface
 
     private function transformMiddlewareParam(array $params): array
     {
-        $newParams = [];
-        foreach ($params as $param) {
+        return array_map(static function (mixed $param) {
             if (is_numeric($param)) {
-                $newParams[] = str_contains($param, '.')
-                ? (float) $param
-                : (int) $param;
+                return str_contains($param, '.') ? (float) $param : (int) $param;
+            } elseif  ($param === 'true' || $param === 'false') {
+                return $param === 'true';
+            } else {
+                return (string) $param;
             }
-            if ($param === 'true' || $param === 'false') {
-                $newParams[] = $param === 'true';
-            }
-            $newParams[] = (string) $param;
-        }
-        return $newParams;
+        }, $params);
     }
 
     /**
