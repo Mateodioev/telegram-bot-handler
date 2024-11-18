@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
 
 use Mateodioev\Bots\Telegram\Api;
+use SimpleLogger\streams\LogResult;
 
-use function str_replace, preg_replace;
+use function str_replace;
 
 /**
  * Push messages to telegram channel/chat
@@ -26,12 +29,16 @@ class BotApiStream implements Stream
         return $this;
     }
 
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
-        if ($this->isFlagSet(Logger::levelToInt($level ?? '')) === false)
+        if ($this->isFlagSet(Logger::levelToInt($message->level ?? '')) === false) {
             return;
+        }
 
-        $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
+        // $message = $this->addHtmlTags($this->replaceIllegalCharacters($message));
+        $level = strtoupper($message->level);
+        $strMessage = $this->replaceIllegalCharacters($message->message);
+        $message = "<b>{$level}</b>\n<pre>{$strMessage}</pre>";
 
         $this->api->sendMessage(
             $this->chatId,
@@ -43,10 +50,5 @@ class BotApiStream implements Stream
     protected function replaceIllegalCharacters(string $message): string
     {
         return str_replace(['<', '>'], ['&lt;', '&gt;'], $message);
-    }
-
-    public function addHtmlTags(string $input): string
-    {
-        return preg_replace('/\[(.*?)\]/', '<b>[$1]</b>', $input);
     }
 }

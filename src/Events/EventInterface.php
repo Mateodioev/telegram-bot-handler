@@ -1,11 +1,13 @@
 <?php
 
+declare (strict_types=1);
+
 namespace Mateodioev\TgHandler\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
-use Mateodioev\TgHandler\Filters\Filter;
+use Mateodioev\TgHandler\Middleware\Middleware;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -17,6 +19,11 @@ interface EventInterface
      * Get event type
      */
     public function type(): EventType;
+
+    /**
+     * Set api and context vars
+     */
+    public function setVars(Api $bot, Context $ctx): static;
 
     /**
      * Get description
@@ -61,6 +68,7 @@ interface EventInterface
 
     /**
      * Get middlewares
+     * @return Middleware[]
      */
     public function middlewares(): array;
 
@@ -70,18 +78,12 @@ interface EventInterface
     public function hasFilters(): bool;
 
     /**
-     * Get filter
-     * @return Filter[]
-     */
-    public function filters(): array;
-
-    /**
      * Validates all filters, return `false` if any of them fail
      */
-    public function validateFilters(Context $ctx): bool;
+    public function validateFilters(): bool;
 
     /**
-     * Add single middleware
+     * Add single middleware. If two middlewares have the same name, the last one will be used
      */
     public function addMiddleware(\Closure $middleware): static;
 
@@ -93,13 +95,28 @@ interface EventInterface
     /**
      * Return true if the event is valid
      */
-    public function isValid(Api $bot, Context $context): bool;
+    public function isValid(): bool;
 
     /**
      * Run event
-     * @param Api $bot Telegram bot api
-     * @param Context $context Update context
      * @param array $args Middlewares results
+     * @return ?EventInterface|void
      */
-    public function execute(Api $bot, Context $context, array $args = []);
+    public function execute(array $args = []);
+
+    /**
+     * Get Telegram bot api instance
+     */
+    public function api(): Api;
+
+    /**
+     * Get Context
+     */
+    public function ctx(): Context;
+
+    /**
+     * Stop the bot in the next iteration
+     * @return void
+     */
+    public function stop(): void;
 }

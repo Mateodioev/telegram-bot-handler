@@ -1,21 +1,20 @@
 <?php
 
-use Mateodioev\TgHandler\Events\Types\AllEvent;
+declare(strict_types=1);
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Events\Types\AllEvent;
 
 /**
  * AllEvent receive all event types
  */
 class All extends AllEvent
 {
-    public function execute(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $type = $context->eventType()->prettyName();
-        $raw = $context->toString(JSON_PRETTY_PRINT) . PHP_EOL;
+        $type = $this->ctx()->eventType()->prettyName();
+        $raw = json_encode($this->ctx()->getReduced(), JSON_PRETTY_PRINT) . PHP_EOL;
 
-        // $this->getLogger()->info('Receive new {type} event', ['type' => $type]);
-        // $this->getLogger()->info('Update: {raw}', ['raw' => $raw]);
+        /* $this->logger()->info('Receive new {type} event', ['type' => $type]);
+        $this->logger()->info('Update: {raw}', ['raw' => $raw]); */
     }
 }

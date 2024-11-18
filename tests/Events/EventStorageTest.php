@@ -1,12 +1,11 @@
 <?php
 
-namespace Tests;
+namespace Tests\Events;
 
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Events\EventInterface;
-use Mateodioev\TgHandler\EventStorage;
+use Mateodioev\TgHandler\{Context, EventStorage};
 use PHPUnit\Framework\TestCase;
 
 class EventStorageTest extends TestCase
@@ -14,7 +13,7 @@ class EventStorageTest extends TestCase
     public static function eventStorage(): EventStorage
     {
         static $eventStorage;
-        $eventStorage ??= new EventStorage;
+        $eventStorage ??= new EventStorage();
 
         return $eventStorage;
     }
@@ -24,10 +23,9 @@ class EventStorageTest extends TestCase
      */
     public static function getExampleEvent(): EventInterface
     {
-        return ClosureMessageCommand::fromClosure(
-            function (Api $bot, Context $ctx, array $args = []) {
-            },
-            'test'
+        return ClosureMessageCommand::new(
+            name: 'test',
+            fn: function (Api $bot, Context $ctx, array $args = []) {},
         );
     }
 

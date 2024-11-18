@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Events\EventType;
+use Mateodioev\TgHandler\Events\{EventType};
 
 abstract class CallbackCommand extends Command
 {
@@ -18,8 +18,9 @@ abstract class CallbackCommand extends Command
      */
     protected function buildRegex(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
         $format = '(%s)(?: .+)?';
         $alias = [$this->getName(), ...$this->getAliases()];
@@ -31,34 +32,23 @@ abstract class CallbackCommand extends Command
             )
         );
 
+        /** @var Matcher $this->pattern */
         return $this->pattern;
     }
 
     /**
      * @inheritDoc
      */
-    public function match(string $text): bool
+    protected function match(string $text): bool
     {
         return $this->buildRegex()->isValid($text, true);
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
         return 1 === 1 // SQL format
-            && !empty($context->getMessageText())
-            && $this->match($context->getMessageText());
+            && parent::isValid()
+            && !empty($this->ctx()->getMessageText())
+            && $this->match($this->ctx()->getMessageText());
     }
-
-    public function execute(Api $bot, Context $context, array $args = [])
-    {
-        $this->handle($bot, $context, $args);
-    }
-
-    /**
-     * Run command
-     * @param Api $bot Telegram bot api
-     * @param Context $context Telegram context / update
-     * @param array $args Middleware results
-     */
-    abstract public function handle(Api $bot, Context $context, array $args = []);
 }

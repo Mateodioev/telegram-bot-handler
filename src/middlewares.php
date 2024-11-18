@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
 use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
 
-use function array_map, array_filter, call_user_func;
+use Mateodioev\TgHandler\Middleware\Middleware;
+
+use function array_filter;
 
 trait middlewares
 {
@@ -14,24 +18,29 @@ trait middlewares
      * @throws Exception
      * @return array Returns array of middlewares results, only include results that are not null
      */
-    protected function handleMiddlewares(EventInterface $event, Context $context): array
+    public function handleMiddlewares(EventInterface $event, Context $context): array
     {
-        if (!$event->hasMiddlewares()) // Check if command has middlewares
+        if (!$event->hasMiddlewares()) { // Check if command has middlewares
             return [];
-
+        }
         $middlewares = $event->middlewares();
 
-        $params = array_map(fn($middleware) => $this->runMiddleware($middleware, $context), $middlewares);
-        return array_filter($params, fn($param) => $param !== null);
+        $params = [];
+        foreach ($middlewares as $middleware) {
+            $params[$middleware->name()] = $this->runMiddleware($middleware, $context, $params);
+        }
+
+        // Delete empty outputs
+        return array_filter($params, fn ($param) => $param !== null);
     }
 
     /**
      * @throws Exception
      */
-    protected function runMiddleware($middleware, Context $context): mixed
+    protected function runMiddleware(Middleware $middleware, Context $context, array $previousResults): mixed
     {
         try {
-            return call_user_func($middleware, $context, $this->getApi());
+            return $middleware($context, $this->getApi(), $previousResults);
         } catch (StopCommand $e) {
             throw $e;
         } catch (Exception $e) {

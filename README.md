@@ -1,9 +1,11 @@
 # Telegram bot handler
 
+[![CodeFactor](https://www.codefactor.io/repository/github/mateodioev/telegram-bot-handler/badge)](https://www.codefactor.io/repository/github/mateodioev/telegram-bot-handler)
+
 ## Installation
 
 ```bash
-composer require mateodioev/tg-handler
+composer require mateodioev/tg-handler:"~5.3"
 ```
 
 ```php
@@ -38,9 +40,8 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     
-    public function handle(Api $bot, Context $context){
-         // TODO: Implement handle() method.
-         $bot->sendMessage($context->getChatId(), 'Hello!!!');
+    public function execute(array $args = []){
+         $this->api()->sendMessage($this->ctx()->getChatId(), 'Hello!!!');
     }
 }
 
@@ -69,7 +70,7 @@ $myCommand->setPrefixes(['/', '!']); // Set prefix, no need to set `$prefix` pro
 
 ### Using middlewares
 
-You can add middlewares to your command. Middlewares are closures that will be executed before the command. All middlewares results will be passed to the command as an array.
+You can add middlewares to your command. Middlewares will be executed before the command. All middlewares results will be passed to the command as an array with the name of the middleware as a key.
 
 For example, you can create a middleware that will check if the user is authorized, and if not, the command will not be executed.
 
@@ -79,23 +80,27 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     protected array $middlewares = [
-        'authUser'
+        AuthUserMiddleware::class,
     ];
     
-    public function handle(Api $bot, Context $context, array $args = []){
-        // $args[0] is the result of the middleware authUser
-        // Your logic here
+    public function execute(array $args = []){
+        $authenticatedUser = $args[AuthUserMiddleware::class];
     }
 }
+$cmd = MyCommand::get();
+$cmd->addMiddleware(new AuthUserMiddleware); // This works too
 
-// Your middleware function 
-function authUser(Context $ctx, Api $bot) {
-    $user = User::find($ctx->getUserId());
-    if (!$user) {
-        $bot->replyTo($ctx->getChatId(), 'You are not authorized', $ctx->getMessageId())
-        throw new \Mateodioev\TgHandler\Commands\StopCommand(); // Stop command execution
+// Your middleware definition
+class AuthUserMiddleware extends \Mateodioev\TgHandler\Middleware\Middleware
+{
+    public function __invoke(\Mateodioev\TgHandler\Context $ctx,\Mateodioev\Bots\Telegram\Api $api, array $args = [])****{
+        $user = User::find($ctx->getUserId());
+        if (!$user) {
+            $bot->replyTo($ctx->getChatId(), 'You are not authorized', $ctx->getMessageId())
+            throw new \Mateodioev\TgHandler\Commands\StopCommand(); // Stop command execution
+        }
+        return $user; 
     }
-    return $user;
 }
 ```
 > You can use `StopCommand` exception to stop command execution
@@ -110,12 +115,12 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 
 [\Mateodioev\TgHandler\Filters\FilterFromUserId(996202950)];
-class FilterCommand extends MessageCommand
+class FilterCommand extends \Mateodioev\TgHandler\Commands\MessageCommand
 {
     protected string $name = 'filter';
     
-    public function handle(Api $bot, Context $context, array $args = [])
-    {
+    public function execute(array $args = []) {
+        // TODO: Implement execute() method.
     }
 }
 ```
@@ -124,36 +129,67 @@ Now this command only respond to the user ID `996202950`
 
 #### Using multiple filters
 
-You can use `FilterCollection` 
-
-```php
-use Mateodioev\TgHandler\Events\Types\MessageEvent;
-use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
-
-#[FilterCollection(
-    new FilterMessageChat(TestChat::CHAT_ID),
-    new FilterMessageRegex('/.*(mt?proto).*/i')
-)]
-class TestChat extends MessageEvent {
-    const CHAT_ID = 'Put your chat id here';
-    public function execute(Api $bot, Context $context, array $args = []) {
-        // your logic here
-    }
-}
-```
-
-Or can use this sintax
 ```php
 use Mateodioev\TgHandler\Events\Types\MessageEvent;
 use Mateodioev\TgHandler\Filters\{FilterCollection, FilterMessageChat, FilterMessageRegex};
 
 #[FilterMessageChat(TestChat::CHAT_ID), FilterMessageRegex('/.*(filters).*/i')]
 class TestChat extends MessageEvent {
-    const CHAT_ID = 'Put your chat id here';
-    public function execute(Api $bot, Context $context, array $args = []) {
+    const CHAT_ID = 1111111111111;
+    public function execute(array $args = []) {
         // your logic here
     }
 }
+```
+
+If your filters cannot be validated you must implement the `Mateodioev\TgHandler\Commands\Command::onInvalidFilters` method, this method must return true. This is optional
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\Commands\MessageCommand;
+use Mateodioev\TgHandler\Context;
+use Mateodioev\TgHandler\Filters\FilterPrivateChat;
+
+#[FilterPrivateChat]
+class Me extends MessageCommand
+{
+    protected string $name = 'me';
+
+    public function execute(array $args = []) {
+    {
+        // Your logic here
+    }
+
+    public function onInvalidFilters(): bool
+    {
+        $id = $this->ctx()->getUserId();
+
+        if (isAllowed($id)) {
+            // Returning true, the code inside handle method will be executed
+            return true;
+        } else {
+            $this->api()->sendMessage($this->ctx()->getChatId(), 'Only execute this command in a private chat');
+            return false;
+        }
+    }
+}
+```
+
+### Fallback command
+
+If you want to execute a command when no registered command could be validated, you must register the command with the `Mateodioev\TgHandler\Bot::registerCommand` method, which returns an instance of GenericCommand.
+
+```php
+$bot->registerCommand(Start::get())
+    // ->add(OtherCommand::get()) // use this to register more commands
+    ->setFallbackCommand(new YourFallbackCommand);
+// or can use default fallback
+$bot->registerCommand(Start::get())
+    ->withDefaultFallbackCommand(new YourFallbackCommand);
 ```
 
 ### Conversations
@@ -171,11 +207,11 @@ class MyConversation extends MessageConversation
 {
     // This is optional, only for validate the user input message
     protected string $format = 'My name is {w:name}';
-    public function execute(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $bot->sendMessage(
-            $context->getChatId(),
-            'Nice to meet you ' . $this->param('name')
+        $this->api()->sendMessage(
+            $this->ctx()->getChatId(),
+            'Nice to meet you ' . $this->param('name') // Get param defined in $format, if not defined return null
         );
     }
 }
@@ -192,16 +228,16 @@ class Name extends MessageCommand
 {
     protected string $name = 'name';
 
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute(array $args = [])
     {
-        $bot->replyTo(
-            $context->getChatId(),
+        $this->api()->replyTo(
+            $this->ctx()->getChatId(),
             'Please give me your name:',
-            $context->getMessageId(),
+            $this->ctx()->getMessageId(),
         );
 
         // Register next conversation handler
-        return nameConversation::new($context->getChatId(), $context->getUserId());
+        return nameConversation::new($this->ctx()->getChatId(), $this->ctx()->getUserId());
     }
 }
 ```
@@ -214,7 +250,7 @@ $bot->onEvent(Name::get());
 
 > For more details see [examples](examples/) folder
 
-### Loging
+### Logging
 
 #### Basic usage
 
@@ -230,10 +266,12 @@ $bot->setLogger($log); // Save logger
 ```php
 use Mateodioev\TgHandler\Log\{BulkStream, Logger, TerminalStream, PhpNativeStream};
 
-BulkStream::add(new TerminalStream); // print logs in terminal
-BulkStream::add((new PhpNativeStream)->activate(__DIR__)); // save logs in .log file and catch php warnings
+$bulkStream = new BulkStream(
+    new TerminalStream(), // Print logs in terminal
+    (new PhpNativeStream)->activate(__DIR__) // save logs in .log file and catch php warnings
+);
 
-$bot->setLogger(new Logger(new BulkStream));
+$bot->setLogger(new Logger($bulkStream));
 ```
 
 #### Set log level
@@ -277,11 +315,11 @@ class MyCommand extends MessageCommand
     protected string $name = 'start';
     protected string $description = 'Start the bot';
     
-    public function handle(Api $bot, Context $context)
+    public function execute(array $args = [])
     {
-         $this->logger()->debug('Loging inside event');
+         $this->logger()->debug('Logging inside event');
          $this->logger()->info('User {name} use the command {commandName}', [
-            'name'        => $context->getUserName() ?? 'null',
+            'name'        => $this->ctx()->getUserName() ?? 'null',
             'commandName' => $this->name
          ]);
     }
@@ -311,8 +349,8 @@ $bot->setExceptionHandler(UserBanned::class, function (UserBanned $e, Bot $bot, 
     $bot->getApi()->sendMessage($ctx->getChatId(), 'You are banned');
 });
 
-// This manage all UserException sub classes
+// This manage all UserException subclasses
 $bot->setExceptionHandler(UserException::class, function (UserException $e, Bot $bot, Context $ctx) {
-    $bot->getLogger()->warning('Ocurrs an user exception in chat id: ' . $ctx->getChatId());
+    $bot->getLogger()->warning('Occurs an user exception in chat id: ' . $ctx->getChatId());
 });
 ```

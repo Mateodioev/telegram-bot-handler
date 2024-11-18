@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
 use Mateodioev\TgHandler\Events\{
@@ -7,6 +9,8 @@ use Mateodioev\TgHandler\Events\{
     EventType
 };
 
+use function array_keys;
+use function count;
 use function spl_object_id;
 
 /**
@@ -23,15 +27,31 @@ final class EventStorage
     private array $eventsPointers = [];
 
     /**
+     * Resolver all events
+     */
+    public function all(): array
+    {
+        $events = [];
+
+        foreach ($this->events as $type => $eventIds) {
+            $events[$type] = [];
+            foreach ($eventIds as $eventId) {
+                $events[$type][] = $this->eventsPointers[$eventId] ?? null;
+            }
+        }
+        return $events;
+    }
+
+    /**
      * Get total events count. If $eventType is specified, return count of events with this type.
      */
     public function total(?EventType $eventType = null): int
     {
         if ($eventType === null) {
-            return \count($this->eventsPointers);
+            return count($this->eventsPointers);
         }
 
-        return \count($this->events[$eventType->name()] ?? []);
+        return count($this->events[$eventType->name()] ?? []);
     }
 
     /**
@@ -49,6 +69,7 @@ final class EventStorage
     public function resolve(EventType $eventType): array
     {
         $events = [];
+        $eventsPointers = $this->events[$eventType->name()] ?? [];
 
         foreach (($this->events[$eventType->name()] ?? []) as $eventId) {
             $event = $this->get($eventId);
@@ -68,6 +89,10 @@ final class EventStorage
     public function add(EventInterface $event): int
     {
         $eventId = $this->getEventId($event);
+
+        if ($this->exitsEventId($eventId)) {
+            return $eventId;
+        }
 
         $this->eventsPointers[$eventId]         = $event;
         $this->events[$event->type()->name()][] = $eventId;
@@ -144,7 +169,12 @@ final class EventStorage
      */
     public function types(): array
     {
-        $types = \array_keys($this->events);
+        // receive all events if we have a listener for all events
+        if (isset($this->events['all'])) {
+            return [];
+        }
+
+        $types = array_keys($this->events);
         unset($types['all']);
 
         return $types;

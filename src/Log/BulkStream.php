@@ -1,8 +1,11 @@
 <?php
 
+declare (strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
 
-use function array_walk;
+use Revolt\EventLoop;
+use SimpleLogger\streams\LogResult;
 
 /**
  * Collections of streams
@@ -28,11 +31,13 @@ class BulkStream implements Stream
         return $this;
     }
 
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
         array_walk(
             $this->streams,
-            fn(Stream $stream) => $stream->push($message, $level)
+            function (Stream $stream) use ($message, $level): void {
+                EventLoop::defer(fn () => $stream->push($message, $level));
+            }
         );
     }
 }

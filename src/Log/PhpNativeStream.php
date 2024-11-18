@@ -1,25 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
 
 use Amp\File;
 use Amp\File\FilesystemException;
 use Mateodioev\Utils\Exceptions\FileException;
 use Mateodioev\Utils\Files;
+use SimpleLogger\Formatters\{DefaultFormatter, Formatter};
+use SimpleLogger\streams\LogResult;
 
-use function is_dir, date, error_reporting, ini_set, set_error_handler, fclose, fopen, restore_error_handler, sprintf;
+use function date;
+use function error_reporting;
+use function ini_set;
+use function is_dir;
+use function restore_error_handler;
+use function set_error_handler;
+use function sprintf;
 
 /**
  * Log php errors into a file setting an error_handler
  */
-final class PhpNativeStream implements Stream
+class PhpNativeStream implements Stream
 {
     public string $fileLog;
+    private Formatter $formatter;
 
+    public function __construct(?Formatter $formatter = null)
+    {
+        $this->formatter = $formatter ?? new DefaultFormatter();
+    }
+
+    /**
+     * @throws FileException
+     */
     public function activate(string $dir, ?string $file = null): PhpNativeStream
     {
-        if (is_dir($dir) && $file !== null)
+        if (is_dir($dir) && $file !== null) {
             throw new FileException('Invalid dir');
+        }
 
         if ($file !== null) {
             if (!Files::isFile($file)) {
@@ -28,7 +48,7 @@ final class PhpNativeStream implements Stream
                 $this->setFile($file);
             }
         } else {
-            $this->setFile($dir . '/' . date('Y-m-d') . '-php_error.log');
+            $this->setFile($dir . $this->getFileName());
         }
 
         error_reporting(E_ALL);
@@ -41,13 +61,14 @@ final class PhpNativeStream implements Stream
         return $this;
     }
 
+    private function getFileName(): string
+    {
+        return '/' . date('Y-m-d') . '-php_error.log';
+    }
+
     public function setFile(string $path): PhpNativeStream
     {
         $this->fileLog = $path;
-
-        if (!Files::isFile($path)) {
-            fclose(fopen($path, 'a')); // create file if not exists
-        }
 
         return $this;
     }
@@ -59,11 +80,9 @@ final class PhpNativeStream implements Stream
 
     public function errorHandler(int $errno, string $errorStr, string $errorFile, int $errorLine): bool
     {
-        if (!(error_reporting() & $errno))
+        if (!(error_reporting() & $errno)) {
             return false;
-
-        $date = (new \DateTime())->format('Y-m-d H:i:s');
-        $format = "[%s] [%s] %s in %s(%d)" . PHP_EOL;
+        }
 
         switch ($errno) {
             case E_DEPRECATED || E_USER_DEPRECATED:
@@ -79,21 +98,22 @@ final class PhpNativeStream implements Stream
                 return false;
         }
 
-        $message = sprintf($format, $date, $level, $errorStr, $errorFile, $errorLine);
-
-        return $this->write($this->fileLog, $message);
+        return $this->write($this->fileLog, new LogResult(
+            level: $level,
+            message: sprintf('%s in %s:%s', $errorStr, $errorFile, $errorLine),
+        ));
     }
 
-    public function push(string $message, ?string $level = null): void
+    public function push(LogResult $message, ?string $level = null): void
     {
         $this->write($this->fileLog, $message);
     }
 
-    protected function write(string $path, string $content): bool
+    protected function write(string $path, LogResult $content): bool
     {
         try {
-            $fileContent = File\read($path) . $content;
-            File\write($path, $fileContent);
+            File\openFile($path, 'a')
+                ->write($this->formatter->format($content)); // Create file if not exists
             return true;
         } catch (FilesystemException) {
             return false;
@@ -108,4 +128,3 @@ final class PhpNativeStream implements Stream
         $this->deactivate();
     }
 }
-

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Events\Types;
 
-use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
+use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
 
 /**
  * Event for incomming messages

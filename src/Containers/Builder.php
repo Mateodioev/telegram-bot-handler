@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Containers;
 
 use Closure;
@@ -19,7 +21,7 @@ final class Builder
      */
     public static function default(string $class, ?Closure $fn = null): Builder
     {
-        $instance          = new self;
+        $instance          = new self();
         $instance->class   = $class;
         $instance->builder = $fn;
 
@@ -45,8 +47,9 @@ final class Builder
         $class = $this->class;
         $fn = $this->builder;
 
-        if ($fn === null)
+        if ($fn === null) {
             return new $class(...$this->atributtes);
+        }
 
         return $fn(...$this->atributtes);
     }

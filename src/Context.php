@@ -1,17 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
 use Closure;
+use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
 use Mateodioev\Bots\Telegram\Types\{
     Document,
     Update,
     User
 };
 use Mateodioev\TgHandler\Events\EventType;
-use Mateodioev\Bots\Telegram\Interfaces\TypesInterface;
+use Psr\Log\LoggerInterface;
 
-use function explode, substr, strlen, trim;
+use function explode;
+use function strlen;
+use function substr;
+use function trim;
 
 /**
  * Telegram context
@@ -20,6 +26,16 @@ class Context extends Update
 {
     private ?EventType $type = null;
     private array $cache = [];
+    public ?LoggerInterface $logger = null;
+
+    /**
+     * Add logger to the context
+     */
+    public function withLogger(LoggerInterface $logger): static
+    {
+        $this->logger = $logger;
+        return $this;
+    }
 
     public static function fromUpdate(Update $update): Context
     {
@@ -28,7 +44,7 @@ class Context extends Update
 
     public function getUser(): ?User
     {
-        return $this->resolve('user', function () {
+        return $this->resolve('user', function (): ?User {
             return $this->message()?->from()
                 ?? $this->callbackQuery()?->from()
                 ?? $this->inlineQuery()?->from()
@@ -48,7 +64,7 @@ class Context extends Update
 
     public function getChatId(): ?int
     {
-        return $this->resolve('chat_id', function () {
+        return $this->resolve('chat_id', function (): ?int {
             return $this->message()?->chat()?->id()
                 ?? $this->callbackQuery()?->message()?->chat()?->id()
                 ?? null;
@@ -57,7 +73,7 @@ class Context extends Update
 
     public function getMessageId(): ?int
     {
-        return $this->resolve('message_id', function () {
+        return $this->resolve('message_id', function (): ?int {
             return $this->message()?->messageId()
                 ?? $this->callbackQuery()?->message()?->messageId()
                 ?? null;
@@ -66,7 +82,7 @@ class Context extends Update
 
     public function getMessageText(): ?string
     {
-        return $this->resolve('message_text', function () {
+        return $this->resolve('message_text', function (): ?string {
             return $this->message()?->text()
                 ?? $this->callbackQuery()?->data()
                 ?? $this->inlineQuery()?->query()
@@ -76,7 +92,7 @@ class Context extends Update
 
     public function getPayload(): string
     {
-        return $this->resolve('message_payload', function () {
+        return $this->resolve('message_payload', function (): string {
             $text = $this->getMessageText() ?? '';
             $command = explode(' ', $text)[0] ?? '';
             return substr($text, strlen($command) + 1);
@@ -85,7 +101,7 @@ class Context extends Update
 
     public function getChatType(): ?string
     {
-        return $this->resolve('chat_type', function () {
+        return $this->resolve('chat_type', function (): ?string {
             return $this->message()?->chat()?->type()
                 ?? $this->callbackQuery()?->message()?->chat()?->type()
                 ?? null;
@@ -94,14 +110,14 @@ class Context extends Update
 
     public function getFullName(): string
     {
-        return $this->resolve('user_full_name', function () {
+        return $this->resolve('user_full_name', function (): string {
             return trim($this->getFirsName() . ' ' . $this->getLastName());
         });
     }
 
     public function getFirsName(): ?string
     {
-        return $this->resolve('first_name', function () {
+        return $this->resolve('first_name', function (): ?string {
             return $this->getUser()?->firstName()
                 ?? $this->message()?->replyToMessage()?->from()?->firstName()
                 ?? null;
@@ -110,7 +126,7 @@ class Context extends Update
 
     public function getLastName(): ?string
     {
-        return $this->resolve('last_name', function () {
+        return $this->resolve('last_name', function (): ?string {
             return $this->getUser()?->lastName()
                 ?? $this->message()?->replyToMessage()?->from()?->lastName()
                 ?? null;
@@ -119,7 +135,7 @@ class Context extends Update
 
     public function getDocument(): ?Document
     {
-        return $this->resolve('document', function () {
+        return $this->resolve('document', function (): ?Document {
             return $this->message()?->document()
                 ?? $this->message()?->replyToMessage()?->document()
                 ?? null;
@@ -131,8 +147,9 @@ class Context extends Update
      */
     public function eventType(): EventType
     {
-        if ($this->type instanceof EventType)
+        if ($this->type instanceof EventType) {
             return $this->type;
+        }
 
         $eventTypes = $this->properties();
         unset($eventTypes['update_id']);
@@ -150,18 +167,19 @@ class Context extends Update
 
     /**
      * Resolve a value
-     * 
+     *
      * @template T
-     * 
+     *
      * @param string $key
      * @param \Closure(...): T $callback
-     * 
+     *
      * @return T
      */
     private function resolve(string $key, Closure $callback)
     {
-        if (isset($this->cache[$key]))
+        if (isset($this->cache[$key])) {
             return $this->cache[$key];
+        }
 
         $this->cache[$key] = $callback();
         return $this->cache[$key];

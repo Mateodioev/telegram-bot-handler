@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Filters;
 
 use Attribute;
 use Mateodioev\TgHandler\Context;
 
 /**
- * This filter validate the chat id of the message
+ * Validate if the message is from the chat id specified
  */
 #[Attribute]
 final class FilterMessageChat implements Filter
 {
-	public function __construct(
-		private readonly int|string $chatId
-	) {
-	}
+    public function __construct(
+        private readonly int|string $chatId
+    ) {
+    }
 
-	public function apply(Context $ctx): bool
-	{
-		$fromChat = $ctx->getChatId();
+    public function apply(Context $ctx): bool
+    {
+        $fromChat = $ctx->getChatId();
 
-		return $this->chatId === $fromChat;
-	}
+        return $this->chatId === $fromChat;
+    }
 }

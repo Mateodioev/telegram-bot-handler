@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Db;
 
-use Exception;
+use Mateodioev\TgHandler\BotException;
 
-class DbException extends Exception
+class DbException extends BotException
 {
 }

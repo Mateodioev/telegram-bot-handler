@@ -3,10 +3,10 @@
 namespace Tests;
 
 use Mateodioev\TgHandler\Log\{Logger, ResourceStream};
-use Mateodioev\TgHandler\Log\BulkStream;
 use PHPUnit\Framework\TestCase;
 
 use function fopen;
+use function str_contains;
 
 class LoggerTest extends TestCase
 {
@@ -31,9 +31,9 @@ class LoggerTest extends TestCase
 
     protected function logger(): Logger
     {
-        return new Logger(new BulkStream(
-            new ResourceStream(self::streamResource()),
-        ));
+        return new Logger(
+            new ResourceStream(self::streamResource())
+        );
     }
 
     public function testLogMessage()
@@ -45,10 +45,9 @@ class LoggerTest extends TestCase
 
         foreach ($loggers as $level) {
             $output = $this->getStdOutput($logger, $level, $message);
-            // var_dump($output);
 
             $this->assertNotEmpty($output, $level);
-            $this->assertTrue(\str_contains($output, $message), $level);
+            $this->assertTrue(str_contains($output, $message), $level);
         }
     }
 

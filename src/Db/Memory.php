@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Db;
 
 use Mateodioev\TgHandler\{Bot, RunState};
@@ -20,12 +22,14 @@ class Memory implements DbInterface
     public function __construct()
     {
         // This is why the data is missing in every request
-        if (Bot::$state === RunState::webhook)
+        // Use anothe db if you want to save data between requests (like sqlite, mysql, etc)
+        if (Bot::$state === RunState::webhook) {
             throw new DbException('Can\'t use Memory db while bot is running in webhook mode');
+        }
     }
 
     /**
-     * @return bool Always return true
+     * @return true Always return true
      */
     public function save(string $key, mixed $value): bool
     {

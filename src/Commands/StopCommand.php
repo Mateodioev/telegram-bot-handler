@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\TgHandler\{Bot, Context};
-use Exception;
+use Mateodioev\TgHandler\{Bot, BotException, Context};
+
+use function call_user_func;
+use function is_callable;
 
 /**
  * Throw this exception to stop command execution
  */
-class StopCommand extends Exception
+class StopCommand extends BotException
 {
     /**
      * @var callable|Closure|null Custom handler for StopCommand, receive same arguments as StopCommand::handler
@@ -18,12 +22,13 @@ class StopCommand extends Exception
     public static string $parseMode = 'html';
 
     /**
-     * @throws Exception
+     * @throws BotException
      */
     public static function handler(StopCommand $e, Bot $bot, Context $ctx): void
     {
-        if (empty($e->getMessage()))
+        if (empty($e->getMessage())) {
             return;
+        }
 
         if (is_callable(self::$handler)) {
             call_user_func(self::$handler, $e, $bot, $ctx);

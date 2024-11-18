@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Closure;
 
 use function call_user_func;
@@ -13,28 +13,30 @@ use function call_user_func;
  */
 class ClosureMessageCommand extends MessageCommand
 {
-
-    private Closure $command;
-
-    private function __construct()
-    {
+    private function __construct(
+        private readonly Closure $command
+    ) {
     }
 
-    public function setCommand(Closure $fn): static
+    /**
+     * Alias of fromClosure
+     * @see fromClosure
+     */
+    public static function new(string $name, Closure $fn): static
     {
-        $this->command = $fn;
-        return $this;
+        return self::fromClosure($name, $fn);
     }
 
-    public static function fromClosure(Closure $fn, string $name): static
+    public static function fromClosure(string $name, Closure $fn): static
     {
-        $instance = new static;
+        $instance = new static($fn);
         $instance->name = $name;
-        return $instance->setCommand($fn);
+
+        return $instance;
     }
 
-    public function handle(Api $bot, Context $context, array $args = [])
+    public function execute($args = [])
     {
-        call_user_func($this->command, $bot, $context, $args);
+        call_user_func($this->command, $this->api(), $this->ctx(), $args);
     }
 }

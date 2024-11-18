@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Events;
 
 use Exception;
-use function str_replace, ucwords;
+
+use function str_replace;
+use function ucwords;
 
 /**
  * Telegram update type
@@ -30,7 +34,8 @@ enum EventType: string
     /**
      * Get event name
      */
-    public function name(): string {
+    public function name(): string
+    {
         return $this->name;
     }
 
@@ -46,7 +51,8 @@ enum EventType: string
     /**
      * Get event name
      */
-    public function value(): string {
+    public function value(): string
+    {
         return $this->name();
     }
 

@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Commands;
 
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\Context;
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Events\EventType;
+use Mateodioev\TgHandler\Events\{EventType};
 
-use function sprintf, str_replace, join;
+use function join;
+use function sprintf;
+use function str_replace;
 
 abstract class MessageCommand extends Command
 {
-    private const DEFAULT_PARAMS = '{all:payload}?';
+    public const DEFAULT_PARAMS = '{all:payload}?';
     public EventType $type = EventType::message;
 
     /**
@@ -28,8 +30,15 @@ abstract class MessageCommand extends Command
      */
     protected string $params = self::DEFAULT_PARAMS;
 
-    private ?Matcher $pattern = null;
-    private array $commandParams = [];
+    /**
+     * @var Matcher|null Regex used to match the input
+     */
+    protected ?Matcher $pattern = null;
+
+    /**
+     * @var array Contains the
+     */
+    protected array $commandParams = [];
 
     /**
      * @return array
@@ -79,62 +88,53 @@ abstract class MessageCommand extends Command
         return $this->commandParams[$key] ?? $default;
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function buildRegex(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
         // prefix names parameters
         $format = '(?:%s)(?:%s)%s';
+
         $alias = [$this->getName(), ...$this->getAliases()];
+        // For commands like #start
+        $prefixes = str_replace(
+            '#',
+            '\#',
+            join('|', $this->getPrefix()),
+        );
+        // if params was not set, optional payload are allowed
+        $paramsMatcher = $this->params() === self::DEFAULT_PARAMS
+            ? '( ' . self::DEFAULT_PARAMS . ')?'
+            : ' ' . $this->params();
 
         $pattern = sprintf(
             $format,
-            str_replace('#', '\#', join('|', $this->getPrefix())),
-            // for commands like #start
+            $prefixes,
             join('|', $alias),
-                // if params was not set, optional payload are allowed
-            ($this->params() === self::DEFAULT_PARAMS
-                ? '( ' . self::DEFAULT_PARAMS . ')?'
-                : ' ' . $this->params())
+            $paramsMatcher
         );
 
         $this->pattern = new Matcher($pattern);
         return $this->pattern;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function match(string $text): bool
+    protected function match(string $text): bool
     {
         $isValid = $this->buildRegex()->isValid($text, true);
-        if ($isValid)
+        if ($isValid) {
             $this->commandParams = $this->pattern->match($text);
+        }
 
         return $isValid;
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
         return 1 === 1 // SQL format
-            && !empty($context->getMessageText())
-            && $this->match($context->getMessageText());
+            && parent::isValid()
+            && !empty($this->ctx()->getMessageText())
+            && $this->match($this->ctx()->getMessageText());
     }
-
-    public function execute(Api $bot, Context $context, array $args = [])
-    {
-        return $this->handle($bot, $context, $args);
-    }
-
-    /**
-     * Run command
-     * @param Api $bot Telegram bot api
-     * @param Context $context Telegram context / Update
-     * @param array $args Middlewares results
-     */
-    abstract public function handle(Api $bot, Context $context, array $args = []);
 }

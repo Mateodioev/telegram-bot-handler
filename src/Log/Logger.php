@@ -1,28 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
 
-use DateTime, Stringable;
-use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LoggerInterface, LogLevel};
+use Psr\Log\{AbstractLogger, InvalidArgumentException as LogInvalidArgumentException, LogLevel, LoggerInterface};
+use SimpleLogger\streams\LogResult;
 use Smoren\StringFormatter\{StringFormatter, StringFormatterException};
+use Stringable;
 
-use function preg_replace, strtoupper;
+use function preg_replace;
 
 class Logger extends AbstractLogger implements LoggerInterface
 {
     use BitwiseFlag;
 
-    const ALL = 255;
-    const CRITICAL = 128;
-    const ERROR = 64;
-    const EMERGENCY = 32;
-    const ALERT = 16;
-    const WARNING = 8;
-    const NOTICE = 4;
-    const INFO = 2;
-    const DEBUG = 1;
-
-    public static string $messageFormat = "[{time}] [{level}] {message} {EOL}";
+    public const ALL = 255;
+    public const CRITICAL = 128;
+    public const ERROR = 64;
+    public const EMERGENCY = 32;
+    public const ALERT = 16;
+    public const WARNING = 8;
+    public const NOTICE = 4;
+    public const INFO = 2;
+    public const DEBUG = 1;
 
     public function __construct(private readonly Stream $stream)
     {
@@ -43,20 +44,17 @@ class Logger extends AbstractLogger implements LoggerInterface
      */
     public function log($level, Stringable|string $message, array $context = []): void
     {
-        if (!$this->canAccess(self::levelToInt($level)))
+        if (!$this->canAccess(self::levelToInt($level))) {
             return;
-
-        $date = (new DateTime())->format('Y-m-d H:i:s');
+        }
 
         try {
-            $logMessage = StringFormatter::format(self::$messageFormat, [
-                'time' => $date,
-                'level' => strtoupper($level),
-                'message' => $this->makeLogMessage($message, $context),
-                'EOL' => PHP_EOL
-            ]);
-
-            $this->stream->push($logMessage, $level);
+            $message = new LogResult(
+                level: $level,
+                message: $this->makeLogMessage($message, $context),
+                exception: $context['exception'] ?? null,
+            );
+            $this->stream->push($message, $level);
         } catch (StringFormatterException $th) {
             throw new LogInvalidArgumentException($th->getMessage(), $th->getCode(), $th);
         }
@@ -68,8 +66,9 @@ class Logger extends AbstractLogger implements LoggerInterface
     protected function makeLogMessage(string $message, array $context = []): string
     {
         // if context is empty, delete brackets
-        if (empty($context))
+        if (empty($context)) {
             return $this->deleteBrackets($message);
+        }
 
         return StringFormatter::format($message, $context);
     }
@@ -93,14 +92,14 @@ class Logger extends AbstractLogger implements LoggerInterface
     {
         return match ($level) {
             LogLevel::EMERGENCY => self::EMERGENCY,
-            LogLevel::ALERT => self::ALERT,
-            LogLevel::CRITICAL => self::CRITICAL,
-            LogLevel::ERROR => self::ERROR,
-            LogLevel::WARNING => self::WARNING,
-            LogLevel::NOTICE => self::NOTICE,
-            LogLevel::INFO => self::INFO,
-            LogLevel::DEBUG => self::DEBUG,
-            default => self::ALL
+            LogLevel::ALERT     => self::ALERT,
+            LogLevel::CRITICAL  => self::CRITICAL,
+            LogLevel::ERROR     => self::ERROR,
+            LogLevel::WARNING   => self::WARNING,
+            LogLevel::NOTICE    => self::NOTICE,
+            LogLevel::INFO      => self::INFO,
+            LogLevel::DEBUG     => self::DEBUG,
+            default             => self::ALL
         };
     }
 }

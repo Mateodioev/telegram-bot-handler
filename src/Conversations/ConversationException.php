@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Conversations;
 
-use Exception;
+use Mateodioev\TgHandler\BotException;
 
-class ConversationException extends Exception
+class ConversationException extends BotException
 {
 }

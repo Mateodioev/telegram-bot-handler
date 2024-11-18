@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Log;
+
+use SimpleLogger\streams\LogResult;
 
 /**
  * Save messages with method push
@@ -8,8 +12,9 @@ namespace Mateodioev\TgHandler\Log;
 interface Stream
 {
     /**
-     * @param string $message Message to log
+     * Push a message to the log stream
+     * @param LogResult $message Message to log
      * @param ?string $level Log level
      */
-    public function push(string $message, ?string $level = null): void;
+    public function push(LogResult $message, ?string $level = null): void;
 }

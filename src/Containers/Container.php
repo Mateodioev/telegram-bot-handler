@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Containers;
 
 use Closure;
 
+/**
+ * @deprecated v5.8.0 There is no need to use this class anymore.
+ */
 class Container
 {
     /** @var array<class-string, Builder> */
@@ -14,6 +19,10 @@ class Container
 
     private static function makeBuilder(string $class, ?Closure $fn = null): Builder
     {
+        if (isset(self::$builders[$class])) { // if already exists
+            return self::$builders[$class];
+        }
+
         $builder = Builder::default($class, $fn);
 
         self::$builders[$class] = $builder;
@@ -39,6 +48,10 @@ class Container
      */
     public static function singleton(string $class, ?Closure $fn = null): Builder
     {
+        if (isset(self::$builders[$class])) { // if already exists
+            return self::$builders[$class];
+        }
+
         $builder            = self::makeBuilder($class, $fn);
         $builder->singleton = true;
 
@@ -57,23 +70,25 @@ class Container
 
     /**
      * Get class object
-     * 
+     *
      * @param class-string $class
      */
     public static function make(string $class): object
     {
-        if (isset(self::$instances[$class]))
+        if (isset(self::$instances[$class])) {
             return self::$instances[$class];
+        }
 
         if (isset(self::$builders[$class]) === false) {
-            return new $class;
+            return new $class();
         }
 
         $builder  = self::$builders[$class] ?? null;
         $instance = $builder->build();
 
-        if ($builder->singleton)
+        if ($builder->singleton) {
             self::$instances[$class] = $instance;
+        }
 
         return $instance;
     }

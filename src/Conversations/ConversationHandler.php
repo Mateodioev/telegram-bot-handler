@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mateodioev\TgHandler\Conversations;
 
 use Mateodioev\StringVars\Matcher;
-use Mateodioev\TgHandler\Events\{abstractEvent, EventType};
-use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\TgHandler\{Bot, Context, RunState};
+use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
 
 abstract class ConversationHandler extends abstractEvent implements Conversation
 {
@@ -14,9 +14,11 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     private ?Matcher $pattern = null;
     private array $params = [];
 
+    protected ?int $ttl = Conversation::UNDEFINED_TTL;
+
     protected function __construct(
-        private readonly int $chatId,
-        private readonly int $userId,
+        protected readonly int $chatId,
+        protected readonly int $userId,
     ) {
     }
 
@@ -25,26 +27,31 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
      */
     protected static function create(EventType $type, int $chatId, int $userId): static
     {
-        if (Bot::$state === RunState::webhook)
+        /// You can use in webhook mode if you are using servers like amphp or swoole
+        /* if (Bot::$state === RunState::webhook) {
             throw new ConversationException('Can\'t use Conversation handlers while bot is running in webhook mode');
+        } */
 
         return (new static($chatId, $userId))
             ->setType($type);
     }
 
-    public function isValid(Api $bot, Context $context): bool
+    public function isValid(): bool
     {
-        $text = $context->getMessageText() ?? '';
+
+        $text = $this->ctx()->getMessageText() ?? '';
         $isValid = 1 === 1
-            && $this->chatId === $context->getChatId() // validate user and chat id
-            && $this->userId === $context->getUserId()
-            && $this->type() === $context->eventType() // validate event type
+            && $this->type() === $this->ctx()->eventType() // validate event type
+            && $this->chatId === $this->ctx()->getChatId() // validate chat id
+            && $this->userId === $this->ctx()->getUserId() // validate user id
             && $this->getPattern()->isValid($text, true); // Validate pattern
 
-        if ($isValid)
-            $this->params = $this->getPattern()->match($text); // Get params from command
+        if (!$isValid) {
+            return false;
+        }
 
-        return $isValid;
+        $this->params = $this->getPattern()->match($text); // Get params from command
+        return true;
     }
 
     public function param(string $key, mixed $default = null): mixed
@@ -57,8 +64,6 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
         return $this->format;
     }
 
-    abstract public function execute(Api $bot, Context $context, array $args = []);
-
     /**
      * Set event type
      */
@@ -68,11 +73,22 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
         return $this;
     }
 
+    public function ttl(): ?int
+    {
+        return $this->ttl;
+    }
+
+    public function onExpired(): void
+    {
+    }
+
     private function getPattern(): Matcher
     {
-        if ($this->pattern instanceof Matcher)
+        if ($this->pattern instanceof Matcher) {
             return $this->pattern;
+        }
 
+        /** @var Matcher $this->pattern */
         $this->pattern = new Matcher($this->format());
         return $this->pattern;
     }

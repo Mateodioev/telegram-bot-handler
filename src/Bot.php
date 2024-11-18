@@ -1,44 +1,61 @@
 <?php
 
+declare (strict_types=1);
+
 namespace Mateodioev\TgHandler;
 
-use Closure, Exception, Throwable;
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Types\{Update, Error};
-use Mateodioev\TgHandler\Conversations\Conversation;
-use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
-use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
-use Mateodioev\TgHandler\Commands\{StopCommand, ClosureMessageCommand};
-use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
+use Mateodioev\Bots\Telegram\Types\{Error, Update};
+use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
+use Mateodioev\TgHandler\Commands\{Command, StopCommand};
+use Mateodioev\TgHandler\Conversations\Conversation;
+use Mateodioev\TgHandler\Db\{DbInterface, Memory};
+use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
+use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
 use Psr\Log\LoggerInterface;
+use Revolt\EventLoop;
+use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use function array_keys, array_merge, call_user_func, spl_object_id;
 
 class Bot
 {
     use middlewares;
 
-    protected Api $api;
-    protected LoggerInterface $logger;
-    protected ?DbInterface $db = null;
-
-    protected EventStorage $eventStorage;
-
-    /** @var array<string,Closure> */
-    protected array $exceptionHandlers = [];
+    private const string EVENTS_CACHE = 'events.cache.json';
 
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
 
-    public function __construct(string $token)
-    {
-        $this->api = new Api($token);
-        $this->eventStorage = new EventStorage;
+    private Api $api;
+    private LoggerInterface $logger;
+    private ?DbInterface $db = null;
 
-        $this->setExceptionHandler(StopCommand::class, StopCommand::handler(...));
+    private EventStorage $eventStorage;
+    private ExceptionHandler $exceptionHandler;
+
+    /** @var array<string, GenericCommand> */
+    private array $genericCommands = [];
+
+    public function __construct(string $token, LoggerInterface $logger)
+    {
+        $this->exceptionHandler = new ExceptionHandler($logger);
+        $this->exceptionHandler->add(StopCommand::class, StopCommand::handler(...));
+        $this->setLogger($logger);
+
+        $this->api = new Api($token);
+        $this->eventStorage = new EventStorage();
+
+        $this->genericCommands = [
+            EventType::message->value() => new GenericMessageCommand($this),
+            EventType::callback_query->value() => new GenericCallbackCommand($this),
+        ];
+        foreach ($this->genericCommands as $generic) {
+            $this->eventStorage->add($generic);
+        }
     }
 
     /**
@@ -46,11 +63,12 @@ class Bot
      */
     public static function fromConfig(BotConfig $config): Bot
     {
-        $bot = (new static($config->token()))
-            ->setDb($config->db())
-            ->setLogger($config->logger());
+        $bot = (new static($config->token(), $config->logger()))
+            ->setDb($config->db());
 
         $bot->getApi()->setAsync($config->async());
+
+        $bot->getLogger()->debug('Bot created from config {config}', ['config' => $config::class]);
         return $bot;
     }
 
@@ -61,7 +79,9 @@ class Bot
 
     public function setLogger(LoggerInterface $logger): Bot
     {
+        $logger->debug('Set logger {name}', ['name' => $logger::class]);
         $this->logger = $logger;
+        $this->exceptionHandler->logger = $logger;
         return $this;
     }
 
@@ -71,7 +91,7 @@ class Bot
     public function setDefaultLogger(): Bot
     {
         // $stream = new PhpNativeStream;
-        return $this->setLogger(new Logger(new TerminalStream));
+        return $this->setLogger(new Logger(new TerminalStream()));
     }
 
     /**
@@ -82,64 +102,56 @@ class Bot
         try {
             return $this->logger;
         } catch (Throwable) {
-            return $this->setDefaultLogger()->logger;
+            $logger = $this->setDefaultLogger()->logger;
+            $logger->debug('Set default logger {logger} with {stream}', ['logger' => $logger::class, 'stream' => TerminalStream::class]);
+            return $logger;
         }
     }
 
     public function setDb(DbInterface $db): Bot
     {
+        $this->getLogger()->debug('Set db {name}', ['name' => $db::class]);
         $this->db = $db;
         return $this;
     }
 
     protected function getDb(): DbInterface
     {
-        if ($this->db instanceof DbInterface)
+        if ($this->db instanceof DbInterface) {
             return $this->db;
+        }
 
-        $this->db = new Memory; // Default database
-        return $this->db;
+        // Default db
+        return $this->setDb(new Memory())->db;
     }
 
     /**
      * @param string $exceptionName Exception class name
      * @param Closure $handler Handler function, must accept 3 arguments: \Throwable $e, Bot $api, Context $ctx
+     * @see ExceptionHandler::add
      * @return Bot
      */
     public function setExceptionHandler(string $exceptionName, Closure $handler): Bot
     {
-        $this->exceptionHandlers[$exceptionName] = $handler;
+        $this->exceptionHandler->add($exceptionName, $handler);
         return $this;
     }
 
+    /**
+     * @see ExceptionHandler::find
+     */
     private function findExceptionHandler(Throwable $exception): ?Closure
     {
-        $exceptionName = $exception::class;
-        $handler = $this->exceptionHandlers[$exceptionName] ?? null;
-
-        if ($handler !== null)
-            return $handler;
-
-        foreach ($this->exceptionHandlers as $name => $exceptionHandler) {
-            if (\is_a($exception, $name))
-                return $exceptionHandler;
-        }
-
-        return null;
+        return $this->exceptionHandler->find($exception);
     }
 
     /**
      * @return bool Return true if exception handled
+     * @see ExceptionHandler::handle
      */
-    protected function handleException(Throwable $e, Bot $api, Context $ctx): bool
+    public function handleException(Throwable $e, Bot $api, Context $ctx): bool
     {
-        $handler = $this->findExceptionHandler($e);
-
-        if ($handler === null)
-            return false;
-
-        call_user_func($handler, $e, $api, $ctx);
-        return true;
+        return $this->exceptionHandler->handle($e, $api, $ctx);
     }
 
     /**
@@ -147,24 +159,72 @@ class Bot
      */
     public function onEvent(EventInterface $event): Bot
     {
-        $this->eventStorage->add($event);
+        $this->registerEvent($event);
         return $this;
     }
 
     /**
-     * @deprecated use onEvent
-     * @throws Exception is `$type` is invalid Event type
+     * Register new event.
+     * @return int Event id, return -1 if event is a command
      */
-    public function on(string $type, EventInterface $command): Bot
+    private function registerEvent(EventInterface $eventInterface): int
     {
-        return $this->onEvent($command);
+        if ($eventInterface instanceof Command) {
+            $this->registerCommand($eventInterface);
+            return -1;
+        }
+
+        $this->getLogger()->debug('Register event {name} ({type})', [
+            'type' => $eventInterface->type()->prettyName(),
+            'name' => $eventInterface::class,
+        ]);
+
+        return $this->eventStorage->add($eventInterface);
     }
 
-    public function onCommand(string $name, Closure $fn): ClosureMessageCommand
+    /**
+     * Register a conversation with ttl. If ttl is Conversation::UNDEFINED_TTL, the conversation will not be registered.
+     * @internal
+     */
+    public function registerConversation(Conversation $conversation): void
     {
-        $command = ClosureMessageCommand::fromClosure($fn, $name);
-        $this->onEvent($command);
-        return $command;
+        $ttl = $conversation->ttl();
+        $conversationId = $this->registerEvent($conversation);
+
+        if ($ttl === Conversation::UNDEFINED_TTL) {
+            return;
+        }
+
+        $this->getLogger()->info('Conversation {name} with id {id} will be removed after {ttl} seconds', [
+            'name' => $conversation::class,
+            'id' => $conversationId,
+            'ttl' => $ttl,
+        ]);
+
+        $id = EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
+            $deleted = $this->eventStorage->deleteById($conversationId);
+
+            if ($deleted) {
+                $this->getLogger()->debug(
+                    message: 'Conversation with id {id} removed because exceded the ttl ({ttl})',
+                    context: ['id' => $conversationId, 'ttl' => $conversation->ttl()]
+                );
+                EventLoop::queue($conversation->onExpired(...));
+            }
+        });
+    }
+
+    /**
+     * @throws BotException If command type is invalid
+     */
+    public function registerCommand(Command $command): GenericCommand
+    {
+        $type = $command->type();
+        $generic = $this->genericCommands[$type->value()] ?? throw new BotException('Invalid command type: ' . $type->prettyName());
+
+        $generic->add($command);
+
+        return $generic;
     }
 
     /**
@@ -179,7 +239,7 @@ class Bot
         );
     }
 
-    protected function deleteEvent(EventInterface $event): void
+    public function deleteEvent(EventInterface $event): void
     {
         $this->eventStorage->delete($event);
     }
@@ -191,42 +251,49 @@ class Bot
     {
         $api = $this->getApi();
         try {
-            if ($event->isValid($api, $ctx) === false || $event->validateFilters($ctx) === false) {
+            $event->setVars($api, $ctx)
+                ->setDb($this->getDb());
+
+            if ($event->isValid() === false || $event->validateFilters() === false) {
                 // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',
                     [
                         'type' => $event->type()->prettyName(),
-                        'name' => $event::class
+                        'name' => $event::class,
                     ]
                 );
                 return;
             }
 
-            $return = $event->setLogger($this->getLogger())->execute(
-                $api,
-                $ctx,
+            $nextEvent = $event->setLogger($this->getLogger())->execute(
                 $this->handleMiddlewares($event, $ctx)
             );
 
             // Delete temporary event
             if ($event instanceof TemporaryEvent) {
-                $this->eventStorage->delete($event);
+                $this->deleteEvent($event);
             }
             // Register next conversation
-            if ($return instanceof Conversation) {
-                $this->onEvent($return);
+            if ($nextEvent instanceof Conversation) {
+                $this->getLogger()->info('Register next conversation {name}', ['name' => $nextEvent::class]);
+                $this->registerConversation(
+                    $nextEvent->setVars($api, $ctx)
+                        ->setDb($this->getDb())
+                );
             }
         } catch (Throwable $e) {
-            if ($this->handleException($e, $this, $ctx))
+            if ($this->handleException($e, $this, $ctx)) {
                 return;
+            }
 
             $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name'      => $event::class,
+                'name' => $event::class,
                 'eventType' => $event->type()->prettyName(),
-                'reason'    => $e->getMessage(),
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine()
+                'reason' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'exception' => $e,
             ]);
         }
     }
@@ -236,7 +303,7 @@ class Bot
      */
     public function run(Update $update): void
     {
-        $ctx = Context::fromUpdate($update);
+        $ctx = Context::fromUpdate($update)->withLogger($this->getLogger());
 
         array_map(function (EventInterface $event) use ($ctx) {
             $this->executeCommand($event, $ctx);
@@ -248,9 +315,10 @@ class Bot
      */
     public function runAsync(Update $update): void
     {
-        $ctx = Context::fromUpdate($update);
+        $ctx = Context::fromUpdate($update)->withLogger($this->getLogger());
 
         awaitAll(
+            // Create Futures of all commands
             array_map(function (EventInterface $event) use ($ctx) {
                 // create async function for each command
                 return async(function (EventInterface $event, Context $ctx) {
@@ -258,21 +326,41 @@ class Bot
                 }, $event, $ctx);
             }, $this->resolveEvents($ctx))
         );
+        // Wait all futures
     }
 
-    public function byWebhook(bool $async = false): void
+    /**
+     * Run bot in webhook mode
+     *
+     * @param array $up Update array
+     * @param bool $async Run in async mode using AMPHP
+     * @param bool $disableStateCheck Ignore status setting to webhook mode (Useful for conversations or use of Db\Memory)
+     */
+    public function byWebhook(array $up, bool $async = false, bool $disableStateCheck = false): void
     {
-        self::$state = RunState::webhook;
+        if ($disableStateCheck) {
+            $this->getLogger()->notice('Disable state check');
+            $this->getLogger()->debug('Bot current state: {state}', ['state' => self::$state]);
+        } else {
+            self::$state = RunState::webhook;
+        }
 
-        $up = json_decode(
-            file_get_contents('php://input'),
-            true
-        );
-        /** @var Update $update */
         $update = new Update($up);
 
+        $this->handleUpdate($update, $async);
+    }
+
+    /**
+     * Handle the given update
+     */
+    public function handleUpdate(Update $update, bool $async = false): void
+    {
         $this->getApi()->setAsync($async);
-        $async ? $this->runAsync($update) : $this->run($update);
+        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
+
+        $async
+        ? $this->runAsync($update)
+        : $this->run($update);
     }
 
     /**
@@ -282,52 +370,91 @@ class Bot
      * @param boolean $ignoreOldUpdates Ignore old updates
      * @param boolean $async Run in async mode using AMPHP
      */
-    public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): never
+    public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): void
     {
         self::$state = RunState::longpolling;
+        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
 
-        $offset = ($ignoreOldUpdates) ? -1 : 0;
+        $offset = $ignoreOldUpdates ? -1 : 0;
 
         // Get updates only for registered commands
-        $allowedUpdates = $this->getAllowedUpdates();
+        $allowedUpdates = $this->eventStorage->types();
+        $this->getLogger()->info('Allowed updates: {updates}', ['updates' => json_encode($allowedUpdates)]);
 
         $this->getApi()->setAsync($async);
 
+        // enable garbage collector
+        gc_enable();
         while (true) {
+            if (RunState::stop === self::$state) {
+                $this->getLogger()->notice('Bot stop');
+                break;
+            }
 
             try {
                 /** @var Update[]|Error $updates */
                 $updates = $this->getApi()->getUpdates($offset, 100, $timeout, $allowedUpdates);
-                if ($updates instanceof Error)
+                if ($updates instanceof Error) {
+                    $this->getLogger()->emergency('Fail to get updates: {error}', ['error' => $updates->description]);
                     throw new TelegramApiException('(' . ($updates->error_code ?? 0) . ') ' . ($updates->description ?? ''));
+                }
             } catch (TelegramApiException $e) {
                 if ($e->getCode() === 404 || $e->getCode() === 401) { // 401 unauthorized or 404 not found
                     $this->getLogger()->critical('Invalid bot token');
-                    exit(1);
+                    self::terminate();
+                    continue;
                 }
+
                 $this->getLogger()->warning('Fail to get updates: {reason}', ['reason' => $e->getMessage()]);
                 sleep(1);
                 continue;
             }
 
-            if ($async) {
-                array_map(function (Update $update) use (&$offset) {
-                    $offset = $update->updateId() + 1;
-                    async(fn (Update $up) => $this->runAsync($up), $update);
-                }, $updates);
+            $offset = $this->queueUpdates($updates, $offset, $async);
+            unset($updates);
 
-                \Amp\delay(1);
-            } else {
-                array_map(function (Update $update) use (&$offset) {
-                    $offset = $update->updateId() + 1;
-                    $this->run($update);
-                }, $updates);
-            }
+            gc_collect_cycles();
         }
+        if ($async === false) {
+            return;
+        }
+
+        \Amp\delay(1);
+        EventLoop::getDriver()->stop();
     }
 
-    private function getAllowedUpdates(): array
+    private function queueUpdates(array $updates, int $offset, bool $async): int
     {
-        return $this->eventStorage->types();
+        if ($async) {
+            // queue to the event loop
+            async(function () use ($updates, &$offset) {
+                // Add all the updates to the event loop and run in the next tick
+                array_map(function (Update $update) use (&$offset): void {
+                    $offset = $update->updateId() + 1;
+                    EventLoop::defer(function ($callbackId) use ($update) {
+                        $this->runAsync($update);
+                    });
+                }, $updates);
+                \Amp\delay(1);
+            })->await();
+        } else {
+            // run in the same thread
+            array_map(function (Update $update) use (&$offset): void {
+                $offset = $update->updateId() + 1;
+                $this->run($update);
+            }, $updates);
+        }
+
+        return $offset;
+    }
+
+    /**
+     * Stop the bot in the next iteration.
+     * Only works in long polling mode
+     * @protected
+     */
+    public static function terminate(): void
+    {
+        self::$state = RunState::stop;
     }
 }
