@@ -1,5 +1,0 @@
-tests/ export-ignore
-examples/ export-ignore
-
-.editorconfig export-ignore
-.php-cs-fixer.dist.php export-ignore
