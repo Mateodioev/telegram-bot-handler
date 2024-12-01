@@ -96,7 +96,7 @@ class MyEvent extends MessageEvent {
 
 # On invalid filters
 
-If you want to make some action when any of the filters can be validate you can implement the method `onInvalidFilters` in your [command](./commands)
+If you want to make some action when any of the filters can be validate you can implement the method `onInvalidFilters` in your [command](./commands/intro)
 
 > Note: I'm working on move this to the event interface
 
