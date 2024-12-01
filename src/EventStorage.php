@@ -19,6 +19,9 @@ use function spl_object_id;
  */
 final class EventStorage
 {
+    /**
+     * @var array<EventType, int[]>
+     */
     private array $events = [];
 
     /**
@@ -27,7 +30,8 @@ final class EventStorage
     private array $eventsPointers = [];
 
     /**
-     * Resolver all events
+     * Resolve all events
+     * @return array<EventType, EventInterface>
      */
     public function all(): array
     {
@@ -69,10 +73,8 @@ final class EventStorage
     public function resolve(EventType $eventType): array
     {
         $events = [];
-        $eventsPointers = $this->events[$eventType->name()] ?? [];
-
         foreach (($this->events[$eventType->name()] ?? []) as $eventId) {
-            $event = $this->get($eventId);
+            $event = $this->eventsPointers[$eventId] ?? null;
             if ($event === null) {
                 continue;
             }
@@ -94,7 +96,7 @@ final class EventStorage
             return $eventId;
         }
 
-        $this->eventsPointers[$eventId]         = $event;
+        $this->eventsPointers[$eventId] = $event;
         $this->events[$event->type()->name()][] = $eventId;
 
         return $eventId;
@@ -145,7 +147,7 @@ final class EventStorage
     {
 
         $this->eventsPointers = [];
-        $this->events         = [];
+        $this->events = [];
 
         return $this;
     }
