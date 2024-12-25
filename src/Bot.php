@@ -116,7 +116,7 @@ class Bot
         return $this;
     }
 
-    protected function getDb(): DbInterface
+    public function getDb(): DbInterface
     {
         if ($this->db instanceof DbInterface) {
             return $this->db;
