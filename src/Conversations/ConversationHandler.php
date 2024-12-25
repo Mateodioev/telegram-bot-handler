@@ -17,8 +17,8 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     protected ?int $ttl = Conversation::UNDEFINED_TTL;
 
     protected function __construct(
-        protected readonly int $chatId,
-        protected readonly int $userId,
+        public readonly int $chatId,
+        public readonly int $userId,
     ) {
     }
 

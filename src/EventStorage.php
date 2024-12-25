@@ -31,7 +31,7 @@ final class EventStorage
 
     /**
      * Resolve all events
-     * @return array<EventType, EventInterface>
+     * @return array<EventType, EventInterface[]>
      */
     public function all(): array
     {
