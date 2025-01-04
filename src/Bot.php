@@ -10,7 +10,7 @@ use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\{Error, Update};
 use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
 use Mateodioev\TgHandler\Commands\{Command, StopCommand};
-use Mateodioev\TgHandler\Conversations\{Conversation, ConversationHandler};
+use Mateodioev\TgHandler\Conversations\{Conversation};
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
@@ -20,7 +20,6 @@ use Throwable;
 
 use function Amp\async;
 use function Amp\Future\awaitAll;
-use function array_filter;
 
 class Bot
 {
@@ -268,7 +267,7 @@ class Bot
                 $this->deleteEvent($event);
             }
             // Register next conversation
-            $this->removeOtherConversations($ctx);
+            // $this->removeOtherConversations($ctx);
             if ($nextEvent instanceof Conversation) {
                 $this->getLogger()->info('Register next conversation {name}', ['name' => $nextEvent::class]);
                 $this->registerConversation(
@@ -290,36 +289,6 @@ class Bot
                 'exception' => $e,
             ]);
         }
-    }
-
-    /**
-     * @private
-     */
-    public function removeOtherConversations(Context $ctx): void
-    {
-        if ($ctx->eventType() !== EventType::message) {
-            return;
-        }
-
-        $messageEvents = $this->eventStorage->resolve(EventType::message);
-        // Get all conversations
-        $conversationEvents = array_filter($messageEvents, fn ($event) => $event instanceof ConversationHandler);
-
-        $chatId = $ctx->getChatId();
-        $userId = $ctx->getUserId();
-
-        // Remove all conversations from the same chat and user
-        \array_map(function (ConversationHandler $event) use ($chatId, $userId) {
-            if ($event->chatId !== $chatId || $event->userId !== $userId) {
-                return;
-            }
-            $this->getLogger()->info('Remove conversation {name} in chat {chat} for user {user}', [
-                'name' => $event::class,
-                'chat' => $chatId,
-                'user' => $userId,
-            ]);
-            $this->deleteEvent($event);
-        }, $conversationEvents);
     }
 
     /**
