@@ -25,17 +25,17 @@ $bot->onEvent(new Message())
     ->onEvent(new StickerListener());
 
 // Register text command
-$bot->registerCommand(Start::get())
-    ->add(DynamicStart::get())
-    ->add(Params::get())
-    ->add(Name::get())
-    ->add(TriggerConversationCommand::get())
-    ->add(Me::get())
-    ->add(GetUsage::get())
+$bot->registerCommand(new Start())
+    ->add(new DynamicStart())
+    ->add(new Params())
+    ->add(new Name())
+    ->add(new TriggerConversationCommand())
+    ->add(new Me())
+    ->add(new GetUsage())
     ->withDefaultFallbackCommand(); // use this to register the fallback command
 
 // Register callback command
-$bot->registerCommand(ButtonCallback::get())
+$bot->registerCommand(new ButtonCallback())
     ->setFallbackCommand(new FallbackCallbackCommand());
 
 $streamCollection->add(new BotApiStream($bot->getApi(), '996202950'));
