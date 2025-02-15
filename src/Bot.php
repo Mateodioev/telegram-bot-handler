@@ -50,8 +50,8 @@ class Bot
         $this->eventStorage = new EventStorage();
 
         $this->genericCommands = [
-            EventType::message->value() => new GenericMessageCommand($this),
-            EventType::callback_query->value() => new GenericCallbackCommand($this),
+            EventType::message->value() => new GenericMessageCommand(clone $this),
+            EventType::callback_query->value() => new GenericCallbackCommand(clone $this),
         ];
         foreach ($this->genericCommands as $generic) {
             $this->eventStorage->add($generic);
@@ -187,11 +187,20 @@ class Bot
             return;
         }
 
+        if ($ttl < 0) {
+            $this->getLogger()->warning('Invalid ttl for conversation {name} ({ttl})', [
+                'name' => $conversation::class,
+                'ttl' => $ttl,
+            ]);
+            return;
+        }
+
         $this->getLogger()->info('Conversation {name} with id {id} will be removed after {ttl} seconds', [
             'name' => $conversation::class,
             'id' => $conversationId,
             'ttl' => $ttl,
         ]);
+
 
         $id = EventLoop::delay($ttl, function () use ($conversationId, $conversation) {
             $deleted = $this->eventStorage->deleteById($conversationId);
@@ -241,25 +250,26 @@ class Bot
      */
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
+        $cloneEvent = clone $event;
         $api = $this->getApi();
         try {
-            $event->setVars($api, $ctx)
+            $cloneEvent->setVars($api, $ctx)
                 ->setDb($this->getDb());
 
-            if ($event->isValid() === false || $event->validateFilters() === false) {
+            if ($cloneEvent->isValid() === false || $cloneEvent->validateFilters() === false) {
                 // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',
                     [
-                        'type' => $event->type()->prettyName(),
-                        'name' => $event::class,
+                        'type' => $cloneEvent->type()->prettyName(),
+                        'name' => $cloneEvent::class,
                     ]
                 );
                 return;
             }
 
-            $nextEvent = $event->setLogger($this->getLogger())->execute(
-                $this->handleMiddlewares($event, $ctx)
+            $nextEvent = $cloneEvent->setLogger($this->getLogger())->execute(
+                $this->handleMiddlewares($cloneEvent, $ctx)
             );
 
             // Delete temporary event
@@ -281,8 +291,8 @@ class Bot
             }
 
             $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name' => $event::class,
-                'eventType' => $event->type()->prettyName(),
+                'name' => $cloneEvent::class,
+                'eventType' => $cloneEvent->type()->prettyName(),
                 'reason' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -419,17 +429,14 @@ class Bot
     private function queueUpdates(array $updates, int $offset, bool $async): int
     {
         if ($async) {
-            // queue to the event loop
-            async(function () use ($updates, &$offset) {
-                // Add all the updates to the event loop and run in the next tick
-                array_map(function (Update $update) use (&$offset): void {
-                    $offset = $update->updateId() + 1;
-                    EventLoop::defer(function ($callbackId) use ($update) {
-                        $this->runAsync($update);
-                    });
-                }, $updates);
-                \Amp\delay(1);
-            })->await();
+            // Add all the updates to the event loop and run in the next tick
+            array_map(function (Update $update) use (&$offset): void {
+                $offset = $update->updateId() + 1;
+                EventLoop::defer(function ($callbackId) use ($update) {
+                    $this->runAsync($update);
+                });
+            }, $updates);
+            \Amp\delay(1);
         } else {
             // run in the same thread
             array_map(function (Update $update) use (&$offset): void {

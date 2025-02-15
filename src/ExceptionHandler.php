@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Mateodioev\TgHandler;
 
@@ -70,6 +70,9 @@ class ExceptionHandler
         return true;
     }
 
+    /**
+     * Handler use by amphp
+     */
     public function toEventLoopHandler(): Closure
     {
         return function (Throwable $exception) {

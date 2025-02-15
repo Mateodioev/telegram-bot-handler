@@ -7,7 +7,7 @@ namespace Mateodioev\TgHandler\Events\Types;
 use Mateodioev\TgHandler\Events\{EventType, abstractEvent};
 
 /**
- * Event for incomming messages
+ * Event for incoming messages
  */
 abstract class MessageEvent extends abstractEvent
 {

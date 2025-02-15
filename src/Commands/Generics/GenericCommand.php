@@ -32,7 +32,7 @@ abstract class GenericCommand extends abstractEvent
 
     public function execute($args = [])
     {
-        $handled      = false;                     // If any command is handled set to true
+        $handled = false;                     // If any command is handled set to true
         $cancellation = new DeferredCancellation();
 
         /** @var \Amp\Future[] $futures */
@@ -70,11 +70,11 @@ abstract class GenericCommand extends abstractEvent
             }
 
             $this->logger()->error('Fail to run command {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name'      => $cmd::class,
+                'name' => $cmd::class,
                 'eventType' => $cmd->type()->prettyName(),
-                'reason'    => $e->getMessage(),
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine(),
+                'reason' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'exception' => $e,
             ]);
             return false;
@@ -83,16 +83,17 @@ abstract class GenericCommand extends abstractEvent
 
     private function runCommand(Command $cmd): bool
     {
-        $cmd->setVars($this->api(), $this->ctx())
+        $cloneCmd = clone $cmd;
+        $cloneCmd->setVars($this->api(), $this->ctx())
             ->setDb($this->db());
 
-        if (!$cmd->isValid()) {
+        if (!$cloneCmd->isValid()) {
             return false;
         }
 
         // Cant validate filter but method onInvalidFilter return true
-        if (!$cmd->validateFilters()) {
-            $executed = $cmd->onInvalidFilters();
+        if (!$cloneCmd->validateFilters()) {
+            $executed = $cloneCmd->onInvalidFilters();
             // null = not execute
             // false = execute, but cant continue
             // true = execute, and continue
@@ -104,24 +105,24 @@ abstract class GenericCommand extends abstractEvent
             }
         }
 
-        $nextEvent = $cmd->setLogger($this->logger())->execute(
-            $this->bot->handleMiddlewares($cmd, $this->ctx())
+        $nextEvent = $cloneCmd->setLogger($this->logger())->execute(
+            $this->bot->handleMiddlewares($cloneCmd, $this->ctx())
         );
 
         $this->getLogger()->debug('Command {name} ({eventType}) executed', [
-            'name'      => $cmd::class,
-            'eventType' => $cmd->type()->prettyName(),
+            'name' => $cloneCmd::class,
+            'eventType' => $cloneCmd->type()->prettyName(),
         ]);
 
         // Delete temporary event
-        if ($cmd instanceof TemporaryEvent) {
-            $this->bot->deleteEvent($cmd);
+        if ($cloneCmd instanceof TemporaryEvent) {
+            $this->bot->deleteEvent($cloneCmd);
         }
 
         // Register next conversation
         if ($nextEvent instanceof Conversation) {
             $this->bot->registerConversation(
-                $nextEvent->setVars($this->botApi, $this->botContext)
+                $nextEvent->setVars($this->botApi, clone $this->botContext)
                     ->setDb($this->db())
             );
         }
@@ -132,7 +133,7 @@ abstract class GenericCommand extends abstractEvent
     public function add(Command $command): static
     {
         $this->logger()->debug('Register command {name} ({eventType})', [
-            'name'      => $command::class,
+            'name' => $command::class,
             'eventType' => $command->type()->prettyName(),
         ]);
         $this->commands[$command->getName()] = $command;
