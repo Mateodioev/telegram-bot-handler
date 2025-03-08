@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mateodioev\TgHandler;
 
 use Closure;
+use Mateodioev\TgHandler\Commands\StopCommand;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -66,12 +67,17 @@ class ExceptionHandler
         }
 
         call_user_func($handler, $e, $bot, $ctx);
-        $this->logger?->error('Exception "{e}" handled', ['e' => $e::class]);
+        // Ignore StopCommand exceptions bc is used to stop the bot
+        if ($e::class === StopCommand::class) {
+            return true;
+        }
+        $this->logger?->info('Exception "{e}" handled', ['e' => $e::class]);
         return true;
     }
 
     /**
      * Handler use by amphp
+     * @deprecated v5.9.3
      */
     public function toEventLoopHandler(): Closure
     {
@@ -82,7 +88,7 @@ class ExceptionHandler
             }
 
             $handler($exception);
-            $this->logger?->error('EventLoop Exception "{e}" handled', ['e' => $exception::class]);
+            $this->logger?->info('EventLoop Exception "{e}" handled', ['e' => $exception::class]);
         };
     }
 }

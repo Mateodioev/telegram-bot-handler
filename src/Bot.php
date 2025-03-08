@@ -277,7 +277,6 @@ class Bot
                 $this->deleteEvent($event);
             }
             // Register next conversation
-            // $this->removeOtherConversations($ctx);
             if ($nextEvent instanceof Conversation) {
                 $this->getLogger()->info('Register next conversation {name}', ['name' => $nextEvent::class]);
                 $this->registerConversation(
@@ -290,7 +289,7 @@ class Bot
                 return;
             }
 
-            $this->getLogger()->error('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
+            $this->getLogger()->debug('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
                 'name' => $cloneEvent::class,
                 'eventType' => $cloneEvent->type()->prettyName(),
                 'reason' => $e->getMessage(),
@@ -359,7 +358,6 @@ class Bot
     public function handleUpdate(Update $update, bool $async = false): void
     {
         $this->getApi()->setAsync($async);
-        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
 
         $async
             ? $this->runAsync($update)
@@ -376,7 +374,6 @@ class Bot
     public function longPolling(int $timeout, bool $ignoreOldUpdates = false, bool $async = false): void
     {
         self::$state = RunState::longpolling;
-        EventLoop::setErrorHandler($this->exceptionHandler->toEventLoopHandler());
 
         $offset = $ignoreOldUpdates ? -1 : 0;
 
