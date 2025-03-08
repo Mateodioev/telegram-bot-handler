@@ -228,7 +228,7 @@ abstract class abstractEvent implements EventInterface
         return array_map(static function (mixed $param) {
             if (is_numeric($param)) {
                 return str_contains($param, '.') ? (float) $param : (int) $param;
-            } elseif  ($param === 'true' || $param === 'false') {
+            } elseif ($param === 'true' || $param === 'false') {
                 return $param === 'true';
             } else {
                 return (string) $param;

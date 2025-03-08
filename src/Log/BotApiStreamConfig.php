@@ -4,25 +4,28 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler\Log;
 
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use SimpleLogger\streams\LogResult;
+
+use function sprintf;
 
 final class BotApiStreamConfig
 {
     /**
-     * @var \Closure(string $logDir, string $level, int $timestamp):string $fileFormat Function to get the log message
+     * @var Closure(string $logDir, string $level, int $timestamp):string $fileFormat Function to get the log message
      */
-    private \Closure $fileFormat;
+    private Closure $fileFormat;
 
     /**
-     * @var \Closure(LogResult $message):string $messageFormat Function to format the log message
+     * @var Closure(LogResult $message):string $messageFormat Function to format the log message
      */
-    public \Closure $messageFormat;
+    public Closure $messageFormat;
 
     /**
-     * @var \Closure(LogResult $message):string $fileContentFormat Function to get the content of the log file
+     * @var Closure(LogResult $message):string $fileContentFormat Function to get the content of the log file
      */
-    private \Closure $fileContentFormat;
+    private Closure $fileContentFormat;
 
     /**
      * @param string $token Bot token from BotFather
@@ -36,8 +39,8 @@ final class BotApiStreamConfig
         public string $logDir,
         public bool $sendFiles = true,
         private bool $async = true,
-        ?\Closure $fileFormat = null,
-        ?\Closure $messageFormat = null,
+        ?Closure $fileFormat = null,
+        ?Closure $messageFormat = null,
     ) {
         $this->fileFormat = $fileFormat ?? $this->defaultGetFileNameFormatter(...);
         $this->messageFormat = $messageFormat ?? $this->defaultGetMessageFormatter(...);
@@ -88,25 +91,23 @@ final class BotApiStreamConfig
         return $this;
     }
 
-    public function withFileFormat(\Closure $fileFormat): self
+    public function withFileFormat(Closure $fileFormat): self
     {
         $this->fileFormat = $fileFormat;
         return $this;
     }
 
-    public function withMessageFormat(\Closure $messageFormat): self
+    public function withMessageFormat(Closure $messageFormat): self
     {
         $this->messageFormat = $messageFormat;
         return $this;
     }
 
-    public function withFileContentFormat(\Closure $fileContentFormat): self
+    public function withFileContentFormat(Closure $fileContentFormat): self
     {
         $this->fileContentFormat = $fileContentFormat;
         return $this;
     }
-
-    ### Formatter
 
     public function getFileName(LogResult $logResult): string
     {
@@ -120,14 +121,9 @@ final class BotApiStreamConfig
         return $formatter($logResult);
     }
 
-
-    ############# 
-    ############# private formatter
-    ############# 
-
     private function defaultGetFileNameFormatter(string $logDir, string $level, int $timestamp): string
     {
-        return \sprintf(
+        return sprintf(
             "%s/%s-%s.log",
             $logDir,
             \strtoupper($level),

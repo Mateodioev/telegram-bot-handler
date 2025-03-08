@@ -7,7 +7,6 @@ namespace Mateodioev\TgHandler;
 use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
-
 use Mateodioev\TgHandler\Middleware\Middleware;
 
 use function array_filter;
