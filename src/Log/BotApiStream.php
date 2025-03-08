@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler\Log;
 
-use App\Models\Tools\ArrayWrapper;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\Bots\Telegram\Types\InputFile;
 use SimpleLogger\streams\LogResult;
 
 use function str_replace;
@@ -18,8 +18,7 @@ class BotApiStream implements Stream
     use BitwiseFlag;
 
     public function __construct(
-        protected Api $api,
-        protected string $chatId
+        private BotApiStreamConfig $config,
     ) {
         $this->setLevel(Logger::CRITICAL | Logger::ERROR | Logger::EMERGENCY);
     }
@@ -36,64 +35,56 @@ class BotApiStream implements Stream
             return;
         }
 
-        $level = \strtoupper($message->level);
-        $strMessage = $this->replaceIllegalCharacters($message->message);
-        $messages = self::chunkString($strMessage, 1000);
+        if (
+            ($message->exception !== null || strlen($message->message) > 1000)
+            && $this->config->sendFiles
+        ) {
+            $this->sendMessageAsFile($message);
+            return;
+        }
 
-        array_walk($messages, function (string &$message) use ($level) {
-            $message = "<b>{$level}</b>\n<pre>{$message}</pre>";
-            $this->api->sendMessage($this->chatId, $message, ['parse_mode' => 'html']);
-        });
+        $this->sendSingleMessage($message);
+    }
+
+    private function sendMessageAsFile(LogResult $message): void
+    {
+        $file = $this->config->getFileName($message);
+        \Amp\File\write($file, $this->config->getFileContent($message));
+
+        $caption = $this->formatMessage($message);
+        $api = $this->config->getApi();
+
+        $api->sendDocument(
+            $this->config->channelID,
+            InputFile::fromLocal($file),
+            [
+                'caption' => $caption,
+                'parse_mode' => 'html',
+            ]
+        );
+
+        \Amp\File\deleteFile($file);
+    }
+
+    private function sendSingleMessage(LogResult $message): void
+    {
+        $message = $this->formatMessage($message);
+        (new Api($this->config->token))
+            ->sendMessage(
+                $this->config->channelID,
+                $message,
+                ['parse_mode' => 'html']
+            );
+    }
+
+    private function formatMessage(LogResult $message): string
+    {
+        $formatter = $this->config->messageFormat;
+        return $this->replaceIllegalCharacters($formatter($message));
     }
 
     protected function replaceIllegalCharacters(string $message): string
     {
         return str_replace(['<', '>'], ['&lt;', '&gt;'], $message);
-    }
-
-    /**
-     * @return string[]
-     */
-    private static function chunkString(string $str, int $maxLength = 1024): array
-    {
-        $result = [];
-        $textLength = strlen($str);
-        $position = 0;
-
-        while ($position < $textLength) {
-            // Si la posición + longitud supera el texto, tomar lo que quede
-            if ($position + $maxLength >= $textLength) {
-                $result[] = substr($str, $position);
-                break;
-            }
-
-            // Buscar un punto de ruptura adecuado
-            $puntoCorte = $position + $maxLength;
-
-            // Verificar si estamos en medio de una palabra
-            if (!in_array($str[$puntoCorte], [' ', ',', '.', ';', ':', "\n", "\r", "\t"])) {
-                // Retroceder hasta encontrar un delimitador
-                $haystack = substr($str, $position, $maxLength);
-                $ultimoDelimitador = max(
-                    strrpos($haystack, ' '),
-                    strrpos($haystack, ','),
-                    strrpos($haystack, '.'),
-                    strrpos($haystack, ';'),
-                    strrpos($haystack, ':'),
-                    strrpos($haystack, "\n"),
-                    strrpos($haystack, "\r"),
-                    strrpos($haystack, "\t")
-                );
-
-                if ($ultimoDelimitador !== false) {
-                    $puntoCorte = $position + $ultimoDelimitador + 1;
-                }
-            }
-
-            $result[] = substr($str, $position, $puntoCorte - $position);
-            $position = $puntoCorte;
-        }
-
-        return $result;
     }
 }
