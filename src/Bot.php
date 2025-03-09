@@ -250,27 +250,30 @@ class Bot
      */
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
-        $cloneEvent = clone $event;
+        $clonedEvent = clone $event;
         $api = $this->getApi();
         try {
-            $cloneEvent->setVars($api, $ctx)
+            $clonedEvent->setVars($api, $ctx)
                 ->setDb($this->getDb());
 
-            if ($cloneEvent->isValid() === false || $cloneEvent->validateFilters() === false) {
+            if ($clonedEvent->isValid() === false || $clonedEvent->validateFilters() === false) {
                 // Invalid event
                 $this->getLogger()->debug(
                     'It\'s not possible to validate the event {name} ({type})',
                     [
-                        'type' => $cloneEvent->type()->prettyName(),
-                        'name' => $cloneEvent::class,
+                        'type' => $clonedEvent->type()->prettyName(),
+                        'name' => $clonedEvent::class,
                     ]
                 );
                 return;
             }
 
-            $nextEvent = $cloneEvent->setLogger($this->getLogger())->execute(
-                $this->handleMiddlewares($cloneEvent, $ctx)
-            );
+            $logger = $this->getLogger();
+            $nextEvent = $clonedEvent
+                ->setLogger($logger)
+                ->execute(
+                    $this->handleMiddlewares($clonedEvent, $ctx, $logger)
+                );
 
             // Delete temporary event
             if ($event instanceof TemporaryEvent) {
@@ -290,8 +293,8 @@ class Bot
             }
 
             $this->getLogger()->debug('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name' => $cloneEvent::class,
-                'eventType' => $cloneEvent->type()->prettyName(),
+                'name' => $clonedEvent::class,
+                'eventType' => $clonedEvent->type()->prettyName(),
                 'reason' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
