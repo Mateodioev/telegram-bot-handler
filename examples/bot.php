@@ -6,6 +6,7 @@ use Mateodioev\TgHandler\Commands\Generics\FallbackCallbackCommand;
 use Mateodioev\TgHandler\Db\Memory;
 use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
 use Mateodioev\TgHandler\{Bot, Context};
+use Mateodioev\TgHandler\Log\BotApiStreamConfig;
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/bootstrap.php';
@@ -38,7 +39,9 @@ $bot->registerCommand(new Start())
 $bot->registerCommand(new ButtonCallback())
     ->setFallbackCommand(new FallbackCallbackCommand());
 
-$streamCollection->add(new BotApiStream($bot->getApi(), '996202950'));
+$streamCollection->add(new BotApiStream(
+    BotApiStreamConfig::default($config->token(), '996202950')
+));
 $bot->setLogger(new Logger($streamCollection));
 
 try {
