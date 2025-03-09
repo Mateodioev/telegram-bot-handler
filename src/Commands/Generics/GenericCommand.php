@@ -106,7 +106,7 @@ abstract class GenericCommand extends abstractEvent
         }
 
         $nextEvent = $cloneCmd->setLogger($this->logger())->execute(
-            $this->bot->handleMiddlewares($cloneCmd, $this->ctx())
+            $this->bot->handleMiddlewares($cloneCmd, $this->ctx(), $this->logger())
         );
 
         $this->getLogger()->debug('Command {name} ({eventType}) executed', [
@@ -148,7 +148,7 @@ abstract class GenericCommand extends abstractEvent
     }
 
     /**
-     * @param Closure(Bot, Context, Commands[]) $fallbackCommand
+     * @param Closure $fallbackCommand (Bot, Context, Commands[])
      * @return static
      */
     public function setFallbackCallable(Closure $fallbackCommand): static
