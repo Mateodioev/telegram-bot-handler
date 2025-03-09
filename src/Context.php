@@ -171,7 +171,7 @@ class Context extends Update
      * @template T
      *
      * @param string $key
-     * @param \Closure(...): T $callback
+     * @param Closure $callback (...): T $callback
      *
      * @return T
      */

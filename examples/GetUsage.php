@@ -15,15 +15,15 @@ class GetUsage extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
-        $bytesToMb            = fn (int $bytes): float => \round($bytes / 1024 / 1024);
+        $bytesToMb            = fn (int $bytes): float => round($bytes / 1024 / 1024);
         $memory_usage         = $this->db()->get('memory_usage');
-        $current_memory_usage = \memory_get_usage();
+        $current_memory_usage = memory_get_usage();
 
         $this->api()->replyToMessage(
             $this->ctx()->message(),
-            \sprintf(
+            sprintf(
                 "Start usage: %sMb\nCurrent Usage: %sMb\nDifference: %sMb",
                 $bytesToMb($memory_usage),
                 $bytesToMb($current_memory_usage),

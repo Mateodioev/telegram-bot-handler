@@ -52,7 +52,8 @@ final class FallbackMessageCommand implements FallbackCommand
     }
 
     /**
-     * @param MessageCommand[] $command
+     * @param array $commands
+     * @return FallbackMessageCommand
      */
     public function setCommands(array $commands): static
     {

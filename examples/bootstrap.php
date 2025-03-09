@@ -18,7 +18,7 @@ require __DIR__ . '/GetUsage.php';
 require __DIR__ . '/ButtonCallback.php';
 require __DIR__ . '/Message.php';
 require __DIR__ . '/Name.php';
-require __DIR__ . '/nameConversation.php';
+require __DIR__ . '/NameConversation.php';
 require __DIR__ . '/TestFilters.php';
 
 // Log php error and print in terminal

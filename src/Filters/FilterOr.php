@@ -11,11 +11,11 @@ use Mateodioev\TgHandler\Context;
  * Return true is `$a` or `$b` return true after call method {@see Filter::apply}
  */
 #[Attribute]
-final class FilterOr implements Filter
+final readonly class FilterOr implements Filter
 {
     public function __construct(
-        private readonly Filter $a,
-        private readonly Filter $b
+        private Filter $a,
+        private Filter $b
     ) {
     }
 

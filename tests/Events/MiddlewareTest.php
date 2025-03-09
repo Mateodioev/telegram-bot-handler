@@ -20,7 +20,7 @@ class MiddlewareTest extends TestCase
 
     public function testCreateMiddlewareFromClosure()
     {
-        $middleware = ClosureMiddleware::create(function (Context $ctx, Api $api) {
+        $middleware = ClosureMiddleware::create(function () {
             return 'middleware from closure :)';
         });
 
@@ -53,7 +53,7 @@ class MiddlewareTest extends TestCase
         $event->addMiddleware($this->createMiddleware());
 
         $this->assertNotEmpty($event->middlewares());
-        $this->assertEquals(2, count($event->middlewares()));
+        $this->assertCount(2, $event->middlewares());
         $this->assertIsArray($event->middlewares());
     }
 
@@ -73,7 +73,7 @@ class MiddlewareTest extends TestCase
 
     public function testMiddlewareWithParams()
     {
-        $middleware = $this->createMiddlewareWithParams('param');
+        $middleware = $this->createMiddlewareWithParams();
         $this->assertIsString($middleware->name());
         $this->assertEquals('param', $middleware->name());
 
@@ -81,14 +81,14 @@ class MiddlewareTest extends TestCase
         $event->addMiddleware($middleware);
 
         $this->assertNotEmpty($event->middlewares());
-        $this->assertEquals(1, count($event->middlewares()));
+        $this->assertCount(1, $event->middlewares());
         $this->assertIsArray($event->middlewares());
 
         $this->assertIsString($event->middlewares()['param']->name());
         $this->assertEquals('param', $event->middlewares()['param']->name());
     }
 
-    private function createMiddleware()
+    private function createMiddleware(): Middleware
     {
         return new class () extends Middleware {
             public function name(): string
@@ -96,14 +96,14 @@ class MiddlewareTest extends TestCase
                 return '#' . spl_object_id($this); // random name for testing
             }
 
-            public function __invoke(Context $context, Api $api, array $args = []): mixed
+            public function __invoke(Context $ctx, Api $api, array $args = []): string
             {
                 return 'middleware';
             }
         };
     }
 
-    private function createEvent()
+    private function createEvent(): AllEvent
     {
         return new class () extends AllEvent {
             public function execute(array $args = [])
@@ -113,15 +113,15 @@ class MiddlewareTest extends TestCase
         };
     }
 
-    private function createMiddlewareWithParams(string $param)
+    private function createMiddlewareWithParams(): Middleware
     {
-        return new class ($param) extends Middleware {
+        return new class ('param') extends Middleware {
             public function __construct(
-                private string $param
+                private readonly string $param
             ) {
             }
 
-            public function __invoke(Context $ctx, Api $api, array $args = [])
+            public function __invoke(Context $ctx, Api $api, array $args = []): string
             {
                 return $this->param;
             }

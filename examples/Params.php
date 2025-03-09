@@ -15,11 +15,11 @@ class Params extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
         $this->api()->replyTo(
             $this->ctx()->getChatId(),
-            \sprintf(
+            sprintf(
                 'User: %s | Name: %s | Age: %d',
                 $this->param('user'),
                 $this->param('name'),

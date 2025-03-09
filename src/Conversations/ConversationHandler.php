@@ -40,8 +40,7 @@ abstract class ConversationHandler extends abstractEvent implements Conversation
     {
 
         $text = $this->ctx()->getMessageText() ?? '';
-        $isValid = 1 === 1
-            && $this->type() === $this->ctx()->eventType() // validate event type
+        $isValid = $this->type() === $this->ctx()->eventType() // validate event type
             && $this->chatId === $this->ctx()->getChatId() // validate chat id
             && $this->userId === $this->ctx()->getUserId() // validate user id
             && $this->getPattern()->isValid($text, true); // Validate pattern

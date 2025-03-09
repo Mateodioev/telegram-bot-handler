@@ -14,8 +14,8 @@ use function strtolower;
 
 class BotConfig
 {
-    public const DEFAULT_DB = Memory::class;
-    public const DEFAULT_STREAM_LOGGER = PhpNativeStream::class;
+    public const string DEFAULT_DB = Memory::class;
+    public const string DEFAULT_STREAM_LOGGER = PhpNativeStream::class;
 
     protected ?string $botToken = null;
     protected ?DbInterface $db = null;

@@ -131,7 +131,7 @@ final class EventStorage
         return true;
     }
 
-    public function clearType(EventType $type): static
+    public function clearType(EventType $type): EventStorage
     {
         $this->events[$type->name()] = [];
 
@@ -143,7 +143,7 @@ final class EventStorage
         return $this;
     }
 
-    public function clear(): static
+    public function clear(): EventStorage
     {
 
         $this->eventsPointers = [];

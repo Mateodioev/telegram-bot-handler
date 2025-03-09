@@ -8,6 +8,7 @@ use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Types\InputFile;
 use SimpleLogger\streams\LogResult;
 
+use function Amp\File\{deleteFile, write};
 use function str_replace;
 
 /**
@@ -49,7 +50,7 @@ class BotApiStream implements Stream
     private function sendMessageAsFile(LogResult $message): void
     {
         $file = $this->config->getFileName($message);
-        \Amp\File\write($file, $this->config->getFileContent($message));
+        write($file, $this->config->getFileContent($message));
 
         $caption = $this->formatMessage($message);
         $api = $this->config->getApi();
@@ -63,7 +64,7 @@ class BotApiStream implements Stream
             ]
         );
 
-        \Amp\File\deleteFile($file);
+        deleteFile($file);
     }
 
     private function sendSingleMessage(LogResult $message): void

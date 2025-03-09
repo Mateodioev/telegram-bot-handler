@@ -10,6 +10,7 @@ use Mateodioev\Bots\Telegram\Exception\InvalidFileException;
 use SimpleLogger\Formatters\{DefaultFormatter, Formatter};
 use SimpleLogger\streams\LogResult;
 
+use function Amp\File\openFile;
 use function date;
 use function realpath;
 
@@ -25,11 +26,11 @@ class FileStream implements Stream
 
     /**
      * @throws FilesystemException
+     * @throws InvalidFileException
      */
     public function __construct(string $fileName)
     {
-        $this->file = \Amp\File\openFile($fileName, self::OPEN_MODE);
-        // $this->file = fopen($fileName, 'a');
+        $this->file = openFile($fileName, self::OPEN_MODE);
 
         if (!$this->file->isWritable()) {
             throw new InvalidFileException('File ' . $fileName . ' is not writable');
@@ -40,7 +41,7 @@ class FileStream implements Stream
 
     /**
      * Create a new file stream with today's date
-     * @throws FilesystemException
+     * @throws FilesystemException|InvalidFileException
      */
     public static function fromToday(string $dir): FileStream
     {

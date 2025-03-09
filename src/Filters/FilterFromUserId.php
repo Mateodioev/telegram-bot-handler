@@ -11,10 +11,10 @@ use Mateodioev\TgHandler\Context;
  * Validate if the message is from the user id specified
  */
 #[Attribute]
-final class FilterFromUserId implements Filter
+final readonly class FilterFromUserId implements Filter
 {
     public function __construct(
-        private readonly int $userId
+        private int $userId
     ) {
     }
 

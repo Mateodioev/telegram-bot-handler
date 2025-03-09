@@ -30,7 +30,7 @@ abstract class GenericCommand extends abstractEvent
         $this->setLogger($bot->getLogger());
     }
 
-    public function execute($args = [])
+    public function execute($args = []): void
     {
         $handled = false;                     // If any command is handled set to true
         $cancellation = new DeferredCancellation();

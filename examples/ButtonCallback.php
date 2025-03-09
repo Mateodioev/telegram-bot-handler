@@ -15,14 +15,14 @@ class ButtonCallback extends CallbackCommand
         EchoPayload::class . ':This is the example param',
     ];
 
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
         $value = $args[EchoPayload::class];
         $this->logger()->info('Middleware result: {result}', ['result' => $value]);
         $this->logger()->info('Button 1 pressed');
         // log telegram context
         $this->logger()->info('Update: {up}', [
-            'up' => \json_encode($this->ctx()->getReduced(), JSON_PRETTY_PRINT)
+            'up' => json_encode($this->ctx()->getReduced(), JSON_PRETTY_PRINT)
         ]);
 
         $payload = $this->ctx()->getPayload();
@@ -51,7 +51,7 @@ class EchoPayload extends Middleware
     /**
      * @throws StopCommand Stop execution command if payload is empty
      */
-    public function __invoke(Context $ctx, Api $api, array $args = [])
+    public function __invoke(Context $ctx, Api $api, array $args = []): string
     {
         $ctx->logger?->debug(
             message: 'Old results: {args}',
@@ -68,6 +68,6 @@ class EchoPayload extends Middleware
         }
 
         $payload = $ctx->getPayload();
-        return \sprintf($message, $payload) . PHP_EOL;
+        return sprintf($message, $payload) . PHP_EOL;
     }
 }

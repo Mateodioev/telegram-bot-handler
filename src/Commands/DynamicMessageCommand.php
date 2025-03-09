@@ -6,6 +6,8 @@ namespace Mateodioev\TgHandler\Commands;
 
 use Mateodioev\StringVars\{Config, Matcher};
 
+use function join;
+
 /**
  * This command is similar to {@see MessageCommand} but allows any string in the command
  *
@@ -56,7 +58,7 @@ abstract class DynamicMessageCommand extends MessageCommand
         $pattern = sprintf(
             $regexFormat,
             $prefixes,
-            \join('|', $alias),
+            join('|', $alias),
             $paramsMatcher,
         );
 

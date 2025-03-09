@@ -9,7 +9,7 @@ use Mateodioev\TgHandler\Filters\FilterPrivateChat;
 #[FilterPrivateChat]
 class Me extends MessageCommand
 {
-    private const ADMIN_ID = 996202950;
+    private const int ADMIN_ID = 996202950;
 
     protected string $name = 'me';
 
@@ -17,13 +17,13 @@ class Me extends MessageCommand
      * Run command
      * @throws Exception
      */
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
         $user = $this->ctx()->getUser();
 
         $this->api()->replyToMessage(
             $this->ctx()->message(),
-            \sprintf(
+            sprintf(
                 'Hello %s, your id is <code>%d</code> and your username is <i>%s</i>',
                 $user->mention(),
                 $user->id(),

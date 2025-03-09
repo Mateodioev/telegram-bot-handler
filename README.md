@@ -241,7 +241,7 @@ class Name extends MessageCommand
         );
 
         // Register next conversation handler
-        return nameConversation::new($this->ctx()->getChatId(), $this->ctx()->getUserId());
+        return NameConversation::new($this->ctx()->getChatId(), $this->ctx()->getUserId());
     }
 }
 ```

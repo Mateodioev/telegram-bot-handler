@@ -48,17 +48,17 @@ $bot->onEvent(new Message())
     ->onEvent(new TestFilters())
     ->onEvent(new All())
     ->onEvent(new StickerListener())
-    ->onEvent(Start::get())
-    ->onEvent(ButtonCallback::get())
-    ->onEvent(Params::get())
-    ->onEvent(Name::get());
+    ->onEvent(new Start())
+    ->onEvent(new ButtonCallback())
+    ->onEvent(new Params())
+    ->onEvent(new Name());
 
 //
 // SERVER
 //
 
-$requestHandler =  new class ($bot, $logger) implements RequestHandler {
-    public function __construct(private readonly Bot $bot, private readonly Logger $logger)
+$requestHandler =  new readonly class ($bot, $logger) implements RequestHandler {
+    public function __construct(private Bot $bot, private Logger $logger)
     {
     }
 
@@ -78,7 +78,7 @@ $requestHandler =  new class ($bot, $logger) implements RequestHandler {
 
         try {
             $this->bot->byWebhook(json_decode($a, true), async: true, disableStateCheck: true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error($e::class . ': ' . $e->getMessage());
         }
 
@@ -107,7 +107,7 @@ $server->stop();
 
 function checkDependency(string $classTest, string $pkg, int $exitCode = 1): void
 {
-    if (\class_exists($classTest) === false) {
+    if (class_exists($classTest) === false) {
         echo 'Please install ' . $pkg . ' package' . PHP_EOL;
         exit($exitCode);
     }

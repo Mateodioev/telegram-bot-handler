@@ -11,10 +11,10 @@ use Mateodioev\TgHandler\Context;
  * Negate the given filter
  */
 #[Attribute]
-class FilterNot implements Filter
+readonly class FilterNot implements Filter
 {
     public function __construct(
-        private readonly Filter $filter
+        private Filter $filter
     ) {
     }
 

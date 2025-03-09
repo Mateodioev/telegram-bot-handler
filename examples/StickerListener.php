@@ -9,7 +9,7 @@ use Mateodioev\TgHandler\Filters\FilterMessageMediaSticker;
 #[FilterMessageMediaSticker]
 class StickerListener extends MessageEvent
 {
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
         $sticker       = $this->ctx()->message()->sticker();
         $randomSticker = $this->pickOneSticker($sticker);
@@ -27,12 +27,12 @@ class StickerListener extends MessageEvent
         $stickers = $this->privateDb()->get('sticker_id', []);
 
         if (in_array($id, $stickers)) {
-            return $stickers[\array_rand($stickers)];
+            return $stickers[array_rand($stickers)];
         }
 
         $this->saveSticker($id);
         $stickers = $this->privateDb()->get('sticker_id', []);
-        return $stickers[\array_rand($stickers)];
+        return $stickers[array_rand($stickers)];
     }
 
     private function saveSticker(string $id): void

@@ -132,8 +132,7 @@ abstract class MessageCommand extends Command
 
     public function isValid(): bool
     {
-        return 1 === 1 // SQL format
-            && parent::isValid()
+        return parent::isValid()
             && !empty($this->ctx()->getMessageText())
             && $this->match($this->ctx()->getMessageText());
     }

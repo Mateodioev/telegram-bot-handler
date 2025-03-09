@@ -1,13 +1,15 @@
 <?php
 
+/** @noinspection PhpInconsistentReturnPointsInspection */
+
 declare(strict_types=1);
 
 use Mateodioev\Bots\Telegram\Config\ParseMode;
 use Mateodioev\TgHandler\Conversations\MessageConversation;
 
-class nameConversation extends MessageConversation
+class NameConversation extends MessageConversation
 {
-    public const NAME_TOKEN = '%d_nameconversation';
+    public const string NAME_TOKEN = '%d_nameconversation';
     protected string $format = 'My name is {w:name}';
     public function execute(array $args = [])
     {
@@ -19,7 +21,7 @@ class nameConversation extends MessageConversation
         $this->api()->replyTo($this->ctx()->getChatId(), 'Nice to meet you ' . $name, $this->ctx()->getMessageId());
         $this->api()->sendMessage($this->ctx()->getChatId(), 'What is your age? ');
 
-        return ageConversation::fromContext($this->ctx());
+        return AgeConversation::fromContext($this->ctx());
     }
 
     /**
@@ -31,9 +33,9 @@ class nameConversation extends MessageConversation
     }
 }
 
-class ageConversation extends MessageConversation
+class AgeConversation extends MessageConversation
 {
-    public const NAME_TOKEN = '%d_ageconversation';
+    public const string NAME_TOKEN = '%d_ageconversation';
     protected string $format = 'My age is {d:age}';
 
     public function execute(array $args = [])
@@ -41,7 +43,7 @@ class ageConversation extends MessageConversation
         $this->api()->sendChatAction($this->ctx()->getChatId(), 'typing');
 
         $age = $this->param('age');
-        $name = $this->db()->get(nameConversation::nameToken($this->ctx()->getUserId()));
+        $name = $this->db()->get(NameConversation::nameToken($this->ctx()->getUserId()));
 
         $this->api()->sendChatAction($this->ctx()->getChatId(), 'typing');
         $this->api()->replyTo(
@@ -51,7 +53,7 @@ class ageConversation extends MessageConversation
         );
 
         $this->db()->save(self::ageToken($this->ctx()->getUserId()), $age);
-        return confirmConversation::fromContext($this->ctx());
+        return ConfirmConversation::fromContext($this->ctx());
     }
 
     public static function ageToken(int $userId): string
@@ -60,22 +62,22 @@ class ageConversation extends MessageConversation
     }
 }
 
-class confirmConversation extends MessageConversation
+class ConfirmConversation extends MessageConversation
 {
     public function execute(array $args = [])
     {
         $userId = $this->ctx()->getUserId();
         $this->api()->sendChatAction($this->ctx()->getChatId(), 'typing');
 
-        $age = (int) $this->db()->get(ageConversation::ageToken($userId));
-        $name = $this->db()->get(nameConversation::nameToken($userId));
+        $age = (int) $this->db()->get(AgeConversation::ageToken($userId));
+        $name = $this->db()->get(NameConversation::nameToken($userId));
 
         $yes = ['yes', 'si', 'y'];
 
         if (in_array(strtolower($this->ctx()->getMessageText()), $yes) === false) {
             // ask your age again
             $this->api()->sendMessage($this->ctx()->getChatId(), 'What is your age? ');
-            return ageConversation::fromContext($this->ctx());
+            return AgeConversation::fromContext($this->ctx());
         }
 
         $msg = 'Welcome ' . $this->ctx()->getUser()->mention(customName: $name);
@@ -89,7 +91,7 @@ class confirmConversation extends MessageConversation
 
     private function deleteDb(int $userID): void
     {
-        $this->db()->delete(nameConversation::nameToken($userID));
-        $this->db()->delete(ageConversation::ageToken($userID));
+        $this->db()->delete(NameConversation::nameToken($userID));
+        $this->db()->delete(AgeConversation::ageToken($userID));
     }
 }

@@ -8,8 +8,8 @@ use Exception;
 use Mateodioev\TgHandler\Commands\StopCommand;
 use Mateodioev\TgHandler\Events\EventInterface;
 use Mateodioev\TgHandler\Middleware\Middleware;
-
 use Psr\Log\LoggerInterface;
+
 use function array_filter;
 
 trait middlewares
@@ -32,7 +32,7 @@ trait middlewares
         }
 
         // Delete empty outputs
-        return array_filter($params, fn($param) => $param !== null);
+        return array_filter($params, fn ($param) => $param !== null);
     }
 
     /**

@@ -13,10 +13,10 @@ use function preg_match;
  * Validate if the message text match with the pattern
  */
 #[Attribute]
-final class FilterMessageRegex implements Filter
+final readonly class FilterMessageRegex implements Filter
 {
     public function __construct(
-        private readonly string $pattern
+        private string $pattern
     ) {
     }
 

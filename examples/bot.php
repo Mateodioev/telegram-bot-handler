@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Mateodioev\TgHandler\Commands\Generics\FallbackCallbackCommand;
 use Mateodioev\TgHandler\Db\Memory;
+use Mateodioev\TgHandler\Log\BotApiStreamConfig;
 use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
 use Mateodioev\TgHandler\{Bot, Context};
-use Mateodioev\TgHandler\Log\BotApiStreamConfig;
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/bootstrap.php';
@@ -16,7 +16,7 @@ $bot->setDb($db = new Memory());
 $db->save('memory_usage', memory_get_usage());
 
 // Exception handler for RequestException
-$bot->setExceptionHandler(RequestException::class, function (RequestException $e, Bot $bot, Context $ctx) {
+$bot->setExceptionHandler(RequestException::class, function (RequestException $e, Bot $bot) {
     $bot->getLogger()->error('New Request exception', ['exception' => $e]);
 });
 

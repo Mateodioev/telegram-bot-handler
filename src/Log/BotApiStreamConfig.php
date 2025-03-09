@@ -6,9 +6,12 @@ namespace Mateodioev\TgHandler\Log;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\Bots\Telegram\Exception\TelegramParamException;
 use SimpleLogger\streams\LogResult;
 
+use function date;
 use function sprintf;
+use function strtoupper;
 
 final class BotApiStreamConfig
 {
@@ -38,9 +41,9 @@ final class BotApiStreamConfig
         public string $channelID,
         public string $logDir,
         public bool $sendFiles = true,
-        private bool $async = true,
         ?Closure $fileFormat = null,
         ?Closure $messageFormat = null,
+        ?Closure $fileContentFormat = null,
     ) {
         $this->fileFormat = $fileFormat ?? $this->defaultGetFileNameFormatter(...);
         $this->messageFormat = $messageFormat ?? $this->defaultGetMessageFormatter(...);
@@ -55,10 +58,12 @@ final class BotApiStreamConfig
         return new self($token, $channelID, $logDir);
     }
 
+    /**
+     * @throws TelegramParamException
+     */
     public function getApi(): Api
     {
-        $api = new Api($this->token);
-        return $api;
+        return new Api($this->token);
     }
 
     public function withToken(string $token): self
@@ -126,8 +131,8 @@ final class BotApiStreamConfig
         return sprintf(
             "%s/%s-%s.log",
             $logDir,
-            \strtoupper($level),
-            \date('Y-m-d', $timestamp)
+            strtoupper($level),
+            date('Y-m-d', $timestamp)
         );
     }
 
@@ -138,9 +143,9 @@ final class BotApiStreamConfig
         $timestamp = date('Y-m-d H:i:s', $message->timestamp);
         $message = $message->message;
 
-        return "<b>{$levelEmoji} {$level}</b>\n" .
-            "📅 <code>{$timestamp}</code>\n" .
-            "📝 Message:\n<pre>{$message}</pre>";
+        return "<b>$levelEmoji $level</b>\n" .
+            "📅 <code>$timestamp</code>\n" .
+            "📝 Message:\n<pre>$message</pre>";
     }
 
     private function defaultFileContentFormatter(LogResult $message): string

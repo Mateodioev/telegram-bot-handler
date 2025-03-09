@@ -18,8 +18,8 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
 
-use function Amp\async;
 use function Amp\Future\awaitAll;
+use function Amp\{async, delay};
 
 class Bot
 {
@@ -422,7 +422,7 @@ class Bot
             return;
         }
 
-        \Amp\delay(1);
+        delay(1);
         EventLoop::getDriver()->stop();
     }
 
@@ -432,11 +432,11 @@ class Bot
             // Add all the updates to the event loop and run in the next tick
             array_map(function (Update $update) use (&$offset): void {
                 $offset = $update->updateId() + 1;
-                EventLoop::defer(function ($callbackId) use ($update) {
+                EventLoop::defer(function () use ($update) {
                     $this->runAsync($update);
                 });
             }, $updates);
-            \Amp\delay(1);
+            delay(1);
         } else {
             // run in the same thread
             array_map(function (Update $update) use (&$offset): void {

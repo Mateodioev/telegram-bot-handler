@@ -7,7 +7,7 @@ use Mateodioev\TgHandler\Events\Types\MessageEvent;
 #[\Mateodioev\TgHandler\Filters\FilterMessageRegex(pattern: '/^Hello$/i')]
 class Message extends MessageEvent
 {
-    public function execute(array $args = [])
+    public function execute(array $args = []): void
     {
         // handle all message events
 

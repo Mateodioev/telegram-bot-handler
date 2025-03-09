@@ -11,10 +11,10 @@ use Mateodioev\TgHandler\Context;
  * Validate if the message is from the chat id specified
  */
 #[Attribute]
-final class FilterMessageChat implements Filter
+final readonly class FilterMessageChat implements Filter
 {
     public function __construct(
-        private readonly int|string $chatId
+        private int|string $chatId
     ) {
     }
 

@@ -4,6 +4,7 @@ declare (strict_types=1);
 
 namespace Mateodioev\TgHandler\Events;
 
+use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Db\DbInterface;
@@ -85,7 +86,7 @@ interface EventInterface
     /**
      * Add single middleware. If two middlewares have the same name, the last one will be used
      */
-    public function addMiddleware(\Closure $middleware): static;
+    public function addMiddleware(Closure $middleware): static;
 
     /**
      * @param Closure[] $middlewares
