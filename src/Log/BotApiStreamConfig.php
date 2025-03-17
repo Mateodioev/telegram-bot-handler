@@ -141,7 +141,7 @@ final class BotApiStreamConfig
         $level = $message->level;
         $levelEmoji = $this->getLevelEmoji($message->level);
         $timestamp = date('Y-m-d H:i:s', $message->timestamp);
-        $message = $message->message;
+        $message = self::replaceIllegalCharacters($message->message);
 
         return "<b>$levelEmoji $level</b>\n" .
             "📅 <code>$timestamp</code>\n" .
@@ -190,5 +190,10 @@ final class BotApiStreamConfig
             'DEBUG' => '🔍',
             default => '🔔'
         };
+    }
+
+    private static function replaceIllegalCharacters(string $message): string
+    {
+        return str_replace(['<', '>'], ['&lt;', '&gt;'], $message);
     }
 }

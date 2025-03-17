@@ -81,11 +81,6 @@ class BotApiStream implements Stream
     private function formatMessage(LogResult $message): string
     {
         $formatter = $this->config->messageFormat;
-        return $this->replaceIllegalCharacters($formatter($message));
-    }
-
-    protected function replaceIllegalCharacters(string $message): string
-    {
-        return str_replace(['<', '>'], ['&lt;', '&gt;'], $message);
+        return $formatter($message);
     }
 }
