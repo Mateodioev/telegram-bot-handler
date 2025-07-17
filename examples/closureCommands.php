@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\TgHandler\Commands\ClosureMessageCommand;
 use Mateodioev\TgHandler\Log\{Logger, TerminalStream};
-use Mateodioev\TgHandler\{Bot, Context};
 
 require __DIR__ . '/../vendor/autoload.php';
 

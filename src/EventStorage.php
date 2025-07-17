@@ -30,6 +30,11 @@ final class EventStorage
     private array $eventsPointers = [];
 
     /**
+     * @var array<int, string> Map of event ID to event type name for O(1) deletion
+     */
+    private array $eventIdToType = [];
+
+    /**
      * Resolve all events
      * @return array<EventType, EventInterface[]>
      */
@@ -96,8 +101,10 @@ final class EventStorage
             return $eventId;
         }
 
+        $eventTypeName = $event->type()->name();
         $this->eventsPointers[$eventId] = $event;
-        $this->events[$event->type()->name()][] = $eventId;
+        $this->events[$eventTypeName][] = $eventId;
+        $this->eventIdToType[$eventId] = $eventTypeName;
 
         return $eventId;
     }
@@ -116,38 +123,42 @@ final class EventStorage
             return false;
         }
 
-        $eventType = $this->eventsPointers[$eventId]->type();
-        $eventName = $eventType->name();
+        $eventTypeName = $this->eventIdToType[$eventId];
 
         unset($this->eventsPointers[$eventId]);
+        unset($this->eventIdToType[$eventId]);
 
-        foreach ($this->events[$eventName] as $i => $id) {
-            if ($id === $eventId) {
-                unset($this->events[$eventName][$i]);
-                break;
-            }
-        }
+        // Remove from events array - use array_filter for better performance than foreach
+        $this->events[$eventTypeName] = array_filter(
+            $this->events[$eventTypeName],
+            fn ($id) => $id !== $eventId
+        );
 
         return true;
     }
 
     public function clearType(EventType $type): EventStorage
     {
-        $this->events[$type->name()] = [];
+        $typeName = $type->name();
+        $eventIds = $this->events[$typeName] ?? [];
 
-        foreach ($this->eventsPointers as $eventId => $event) {
-            if ($event->type() === $type) {
-                unset($this->eventsPointers[$eventId]);
-            }
+        // Clear events array for this type
+        $this->events[$typeName] = [];
+
+        // Remove all events of this type from pointers and type mapping
+        foreach ($eventIds as $eventId) {
+            unset($this->eventsPointers[$eventId]);
+            unset($this->eventIdToType[$eventId]);
         }
+
         return $this;
     }
 
     public function clear(): EventStorage
     {
-
         $this->eventsPointers = [];
         $this->events = [];
+        $this->eventIdToType = [];
 
         return $this;
     }

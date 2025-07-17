@@ -10,8 +10,6 @@ use Mateodioev\TgHandler\Events\EventInterface;
 use Mateodioev\TgHandler\Middleware\Middleware;
 use Psr\Log\LoggerInterface;
 
-use function array_filter;
-
 trait middlewares
 {
     /**
@@ -28,11 +26,15 @@ trait middlewares
         $params = [];
         foreach ($middlewares as $middleware) {
             $middleware->setLogger($logger);
-            $params[$middleware->name()] = $this->runMiddleware($middleware, $context, $params);
+            $result = $this->runMiddleware($middleware, $context, $params);
+
+            // Only add non-null results (optimized - no need for array_filter)
+            if ($result !== null) {
+                $params[$middleware->name()] = $result;
+            }
         }
 
-        // Delete empty outputs
-        return array_filter($params, fn ($param) => $param !== null);
+        return $params;
     }
 
     /**

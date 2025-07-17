@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Mateodioev\TgHandler\{Bot};
 use Mateodioev\TgHandler\Commands\Generics\FallbackCallbackCommand;
 use Mateodioev\TgHandler\Db\Memory;
-use Mateodioev\TgHandler\Log\BotApiStreamConfig;
 use Mateodioev\TgHandler\Log\{BotApiStream, Logger};
-use Mateodioev\TgHandler\{Bot, Context};
+use Mateodioev\TgHandler\Log\BotApiStreamConfig;
 use Mateodioev\Utils\Exceptions\RequestException;
 
 require __DIR__ . '/bootstrap.php';

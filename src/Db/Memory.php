@@ -58,4 +58,20 @@ class Memory implements DbInterface
         }
         return false;
     }
+
+    /**
+     * Clear all data from memory (useful for memory management)
+     */
+    public function clear(): void
+    {
+        $this->db = [];
+    }
+
+    /**
+     * Get database size (number of stored items)
+     */
+    public function size(): int
+    {
+        return count($this->db);
+    }
 }

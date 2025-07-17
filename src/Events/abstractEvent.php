@@ -6,10 +6,10 @@ namespace Mateodioev\TgHandler\Events;
 
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\{Bot, BotException, Context};
 use Mateodioev\TgHandler\Db\{DbInterface, PrefixDb};
 use Mateodioev\TgHandler\Filters\{Filter, FilterCollection};
 use Mateodioev\TgHandler\Middleware\{ClosureMiddleware, Middleware};
-use Mateodioev\TgHandler\{Bot, BotException, Context};
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;

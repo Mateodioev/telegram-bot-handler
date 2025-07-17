@@ -9,7 +9,6 @@ use Mateodioev\Bots\Telegram\Types\InputFile;
 use SimpleLogger\streams\LogResult;
 
 use function Amp\File\{deleteFile, write};
-use function str_replace;
 
 /**
  * Push messages to telegram channel/chat

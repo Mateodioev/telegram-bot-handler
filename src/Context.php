@@ -147,22 +147,24 @@ class Context extends Update
      */
     public function eventType(): EventType
     {
-        if ($this->type instanceof EventType) {
-            return $this->type;
-        }
-
-        $eventTypes = $this->properties();
-        unset($eventTypes['update_id']);
-
-        foreach ($eventTypes as $type => $value) {
-            if ($value instanceof TypesInterface) {
-                $this->type = EventType::silentFrom($type);
+        return $this->resolve('event_type', function (): EventType {
+            if ($this->type instanceof EventType) {
                 return $this->type;
             }
-        }
 
-        $this->type = EventType::none;
-        return $this->type;
+            $eventTypes = $this->properties();
+            unset($eventTypes['update_id']);
+
+            foreach ($eventTypes as $type => $value) {
+                if ($value instanceof TypesInterface) {
+                    $this->type = EventType::silentFrom($type);
+                    return $this->type;
+                }
+            }
+
+            $this->type = EventType::none;
+            return $this->type;
+        });
     }
 
     /**

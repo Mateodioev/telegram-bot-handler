@@ -7,8 +7,6 @@ namespace Mateodioev\TgHandler\Commands\Generics;
 use Mateodioev\TgHandler\Commands\MessageCommand;
 use Mateodioev\TgHandler\Events\EventType;
 
-use function array_merge;
-use function array_reduce;
 use function in_array;
 use function strlen;
 
@@ -34,8 +32,14 @@ class GenericMessageCommand extends GenericCommand
 
     private function getPrefix()
     {
-        return array_reduce($this->commands, function ($carry, MessageCommand $cmd): array {
-            return array_merge($carry, $cmd->getPrefix());
-        }, []);
+        $prefixes = [];
+        foreach ($this->commands as $cmd) {
+            if ($cmd instanceof MessageCommand) {
+                foreach ($cmd->getPrefix() as $prefix) {
+                    $prefixes[] = $prefix;
+                }
+            }
+        }
+        return $prefixes;
     }
 }

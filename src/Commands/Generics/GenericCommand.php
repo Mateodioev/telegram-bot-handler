@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler\Commands\Generics;
 
-use Amp\DeferredCancellation;
 use Closure;
 use Mateodioev\Bots\Telegram\Api;
+use Mateodioev\TgHandler\{Bot, Context};
 use Mateodioev\TgHandler\Commands\Command;
 use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Events\{TemporaryEvent, abstractEvent};
-use Mateodioev\TgHandler\{Bot, Context};
 use Revolt\EventLoop;
 use Throwable;
-
-use function Amp\async;
-use function Amp\Future\await;
 
 abstract class GenericCommand extends abstractEvent
 {
@@ -32,32 +28,17 @@ abstract class GenericCommand extends abstractEvent
 
     public function execute($args = []): void
     {
-        $handled = false;                     // If any command is handled set to true
-        $cancellation = new DeferredCancellation();
-
-        /** @var \Amp\Future[] $futures */
-        $futures = [];
+        // Process commands sequentially for better performance
+        // Most bots will have only one matching command, so async overhead is unnecessary
         foreach ($this->commands as $cmd) {
-            // Run command in parallel
-            // If any command is handled, cancel the rest
-            $futures[] = async(function (Command $cmd) use (&$handled, $cancellation) {
-                $handled = $this->safeRunCommand($cmd);
-                if ($handled) {
-                    $cancellation->cancel();
-                }
-            }, $cmd);
+            if ($this->safeRunCommand($cmd)) {
+                return; // Command handled, exit early
+            }
         }
 
-        try {
-            await($futures, $cancellation->getCancellation());
-        } catch (Throwable) {
-            return;
-        }
-
-        if ($handled === false) {
-            $this->fallbackCommand?->setCommands($this->commands);
-            $this->fallbackCommand?->handle($this->api(), $this->ctx());
-        }
+        // No command handled, run fallback if available
+        $this->fallbackCommand?->setCommands($this->commands);
+        $this->fallbackCommand?->handle($this->api(), $this->ctx());
     }
 
     private function safeRunCommand(Command $cmd): bool

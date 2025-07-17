@@ -8,8 +8,8 @@ use Closure;
 use Mateodioev\Bots\Telegram\Api;
 use Mateodioev\Bots\Telegram\Exception\TelegramApiException;
 use Mateodioev\Bots\Telegram\Types\{Error, Update};
-use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
 use Mateodioev\TgHandler\Commands\{Command, StopCommand};
+use Mateodioev\TgHandler\Commands\Generics\{GenericCallbackCommand, GenericCommand, GenericMessageCommand};
 use Mateodioev\TgHandler\Conversations\{Conversation};
 use Mateodioev\TgHandler\Db\{DbInterface, Memory};
 use Mateodioev\TgHandler\Events\{EventInterface, EventType, TemporaryEvent};
@@ -18,8 +18,8 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
 
-use function Amp\Future\awaitAll;
 use function Amp\{async, delay};
+use function Amp\Future\awaitAll;
 
 class Bot
 {
@@ -30,11 +30,11 @@ class Bot
     /** @var RunState Bot run mode */
     public static RunState $state = RunState::none;
 
-    private Api $api;
+    private Api             $api;
     private LoggerInterface $logger;
-    private ?DbInterface $db = null;
+    private ?DbInterface    $db     = null;
 
-    private EventStorage $eventStorage;
+    private EventStorage     $eventStorage;
     private ExceptionHandler $exceptionHandler;
 
     /** @var array<string, GenericCommand> */
@@ -46,11 +46,11 @@ class Bot
         $this->exceptionHandler->add(StopCommand::class, StopCommand::handler(...));
         $this->setLogger($logger);
 
-        $this->api = new Api($token);
+        $this->api          = new Api($token);
         $this->eventStorage = new EventStorage();
 
         $this->genericCommands = [
-            EventType::message->value() => new GenericMessageCommand(clone $this),
+            EventType::message->value()        => new GenericMessageCommand(clone $this),
             EventType::callback_query->value() => new GenericCallbackCommand(clone $this),
         ];
         foreach ($this->genericCommands as $generic) {
@@ -80,7 +80,7 @@ class Bot
     public function setLogger(LoggerInterface $logger): Bot
     {
         $logger->debug('Set logger {name}', ['name' => $logger::class]);
-        $this->logger = $logger;
+        $this->logger                   = $logger;
         $this->exceptionHandler->logger = $logger;
         return $this;
     }
@@ -180,7 +180,7 @@ class Bot
      */
     public function registerConversation(Conversation $conversation): void
     {
-        $ttl = $conversation->ttl();
+        $ttl            = $conversation->ttl();
         $conversationId = $this->registerEvent($conversation);
 
         if ($ttl === Conversation::UNDEFINED_TTL) {
@@ -190,15 +190,15 @@ class Bot
         if ($ttl < 0) {
             $this->getLogger()->warning('Invalid ttl for conversation {name} ({ttl})', [
                 'name' => $conversation::class,
-                'ttl' => $ttl,
+                'ttl'  => $ttl,
             ]);
             return;
         }
 
         $this->getLogger()->info('Conversation {name} with id {id} will be removed after {ttl} seconds', [
             'name' => $conversation::class,
-            'id' => $conversationId,
-            'ttl' => $ttl,
+            'id'   => $conversationId,
+            'ttl'  => $ttl,
         ]);
 
 
@@ -220,7 +220,7 @@ class Bot
      */
     public function registerCommand(Command $command): GenericCommand
     {
-        $type = $command->type();
+        $type    = $command->type();
         $generic = $this->genericCommands[$type->value()] ?? throw new BotException('Invalid command type: ' . $type->prettyName());
 
         $generic->add($command);
@@ -251,7 +251,7 @@ class Bot
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
         $clonedEvent = clone $event;
-        $api = $this->getApi();
+        $api         = $this->getApi();
         try {
             $clonedEvent->setVars($api, $ctx)
                 ->setDb($this->getDb());
@@ -268,7 +268,7 @@ class Bot
                 return;
             }
 
-            $logger = $this->getLogger();
+            $logger    = $this->getLogger();
             $nextEvent = $clonedEvent
                 ->setLogger($logger)
                 ->execute(
@@ -293,11 +293,11 @@ class Bot
             }
 
             $this->getLogger()->debug('Fail to run {name} ({eventType}), reason: {reason} on {file}:{line}', [
-                'name' => $clonedEvent::class,
+                'name'      => $clonedEvent::class,
                 'eventType' => $clonedEvent->type()->prettyName(),
-                'reason' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'reason'    => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
                 'exception' => $e,
             ]);
         }
