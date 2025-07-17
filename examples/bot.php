@@ -33,6 +33,7 @@ $bot->registerCommand(new Start())
     ->add(new TriggerConversationCommand())
     ->add(new Me())
     ->add(new GetUsage())
+    ->add(new Order())
     ->withDefaultFallbackCommand(); // use this to register the fallback command
 
 // Register callback command

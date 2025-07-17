@@ -20,6 +20,8 @@ require __DIR__ . '/Message.php';
 require __DIR__ . '/Name.php';
 require __DIR__ . '/NameConversation.php';
 require __DIR__ . '/TestFilters.php';
+require __DIR__ . '/Order.php';
+require __DIR__ . '/OrderFSMConversation.php';
 
 // Log php error and print in terminal
 $streamCollection = new BulkStream(
