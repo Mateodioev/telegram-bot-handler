@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mateodioev\TgHandler;
 
+use Mateodioev\TgHandler\Conversations\Conversation;
 use Mateodioev\TgHandler\Events\{
     EventInterface,
     EventType
@@ -86,6 +87,13 @@ final class EventStorage
 
             $events[] = $event;
         }
+        // Order events: non-Conversations first, Conversations last
+        if (count($events) > 1) {
+            usort(
+                $events,
+                static fn (EventInterface $a, EventInterface $b): int => ($a instanceof Conversation) <=> ($b instanceof Conversation)
+            );
+        }
         return $events;
     }
 
@@ -101,10 +109,10 @@ final class EventStorage
             return $eventId;
         }
 
-        $eventTypeName = $event->type()->name();
+        $eventTypeName                  = $event->type()->name();
         $this->eventsPointers[$eventId] = $event;
         $this->events[$eventTypeName][] = $eventId;
-        $this->eventIdToType[$eventId] = $eventTypeName;
+        $this->eventIdToType[$eventId]  = $eventTypeName;
 
         return $eventId;
     }
@@ -157,8 +165,8 @@ final class EventStorage
     public function clear(): EventStorage
     {
         $this->eventsPointers = [];
-        $this->events = [];
-        $this->eventIdToType = [];
+        $this->events         = [];
+        $this->eventIdToType  = [];
 
         return $this;
     }

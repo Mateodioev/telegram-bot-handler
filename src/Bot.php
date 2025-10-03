@@ -247,6 +247,7 @@ class Bot
 
     /**
      * Execute middlewares and command
+     * @return bool True if the
      */
     public function executeCommand(EventInterface $event, Context $ctx): void
     {
@@ -322,6 +323,7 @@ class Bot
     {
         $ctx = Context::fromUpdate($update)->withLogger($this->getLogger());
 
+        // TODO: Modify this
         awaitAll(
             // Create Futures of all commands
             array_map(function (EventInterface $event) use ($ctx) {
@@ -332,6 +334,8 @@ class Bot
             }, $this->resolveEvents($ctx))
         );
         // Wait all futures
+
+        // TODO: If other events are executed, and are a conversation, cancel the execution of the conversation
     }
 
     /**

@@ -146,7 +146,7 @@ class FSMConversationTest extends TestCase
                 ]
             ]
         ]);
-        
+
         return Context::fromUpdate($update);
     }
 
@@ -248,12 +248,12 @@ class TestFSMConversation extends FSMConversation
     {
         return $this->testStateMachine;
     }
-    
+
     public function getChatId(): int
     {
         return $this->chatId;
     }
-    
+
     public function getUserId(): int
     {
         return $this->userId;
