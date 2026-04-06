@@ -25,7 +25,8 @@ class EventStorageTest extends TestCase
     {
         return ClosureMessageCommand::new(
             name: 'test',
-            fn: function (Api $bot, Context $ctx, array $args = []) {},
+            fn: function (Api $bot, Context $ctx, array $args = []) {
+            },
         );
     }
 

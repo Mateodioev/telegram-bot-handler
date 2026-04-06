@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Conversations\FSM;
 
 use Mateodioev\Bots\Telegram\Api;
-use Mateodioev\Bots\Telegram\Types\{Update};
+use Mateodioev\Bots\Telegram\Types\Update;
 use Mateodioev\TgHandler\Context;
 use Mateodioev\TgHandler\Conversations\FSM\{
     AbstractState,
@@ -22,26 +22,22 @@ use Psr\Log\NullLogger;
 class FSMConversationTest extends TestCase
 {
     private TestFSMConversation $conversation;
-    private Memory $db;
-    private NullLogger $logger;
 
     protected function setUp(): void
     {
-        $this->db = new Memory();
-        $this->logger = new NullLogger();
         $this->conversation = new TestFSMConversation(123, 456);
-        $this->conversation->setDb($this->db);
-        $this->conversation->setLogger($this->logger);
+        $this->conversation->setDb(new Memory());
+        $this->conversation->setLogger(new NullLogger());
     }
 
-    public function testConversationInitialization()
+    public function testConversationInitialization(): void
     {
         $this->assertEquals(123, $this->conversation->getChatId());
         $this->assertEquals(456, $this->conversation->getUserId());
         $this->assertInstanceOf(StateMachine::class, $this->conversation->getStateMachine());
     }
 
-    public function testIsValidWithCorrectInput()
+    public function testIsValidWithCorrectInput(): void
     {
         $ctx = $this->createContextWithMessage('Hello world');
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -50,7 +46,7 @@ class FSMConversationTest extends TestCase
         $this->assertEquals('Hello world', $this->conversation->param('payload'));
     }
 
-    public function testIsValidWithIncorrectEventType()
+    public function testIsValidWithIncorrectEventType(): void
     {
         $ctx = $this->createContextWithEventType(EventType::callback_query);
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -58,7 +54,7 @@ class FSMConversationTest extends TestCase
         $this->assertFalse($this->conversation->isValid());
     }
 
-    public function testIsValidWithIncorrectChatId()
+    public function testIsValidWithIncorrectChatId(): void
     {
         $ctx = $this->createContextWithChatId(999);
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -66,7 +62,7 @@ class FSMConversationTest extends TestCase
         $this->assertFalse($this->conversation->isValid());
     }
 
-    public function testIsValidWithIncorrectUserId()
+    public function testIsValidWithIncorrectUserId(): void
     {
         $ctx = $this->createContextWithUserId(999);
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -74,7 +70,7 @@ class FSMConversationTest extends TestCase
         $this->assertFalse($this->conversation->isValid());
     }
 
-    public function testExecuteWithValidTransition()
+    public function testExecuteWithValidTransition(): void
     {
         $ctx = $this->createContextWithMessage('test message');
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -85,7 +81,7 @@ class FSMConversationTest extends TestCase
         $this->assertEquals('processed', $this->conversation->getStateMachine()->getCurrentState()->getId());
     }
 
-    public function testExecuteWithCompletedStateMachine()
+    public function testExecuteWithCompletedStateMachine(): void
     {
         $ctx = $this->createContextWithMessage('complete');
         $this->conversation->setVars($this->createMock(Api::class), $ctx);
@@ -96,17 +92,17 @@ class FSMConversationTest extends TestCase
         $this->assertTrue($this->conversation->getStateMachine()->isComplete());
     }
 
-    public function testTtlFromCurrentState()
+    public function testTtlFromCurrentState(): void
     {
         $this->assertEquals(3600, $this->conversation->ttl());
     }
 
-    public function testFormatFromCurrentState()
+    public function testFormatFromCurrentState(): void
     {
         $this->assertEquals('{all:payload}', $this->conversation->format());
     }
 
-    public function testOnExpired()
+    public function testOnExpired(): void
     {
         $this->conversation->onExpired();
         $this->assertEquals('initial', $this->conversation->getStateMachine()->getCurrentState()->getId());
@@ -146,7 +142,7 @@ class FSMConversationTest extends TestCase
                 ]
             ]
         ]);
-        
+
         return Context::fromUpdate($update);
     }
 
@@ -248,12 +244,12 @@ class TestFSMConversation extends FSMConversation
     {
         return $this->testStateMachine;
     }
-    
+
     public function getChatId(): int
     {
         return $this->chatId;
     }
-    
+
     public function getUserId(): int
     {
         return $this->userId;

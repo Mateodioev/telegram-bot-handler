@@ -9,8 +9,8 @@
         "smoren/string-formatter": "^1.0",
         "mateodioev/string-vars": "^1.2",
         "mateodioev/tgbot": "^v4.2",
-        "kombyte/simple-logger": "^1.0",
-        "amphp/file": "^3.2"
+        "amphp/file": "^3.2",
+        "mateodioev/simple-logger": "^1.0"
     },
     "license": "MIT",
     "autoload": {
